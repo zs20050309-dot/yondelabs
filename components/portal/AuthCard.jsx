@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import styles from '../../styles/portal.module.css'
 
 const LAB_ITEMS = [
@@ -14,6 +15,8 @@ const LAB_ITEMS = [
 const ITEMS_DOUBLED = [...LAB_ITEMS, ...LAB_ITEMS]
 
 export default function AuthCard({ children, eyebrow, title, subtitle }) {
+  const [logoFailed, setLogoFailed] = useState(false)
+
   return (
     <div className={styles.authPage}>
 
@@ -28,19 +31,19 @@ export default function AuthCard({ children, eyebrow, title, subtitle }) {
           {/* TOP: Logo */}
           <div className={styles.leftTop}>
             <div className={styles.lpLogo}>
-              <img
-                src="/images/logos/yondelabs-logo.svg"
-                alt="YondeLabs"
-                className={styles.lpLogoImg}
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none'
-                  document.getElementById('yl-fallback').style.display = 'flex'
-                }}
-              />
-              <div id="yl-fallback" className={styles.lpLogoFallback} style={{display:'none'}}>
-                <div className={styles.lpLogoIcon}>YL</div>
-                <span className={styles.lpLogoName}>YondeLabs</span>
-              </div>
+              {logoFailed ? (
+                <div className={styles.lpLogoFallback}>
+                  <div className={styles.lpLogoIcon}>YL</div>
+                  <span className={styles.lpLogoName}>YondeLabs</span>
+                </div>
+              ) : (
+                <img
+                  src="/images/logos/yondelabs-logo.svg"
+                  alt="YondeLabs"
+                  className={styles.lpLogoImg}
+                  onError={() => setLogoFailed(true)}
+                />
+              )}
             </div>
           </div>
 
