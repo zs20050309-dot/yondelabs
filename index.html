@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="notranslate">
+    <title>Yonde Labs 凌研阁 | 顶尖科研体验项目</title>
+    <link rel="icon" type="image/png" href="images/logos/yondelabs-w.png">
+    <link rel="stylesheet" href="research-website-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Announcement Banner -->
+    <div id="announcementBanner" class="announcement-banner">
+        <div class="announcement-content">
+            <p class="announcement-text">
+                <span class="lang-zh">冬季项目申请截止日期为2025年11月30日晚11:59（美东时间）！<a href="https://forms.gle/cvDqkKeVxznAQrw57" class="announcement-link" target="_blank">点击申请</a></span>
+                <span class="lang-en">The Winter Cohort application deadline is on November 30, 2025, 11:59 PM EDT! <a href="https://forms.gle/cvDqkKeVxznAQrw57" class="announcement-link" target="_blank">Click here to apply</a></span>
+            </p>
+            <button class="announcement-close" onclick="closeAnnouncement()" aria-label="Close announcement">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <!-- Company Logo -->
+            <a href="#home" class="logo-link">
+                <img src="images/logos/yondelabs-logo.svg" alt="Yonde Labs" class="company-logo">
+            </a>
+
+            <div class="nav-menu">
+                <a href="#home" class="nav-link">
+                    <span class="lang-zh">首页</span>
+                    <span class="lang-en">Home</span>
+                </a>
+                <a href="#labs" class="nav-link">
+                    <span class="lang-zh">实验室</span>
+                    <span class="lang-en">Labs</span>
+                </a>
+                <a href="#program" class="nav-link">
+                    <span class="lang-zh">项目介绍</span>
+                    <span class="lang-en">Program</span>
+                </a>
+                <a href="#research-areas" class="nav-link">
+                    <span class="lang-zh">研究领域</span>
+                    <span class="lang-en">Research Areas</span>
+                </a>
+                <a href="#achievements" class="nav-link">
+                    <span class="lang-zh">学生成果</span>
+                    <span class="lang-en">Achievements</span>
+                </a>
+                <a href="https://forms.gle/cvDqkKeVxznAQrw57" class="nav-link apply-btn" target="_blank">
+                    <span class="lang-zh">立即申请</span>
+                    <span class="lang-en">Apply Now</span>
+                </a>
+            </div>
+            <div class="language-switch" translate="no">
+                <button class="lang-btn btn-zh active" data-lang="zh" translate="no">中文</button>
+                <button class="lang-btn btn-en" data-lang="en" translate="no">EN</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-background"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <span class="lang-zh">
+                    <p>从第一次科研探索，</p>
+                    <p>到终身的科学成长</p></span>
+                <span class="lang-en">From your first project to a lifetime of scientific growth</span>
+            </h1>
+            <p class="hero-subtitle">
+                <span class="lang-zh"> 走进MIT、Stanford实验室，参与真实科研，与世界顶尖科学家建立长期联系，<br>获得超越项目本身的科研陪伴与成长。</span>
+                <span class="lang-en">From MIT To Stanford — Experience Authentic Research, Build Long-Term Connections With Leading Scientists, Gain Mentorship That Lasts Beyond One Project.</span>
+            </p>
+            <div class="hero-cta">
+                <a href="https://forms.gle/cvDqkKeVxznAQrw57" class="cta-primary" target="_blank">
+                    <span class="lang-zh">申请 2026 夏季项目</span>
+                    <span class="lang-en">Apply for Summer 2026</span>
+                </a>
+                <a href="https://forms.gle/cvDqkKeVxznAQrw57" class="cta-secondary" target="_blank">
+                    <span class="lang-zh">申请其他时间段</span>
+                    <span class="lang-en">Apply for Other Time Periods</span>
+                </a>
+            </div>
+            <div class="deadline-banner">
+                <span class="deadline-label">Early Decision Deadline:</span>
+                <span class="deadline-date">December 15, 2025</span>
+                <span class="deadline-separator">|</span>
+                <span class="deadline-label">Regular Decision:</span>
+                <span class="deadline-date">March 15, 2026</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Credibility Badges -->
+    <section class="credibility">
+        <div class="container">
+            <div class="credibility-grid">
+                <img src="https://via.placeholder.com/150x60/ffffff/333333?text=MIT" alt="MIT">
+                <img src="https://via.placeholder.com/150x60/ffffff/333333?text=Stanford" alt="Stanford">
+                <img src="https://via.placeholder.com/150x60/ffffff/333333?text=Caltech" alt="Caltech">
+                <img src="https://via.placeholder.com/150x60/ffffff/333333?text=NASA" alt="NASA">
+                <img src="https://via.placeholder.com/150x60/ffffff/333333?text=Berkeley" alt="Berkeley">
+            </div>
+        </div>
+    </section>
+
+    <!-- Partner Universities Section -->
+    <section id="partner-universities" class="partner-universities">
+        <div class="container">
+            <h3 class="universities-heading">
+                <span class="lang-zh">合作大学</span>
+                <span class="lang-en">Partner Universities</span>
+            </h3>
+        </div>
+        <div class="universities-marquee">
+            <div class="universities-track">
+                <div class="university-item">
+                    <img src="images/uni-logos/harvard.png" alt="Harvard University" class="university-logo" onerror="this.src='https://via.placeholder.com/180x80/ffffff/8B0000?text=Harvard'">
+                </div>
+                <div class="university-item">
+                    <img src="images/uni-logos/MIT.png" alt="Massachusetts Institute of Technology" class="university-logo" onerror="this.src='https://via.placeholder.com/180x80/ffffff/A31F34?text=MIT'">
+                </div>
+                <div class="university-item">
+                    <img src="images/uni-logos/stanford.png" alt="Stanford University" class="university-logo" onerror="this.src='https://via.placeholder.com/180x80/ffffff/8C1515?text=Stanford'">
+                </div>
+                <div class="university-item">
+                    <img src="images/uni-logos/CalTech.svg" alt="California Institute of Technology" class="university-logo" onerror="this.src='https://via.placeholder.com/180x80/ffffff/FF6C0C?text=Caltech'">
+                </div>
+                <div class="university-item">
+                    <img src="images/uni-logos/Vanderbilt.png" alt="Vanderbilt University" class="university-logo" onerror="this.src='https://via.placeholder.com/180x80/ffffff/866D4B?text=Vanderbilt'">
+                </div>
+                <div class="university-item">
+                    <img src="images/uni-logos/Texas_A&M.png" alt="Texas A&M University" class="university-logo" onerror="this.src='https://via.placeholder.com/180x80/ffffff/500000?text=Texas+A%26M'">
+                </div>
+                <div class="university-item">
+                    <img src="images/uni-logos/Yale.png" alt="Yale University" class="university-logo" onerror="this.src='https://via.placeholder.com/180x80/ffffff/00356B?text=Yale'">
+                </div>
+                <div class="university-item">
+                    <img src="images/uni-logos/Cornell-rbg.png" alt="Cornell University" class="university-logo" onerror="this.src='https://via.placeholder.com/180x80/ffffff/B31B1B?text=Cornell'">
+                </div>
+                <div class="university-item">
+                    <img src="images/uni-logos/ucb.png" alt="University of California, Berkeley" class="university-logo" onerror="this.src='https://via.placeholder.com/180x80/ffffff/003262?text=UC+Berkeley'">
+                </div>
+                <div class="university-item">
+                    <img src="images/uni-logos/cambridge.png" alt="University of Cambridge" class="university-logo university-logo-large" onerror="this.src='https://via.placeholder.com/180x80/ffffff/A3C1AD?text=Cambridge'">
+                </div>
+                <div class="university-item">
+                    <img src="images/uni-logos/Oxford.svg" alt="University of Oxford" class="university-logo" onerror="this.src='https://via.placeholder.com/180x80/ffffff/002147?text=Oxford'">
+                </div>
+                <!-- Duplicate set for seamless loop -->
+                <div class="university-item">
+                    <img src="images/uni-logos/harvard.png" alt="Harvard University" class="university-logo" onerror="this.src='https://via.placeholder.com/180x80/ffffff/8B0000?text=Harvard'">
+                </div>
+                <div class="university-item">
+                    <img src="images/uni-logos/MIT.png" alt="Massachusetts Institute of Technology" class="university-logo" onerror="this.src='https://via.placeholder.com/180x80/ffffff/A31F34?text=MIT'">
+                </div>
+                <div class="university-item">
+                    <img src="images/uni-logos/stanford.png" alt="Stanford University" class="university-logo" onerror="this.src='https://via.placeholder.com/180x80/ffffff/8C1515?text=Stanford'">
+                </div>
+                <div class="university-item">
+                    <img src="images/uni-logos/CalTech.svg" alt="California Institute of Technology" class="university-logo" onerror="this.src='https://via.placeholder.com/180x80/ffffff/FF6C0C?text=Caltech'">
+                </div>
+                <div class="university-item">
+                    <img src="images/uni-logos/Vanderbilt.png" alt="Vanderbilt University" class="university-logo" onerror="this.src='https://via.placeholder.com/180x80/ffffff/866D4B?text=Vanderbilt'">
+                </div>
+                <div class="university-item">
+                    <img src="images/uni-logos/Texas_A&M.png" alt="Texas A&M University" class="university-logo" onerror="this.src='https://via.placeholder.com/180x80/ffffff/500000?text=Texas+A%26M'">
+                </div>
+                <div class="university-item">
+                    <img src="images/uni-logos/Yale.png" alt="Yale University" class="university-logo" onerror="this.src='https://via.placeholder.com/180x80/ffffff/00356B?text=Yale'">
+                </div>
+                <div class="university-item">
+                    <img src="images/uni-logos/Cornell-rbg.png" alt="Cornell University" class="university-logo" onerror="this.src='https://via.placeholder.com/180x80/ffffff/B31B1B?text=Cornell'">
+                </div>
+                <div class="university-item">
+                    <img src="images/uni-logos/ucb.png" alt="University of California, Berkeley" class="university-logo" onerror="this.src='https://via.placeholder.com/180x80/ffffff/003262?text=UC+Berkeley'">
+                </div>
+                <div class="university-item">
+                    <img src="images/uni-logos/cambridge.png" alt="University of Cambridge" class="university-logo university-logo-large" onerror="this.src='https://via.placeholder.com/180x80/ffffff/A3C1AD?text=Cambridge'">
+                </div>
+                <div class="university-item">
+                    <img src="images/uni-logos/Oxford.svg" alt="University of Oxford" class="university-logo" onerror="this.src='https://via.placeholder.com/180x80/ffffff/002147?text=Oxford'">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Lab Environment Section -->
+    <section id="lab" class="lab-showcase">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="lang-zh">沉浸式顶尖实验室体验</span>
+                    <span class="lang-en">Immersive Experience in Top Research Labs</span>
+                </h2>
+                <p class="section-subtitle">
+                    <span class="lang-zh">走进真实科研现场，亲手操作，深度参与</span>
+                    <span class="lang-en">Step into real research environments, hands-on operation, deep participation</span>
+                </p>
+            </div>
+
+            <div class="lab-feature">
+                <div class="lab-gallery">
+                    <div class="lab-image main">
+                        <img src="images/mit-media-lab.jpg" alt="MIT Media Lab" onerror="this.src='https://via.placeholder.com/800x500/e8e8e8/333333?text=MIT+Media+Lab'">
+                        <div class="lab-label">MIT Media Lab</div>
+                    </div>
+                    <div class="lab-thumbnails">
+                        <img src="images/mit-koch-institute.jpg" alt="MIT Koch Institute" onclick="swapLabImage(this)" onerror="this.src='https://via.placeholder.com/200x150/e8e8e8/333333?text=Koch+Institute'">
+                        <img src="images/mit-eecs.png" alt="MIT EECS" onclick="swapLabImage(this)" onerror="this.src='https://via.placeholder.com/200x150/e8e8e8/333333?text=MIT+EECS'">
+                        <img src="images/mit-media-lab.jpg" alt="MIT Media Lab" onclick="swapLabImage(this)" onerror="this.src='https://via.placeholder.com/200x150/e8e8e8/333333?text=Media+Lab'">
+                    </div>
+                </div>
+
+                <div class="lab-outcomes">
+                    <div class="outcome-item featured">
+                        <div class="outcome-header">
+                            <div class="outcome-number">01</div>
+                            <h4>
+                                <span class="lang-zh">操作价值 $2M+ 的专业设备</span>
+                                <span class="lang-en">Hands-On Access to $2M+ Equipment</span>
+                            </h4>
+                        </div>
+                        <p>
+                            <span class="lang-zh">使用 MIT / Stanford 实验室的专业级仪器——不是参观，是亲手操作与实验</span>
+                            <span class="lang-en">Use professional-grade instruments in MIT/Stanford labs — not observing, but actually operating and experimenting</span>
+                        </p>
+                    </div>
+
+                    <div class="outcome-item">
+                        <div class="outcome-header">
+                            <div class="outcome-number">02</div>
+                            <h4>
+                                <span class="lang-zh">参与真实的前沿研究项目</span>
+                                <span class="lang-en">Work on Actual Cutting-Edge Research</span>
+                            </h4>
+                        </div>
+                        <p>
+                            <span class="lang-zh">不是模拟课题，是导师团队正在研究的真实课题——你的工作将成为实验室成果的一部分</span>
+                            <span class="lang-en">Not simulated projects, but real research your mentor's team is actively pursuing — your work becomes part of lab outcomes</span>
+                        </p>
+                    </div>
+
+                    <div class="outcome-item">
+                        <div class="outcome-header">
+                            <div class="outcome-number">03</div>
+                            <h4>
+                                <span class="lang-zh">获得一线科研导师的深度指导</span>
+                                <span class="lang-en">One-on-One PhD Mentorship</span>
+                            </h4>
+                        </div>
+                        <p>
+                            <span class="lang-zh">博士每天带教，每周与教授讨论，获得 MIT/Stanford 导师正式推荐信</span>
+                            <span class="lang-en">Daily PhD guidance, weekly professor discussions, formal MIT/Stanford recommendation letters</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Partner Labs Section -->
+    <section id="labs" class="partner-labs">
+        <div class="container">
+            <h3 class="labs-heading">
+                <span class="lang-zh">精选研究实验室</span>
+                <span class="lang-en">Selected Research Labs</span>
+            </h3>
+        </div>
+        <div class="container">
+            <div class="labs-grid">
+                <div class="lab-item">
+                    <img src="images/lab-logos/mit-be.png" alt="MIT Biological Engineering" class="lab-logo" onerror="this.src='https://via.placeholder.com/150x60/f0f0f0/666666?text=MIT+BE'">
+                    <p class="lab-name">
+                        <span class="lang-zh">MIT 生物工程</span>
+                        <span class="lang-en">MIT Biological Engineering</span>
+                    </p>
+                </div>
+                <div class="lab-item">
+                    <img src="images/lab-logos/MIT-dusp.svg" alt="MIT DUSP" class="lab-logo" onerror="this.src='https://via.placeholder.com/150x60/f0f0f0/666666?text=MIT+DUSP'">
+                    <p class="lab-name">
+                        <span class="lang-zh">MIT 城市研究与规划</span>
+                        <span class="lang-en">MIT Urban Studies & Planning</span>
+                    </p>
+                </div>
+                <div class="lab-item">
+                    <img src="images/lab-logos/mit-eaps.png" alt="MIT EAPS" class="lab-logo" onerror="this.src='https://via.placeholder.com/150x60/f0f0f0/666666?text=MIT+EAPS'">
+                    <p class="lab-name">
+                        <span class="lang-zh">MIT 地球、大气与行星科学</span>
+                        <span class="lang-en">MIT Earth, Atmospheric & Planetary Sciences</span>
+                    </p>
+                </div>
+                <div class="lab-item">
+                    <img src="images/lab-logos/mit-lids.png" alt="MIT LIDS" class="lab-logo" onerror="this.src='https://via.placeholder.com/150x60/f0f0f0/666666?text=MIT+LIDS'">
+                    <p class="lab-name">
+                        <span class="lang-zh">MIT 信息与决策系统实验室</span>
+                        <span class="lang-en">MIT Laboratory for Information & Decision Systems</span>
+                    </p>
+                </div>
+                <div class="lab-item">
+                    <img src="images/lab-logos/mit-media-lab.png" alt="MIT Media Lab" class="lab-logo" onerror="this.src='https://via.placeholder.com/150x60/f0f0f0/666666?text=MIT+Media+Lab'">
+                    <p class="lab-name">
+                        <span class="lang-zh">MIT 媒体实验室</span>
+                        <span class="lang-en">MIT Media Lab</span>
+                    </p>
+                </div>
+                <div class="lab-item">
+                    <img src="images/lab-logos/haas-marketing.png" alt="UCB Haas Marketing Group" class="lab-logo" onerror="this.src='https://via.placeholder.com/150x60/f0f0f0/666666?text=UCB+Haas'">
+                    <p class="lab-name">
+                        <span class="lang-zh">UCB Haas 营销研究组</span>
+                        <span class="lang-en">UCB Haas Marketing Group</span>
+                    </p>
+                </div>
+                <div class="lab-item">
+                    <img src="images/lab-logos/caltech-gps.png" alt="Caltech Geological and Planetary Sciences" class="lab-logo" onerror="this.src='https://via.placeholder.com/150x60/f0f0f0/666666?text=Caltech+GPS'">
+                    <p class="lab-name">
+                        <span class="lang-zh">Caltech 地质与行星科学</span>
+                        <span class="lang-en">Caltech Geological & Planetary Sciences</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Program Details -->
+    <section id="program" class="program-details">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="lang-zh">项目详情</span>
+                    <span class="lang-en">Program Details</span>
+                </h2>
+                <p class="section-subtitle">
+                    <span class="lang-zh">量身定制的科研体验</span>
+                    <span class="lang-en">Customized research experience</span>
+                </p>
+            </div>
+
+            <div class="program-grid">
+                <div class="program-card">
+                    <div class="program-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                    </div>
+                    <h3>
+                        <span class="lang-zh">项目时长</span>
+                        <span class="lang-en">Program Duration</span>
+                    </h3>
+                    <p class="card-description">
+                        <span class="lang-zh">4-8周沉浸式科研体验</span>
+                        <span class="lang-en">4-8 weeks immersive research</span>
+                    </p>
+                    <ul>
+                        <li>
+                            <span class="lang-zh">线下实验室: 4周</span>
+                            <span class="lang-en">On-site Lab: 4 weeks</span>
+                        </li>
+                        <li>
+                            <span class="lang-zh">Hybrid模式: 6-8周</span>
+                            <span class="lang-en">Hybrid Mode: 6-8 weeks</span>
+                        </li>
+                        <li>
+                            <span class="lang-zh">灵活安排时间</span>
+                            <span class="lang-en">Flexible scheduling</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="program-card">
+                    <div class="program-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <h3>
+                        <span class="lang-zh">个性化定制</span>
+                        <span class="lang-en">Personalized Match</span>
+                    </h3>
+                    <p class="card-description">
+                        <span class="lang-zh">根据学生兴趣定制课题</span>
+                        <span class="lang-en">Tailored to student interests</span>
+                    </p>
+                    <ul>
+                        <li>
+                            <span class="lang-zh">1对1导师匹配</span>
+                            <span class="lang-en">1-on-1 mentor matching</span>
+                        </li>
+                        <li>
+                            <span class="lang-zh">个人研究项目</span>
+                            <span class="lang-en">Individual project</span>
+                        </li>
+                        <li>
+                            <span class="lang-zh">深度专业指导</span>
+                            <span class="lang-en">In-depth guidance</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="program-card">
+                    <div class="program-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                    </div>
+                    <h3>
+                        <span class="lang-zh">成果产出</span>
+                        <span class="lang-en">Tangible Outcomes</span>
+                    </h3>
+                    <p class="card-description">
+                        <span class="lang-zh">可量化的学术成果</span>
+                        <span class="lang-en">Quantifiable achievements</span>
+                    </p>
+                    <ul>
+                        <li>
+                            <span class="lang-zh">研究论文/报告</span>
+                            <span class="lang-en">Research paper/report</span>
+                        </li>
+                        <li>
+                            <span class="lang-zh">GitHub 开源项目</span>
+                            <span class="lang-en">GitHub project</span>
+                        </li>
+                        <li>
+                            <span class="lang-zh">会议展示机会</span>
+                            <span class="lang-en">Conference presentation</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="program-card premium">
+                    <div class="program-icon-premium">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                    </div>
+                    <h3>
+                        <span class="lang-zh">增值服务</span>
+                        <span class="lang-en">Add-On Services</span>
+                    </h3>
+                    <p class="card-description">
+                        <span class="lang-zh">超越项目本身的持续支持</span>
+                        <span class="lang-en">Ongoing support beyond project</span>
+                    </p>
+                    <ul>
+                        <li>
+                            <span class="lang-zh">论文发表支持</span>
+                            <span class="lang-en">Publication support</span>
+                        </li>
+                        <li>
+                            <span class="lang-zh">ISEF 竞赛辅导</span>
+                            <span class="lang-en">ISEF coaching</span>
+                        </li>
+                        <li>
+                            <span class="lang-zh">大学申请指导</span>
+                            <span class="lang-en">Application guidance</span>
+                        </li>
+                        <li>
+                            <span class="lang-zh">持续 mentorship</span>
+                            <span class="lang-en">Ongoing mentorship</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Research Areas Section -->
+    <section id="research-areas" class="research-areas">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="lang-zh">研究领域</span>
+                    <span class="lang-en">Research Areas</span>
+                </h2>
+                <p class="section-subtitle">
+                    <span class="lang-zh">我们的实验室专注于不同学科，为学生提供广泛领域的科研体验。探索最适合你兴趣的方向。</span>
+                    <span class="lang-en">Our labs specialize in different disciplines, offering research exposure across a wide range of areas. Find the field that matches your interests.</span>
+                </p>
+            </div>
+
+            <div class="research-areas-grid">
+                <!-- Natural Sciences -->
+                <div class="research-category">
+                    <div class="category-icon">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M12 1v6m0 6v6m9.66-9H15m-6 0H3m16.66 5l-4.24-4.24m-6 6L5.34 19M19 5l-4.24 4.24m-6 6L5.34 5"></path>
+                        </svg>
+                    </div>
+                    <h3 class="category-title">
+                        <span class="lang-zh">自然科学</span>
+                        <span class="lang-en">Natural Sciences</span>
+                    </h3>
+                    <ul class="research-topics">
+                        <li>
+                            <strong>
+                                <span class="lang-zh">物理与天文学</span>
+                                <span class="lang-en">Physics & Astronomy</span>
+                            </strong>
+                            <span class="lang-zh"> — 量子物理、天体物理、材料科学</span>
+                            <span class="lang-en"> — quantum physics, astrophysics, materials science</span>
+                        </li>
+                        <li>
+                            <strong>
+                                <span class="lang-zh">化学</span>
+                                <span class="lang-en">Chemistry</span>
+                            </strong>
+                            <span class="lang-zh"> — 有机/无机化学、生物化学、化学工程</span>
+                            <span class="lang-en"> — organic/inorganic chemistry, biochemistry, chemical engineering</span>
+                        </li>
+                        <li>
+                            <strong>
+                                <span class="lang-zh">生物与生命科学</span>
+                                <span class="lang-en">Biology & Life Sciences</span>
+                            </strong>
+                            <span class="lang-zh"> — 分子生物学、遗传学、生物信息学</span>
+                            <span class="lang-en"> — molecular biology, genetics, bioinformatics</span>
+                        </li>
+                        <li>
+                            <strong>
+                                <span class="lang-zh">地球与环境科学</span>
+                                <span class="lang-en">Earth & Environmental Sciences</span>
+                            </strong>
+                            <span class="lang-zh"> — 气候变化、海洋学、可持续发展</span>
+                            <span class="lang-en"> — climate change, oceanography, sustainability</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Computer Science & Engineering -->
+                <div class="research-category">
+                    <div class="category-icon">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                            <line x1="8" y1="21" x2="16" y2="21"></line>
+                            <line x1="12" y1="17" x2="12" y2="21"></line>
+                        </svg>
+                    </div>
+                    <h3 class="category-title">
+                        <span class="lang-zh">计算机科学与工程</span>
+                        <span class="lang-en">Computer Science & Engineering</span>
+                    </h3>
+                    <ul class="research-topics">
+                        <li>
+                            <strong>
+                                <span class="lang-zh">计算机科学</span>
+                                <span class="lang-en">Computer Science</span>
+                            </strong>
+                            <span class="lang-zh"> — 人工智能、机器学习、数据科学、AR/VR</span>
+                            <span class="lang-en"> — AI, machine learning, data science, AR/VR</span>
+                        </li>
+                        <li>
+                            <strong>
+                                <span class="lang-zh">电气与计算机工程</span>
+                                <span class="lang-en">Electrical & Computer Engineering</span>
+                            </strong>
+                            <span class="lang-zh"> — 电路、嵌入式系统、信号处理</span>
+                            <span class="lang-en"> — circuits, embedded systems, signal processing</span>
+                        </li>
+                        <li>
+                            <strong>
+                                <span class="lang-zh">机械/航空航天工程</span>
+                                <span class="lang-en">Mechanical / Aerospace Engineering</span>
+                            </strong>
+                            <span class="lang-zh"> — 机器人、能源系统、自动驾驶</span>
+                            <span class="lang-en"> — robotics, energy systems, autonomous vehicles</span>
+                        </li>
+                        <li>
+                            <strong>
+                                <span class="lang-zh">土木/环境工程</span>
+                                <span class="lang-en">Civil / Environmental Engineering</span>
+                            </strong>
+                            <span class="lang-zh"> — 智慧城市、结构工程、城市交通</span>
+                            <span class="lang-en"> — smart cities, structural engineering, urban mobility</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Social Sciences -->
+                <div class="research-category">
+                    <div class="category-icon">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </div>
+                    <h3 class="category-title">
+                        <span class="lang-zh">社会科学</span>
+                        <span class="lang-en">Social Sciences</span>
+                    </h3>
+                    <ul class="research-topics">
+                        <li>
+                            <strong>
+                                <span class="lang-zh">心理学与行为科学</span>
+                                <span class="lang-en">Psychology & Behavioral Science</span>
+                            </strong>
+                            <span class="lang-zh"> — 认知科学、社会行为、教育学</span>
+                            <span class="lang-en"> — cognitive science, social behavior, education</span>
+                        </li>
+                        <li>
+                            <strong>
+                                <span class="lang-zh">经济学与商业</span>
+                                <span class="lang-en">Economics & Business</span>
+                            </strong>
+                            <span class="lang-zh"> — 金融、创业、计量经济学、公共政策</span>
+                            <span class="lang-en"> — finance, entrepreneurship, econometrics, public policy</span>
+                        </li>
+                        <li>
+                            <strong>
+                                <span class="lang-zh">政治学与国际关系</span>
+                                <span class="lang-en">Political Science & International Relations</span>
+                            </strong>
+                            <span class="lang-zh"> — 治理、外交、冲突研究</span>
+                            <span class="lang-en"> — governance, diplomacy, conflict studies</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Interdisciplinary -->
+                <div class="research-category">
+                    <div class="category-icon">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                    </div>
+                    <h3 class="category-title">
+                        <span class="lang-zh">跨学科与新兴领域</span>
+                        <span class="lang-en">Interdisciplinary & Emerging Fields</span>
+                    </h3>
+                    <ul class="research-topics">
+                        <li>
+                            <strong>
+                                <span class="lang-zh">量化营销</span>
+                                <span class="lang-en">Quantitative Marketing</span>
+                            </strong>
+                        </li>
+                        <li>
+                            <strong>
+                                <span class="lang-zh">人工智能与社会 / 人机交互</span>
+                                <span class="lang-en">AI + Society / Human-AI Interaction</span>
+                            </strong>
+                        </li>
+                        <li>
+                            <strong>
+                                <span class="lang-zh">城市研究 / 智慧出行</span>
+                                <span class="lang-en">Urban Studies / Smart Mobility</span>
+                            </strong>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Student Achievements -->
+    <section id="achievements" class="achievements">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="lang-zh">学生成果与反馈</span>
+                    <span class="lang-en">What Our Students Say & Achieve</span>
+                </h2>
+                <p class="section-subtitle">
+                    <span class="lang-zh">真实的成长故事，真实的项目成果</span>
+                    <span class="lang-en">Real growth stories, real project outcomes</span>
+                </p>
+            </div>
+
+            <!-- Student Stories Grid -->
+            <div class="student-stories-grid">
+                <!-- Timmy's Card -->
+                <div class="student-story-card">
+                    <div class="student-header">
+                        <div class="student-avatar">
+                            <img src="images/students-portraits/timmy.jpg" alt="Timmy Photo">
+                        </div>
+                        <div class="student-meta">
+                            <h3 class="student-name">Timmy</h3>
+                            <p class="student-school">
+                                <span class="lang-zh">华育高二</span>
+                                <span class="lang-en">Huayu High School, Grade 11</span>
+                            </p>
+                            <p class="student-program">
+                                <span class="program-badge">MIT Media Lab</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="student-quote-highlight">
+                        <p>
+                            <span class="lang-zh">"第一天我还没写过一行代码。一周后，我做出了一个完整的 AI 摄影点评系统。在 MIT 实验室，我学会了大语言模型、全栈开发、API 部署...更重要的是，我找到了自己真正热爱的方向。"</span>
+                            <span class="lang-en">"Day one: never wrote a line of code. One week later: built a complete AI photography critique system. More importantly, I found what I truly love."</span>
+                        </p>
+                    </div>
+
+                    <div class="project-achievements">
+                        <h4>
+                            <span class="lang-zh">项目成果</span>
+                            <span class="lang-en">Project Achievements</span>
+                        </h4>
+                        <ul class="achievement-list">
+                            <li>
+                                <span class="checkmark">✓</span>
+                                <span>
+                                    <span class="lang-zh">AI 摄影教练系统（完整部署）</span>
+                                    <span class="lang-en">AI Photography Coach (fully deployed)</span>
+                                </span>
+                            </li>
+                            <li>
+                                <span class="checkmark">✓</span>
+                                <span>
+                                    <span class="lang-zh">GitHub 开源项目 200+ stars</span>
+                                    <span class="lang-en">GitHub open-source project 200+ stars</span>
+                                </span>
+                            </li>
+                            <li>
+                                <span class="checkmark">✓</span>
+                                <span>
+                                    <span class="lang-zh">掌握大语言模型 + 全栈开发</span>
+                                    <span class="lang-en">Mastered LLMs + Full-stack development</span>
+                                </span>
+                            </li>
+                            <li>
+                                <span class="checkmark">✓</span>
+                                <span>
+                                    <span class="lang-zh">获 MIT 教授推荐信</span>
+                                    <span class="lang-en">MIT professor recommendation letter</span>
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Aiko's Card -->
+                <div class="student-story-card">
+                    <div class="student-header">
+                        <div class="student-avatar">
+                            <img src="images/students-portraits/aiko.jpg" alt="Aiko Photo">
+                        </div>
+                        <div class="student-meta">
+                            <h3 class="student-name">Aiko</h3>
+                            <p class="student-school">
+                                <span class="lang-zh">家居品牌创业者</span>
+                                <span class="lang-en">Home Decor Entrepreneur</span>
+                            </p>
+                            <p class="student-program">
+                                <span class="program-badge">MIT Media Lab</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="student-quote-highlight">
+                        <p>
+                            <span class="lang-zh">"看到传统家居需要与前沿技术结合，我直接和 MIT 实验室合作。实验室负责技术，我负责艺术和商业化。这个项目把公司带到了全新高度。"</span>
+                            <span class="lang-en">"Saw that traditional home decor needed tech integration. Collaborated directly with MIT lab — they handle tech, I handle art and commercialization. This project took the company to the next level."</span>
+                        </p>
+                    </div>
+
+                    <div class="project-achievements">
+                        <h4>
+                            <span class="lang-zh">项目成果</span>
+                            <span class="lang-en">Project Achievements</span>
+                        </h4>
+                        <ul class="achievement-list">
+                            <li>
+                                <span class="checkmark">✓</span>
+                                <span>
+                                    <span class="lang-zh">传统艺术 × 智能交互创新产品</span>
+                                    <span class="lang-en">Traditional art × Smart interaction innovation</span>
+                                </span>
+                            </li>
+                            <li>
+                                <span class="checkmark">✓</span>
+                                <span>
+                                    <span class="lang-zh">商业化落地并量产</span>
+                                    <span class="lang-en">Commercialized and scaled</span>
+                                </span>
+                            </li>
+                            <li>
+                                <span class="checkmark">✓</span>
+                                <span>
+                                    <span class="lang-zh">与顶尖艺术家合作</span>
+                                    <span class="lang-en">Partnered with top artists</span>
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Our Process Section -->
+    <section class="our-process">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="lang-zh">申请流程</span>
+                    <span class="lang-en">Our Process</span>
+                </h2>
+                <p class="section-subtitle">
+                    <span class="lang-zh">从申请到实地科研体验，我们与每位学生的合作流程。</span>
+                    <span class="lang-en">From application to in-person research experience, here's how we work with every student.</span>
+                </p>
+            </div>
+
+            <div class="process-timeline">
+                <div class="process-step">
+                    <div class="step-number">01</div>
+                    <div class="step-content">
+                        <h3 class="step-title">
+                            <span class="lang-zh">提交申请</span>
+                            <span class="lang-en">Application Submission</span>
+                        </h3>
+                        <p class="step-description">
+                            <span class="lang-zh">填写在线申请表，告诉我们你的学术背景、兴趣和目标。</span>
+                            <span class="lang-en">Complete the online application to tell us about your academic background, interests, and goals.</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="process-step">
+                    <div class="step-number">02</div>
+                    <div class="step-content">
+                        <h3 class="step-title">
+                            <span class="lang-zh">初步沟通</span>
+                            <span class="lang-en">Initial Outreach</span>
+                        </h3>
+                        <p class="step-description">
+                            <span class="lang-zh">审核申请后，我们的团队将与你联系，进一步了解你的兴趣和时间安排。</span>
+                            <span class="lang-en">After reviewing your application, our team will reach out to learn more about your interests and availability.</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="process-step">
+                    <div class="step-number">03</div>
+                    <div class="step-content">
+                        <h3 class="step-title">
+                            <span class="lang-zh">博士面试</span>
+                            <span class="lang-en">PhD Interview</span>
+                        </h3>
+                        <p class="step-description">
+                            <span class="lang-zh">入围候选人将与博士导师进行一对一面试，探讨你的动机、技能和潜在研究方向。</span>
+                            <span class="lang-en">Shortlisted candidates will interview one-on-one with a PhD mentor to explore your motivation, skills, and potential research directions.</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="process-step">
+                    <div class="step-number">04</div>
+                    <div class="step-content">
+                        <h3 class="step-title">
+                            <span class="lang-zh">课题匹配与录取</span>
+                            <span class="lang-en">Topic Matching & Admission</span>
+                        </h3>
+                        <p class="step-description">
+                            <span class="lang-zh">根据面试和你的兴趣，我们将设计符合你目标的定制化项目。条件录取后需支付 30% 项目费用，若无法匹配将全额退还。</span>
+                            <span class="lang-en">Based on your interview and interests, we'll design a customized placement that aligns with your goals. A 30% program fee is required upon conditional admission — fully refunded if no suitable match is found.</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Long-term Value Section -->
+    <section class="long-term-value">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="lang-zh">构建终身科研网络</span>
+                    <span class="lang-en">Lifetime Academic Network</span>
+                </h2>
+                <p class="section-subtitle">
+                    <span class="lang-zh">科研之旅的每一步都有我们陪伴</span>
+                    <span class="lang-en">We're with you every step of the way</span>
+                </p>
+            </div>
+
+            <div class="value-timeline">
+                <div class="timeline-stage">
+                    <h4>
+                        <span class="lang-zh">项目期间</span>
+                        <span class="lang-en">During Program</span>
+                    </h4>
+                    <p>
+                        <span class="lang-zh">4-8周沉浸式科研</span>
+                        <span class="lang-en">4-8 weeks immersive research</span>
+                    </p>
+                </div>
+                <div class="timeline-arrow">→</div>
+                <div class="timeline-stage">
+                    <h4>
+                        <span class="lang-zh">项目结束</span>
+                        <span class="lang-en">After Program</span>
+                    </h4>
+                    <p>
+                        <span class="lang-zh">成果发表与完善</span>
+                        <span class="lang-en">Publication & refinement</span>
+                    </p>
+                </div>
+                <div class="timeline-arrow">→</div>
+                <div class="timeline-stage">
+                    <h4>
+                        <span class="lang-zh">大学申请</span>
+                        <span class="lang-en">College Applications</span>
+                    </h4>
+                    <p>
+                        <span class="lang-zh">推荐信与材料支持</span>
+                        <span class="lang-en">Recommendation letters & support</span>
+                    </p>
+                </div>
+                <div class="timeline-arrow">→</div>
+                <div class="timeline-stage">
+                    <h4>
+                        <span class="lang-zh">终身连接</span>
+                        <span class="lang-en">Lifetime Connection</span>
+                    </h4>
+                    <p>
+                        <span class="lang-zh">持续mentorship</span>
+                        <span class="lang-en">Ongoing mentorship</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="final-cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2>
+                    <span class="lang-zh">准备开启你的科研之旅了吗？</span>
+                    <span class="lang-en">Ready to Begin Your Research Journey?</span>
+                </h2>
+                <p>
+                    <span class="lang-zh">名额有限，立即申请</span>
+                    <span class="lang-en">Limited spots available, apply now</span>
+                </p>
+                <div class="cta-buttons">
+                    <a href="https://forms.gle/cvDqkKeVxznAQrw57" class="btn-apply" target="_blank">
+                        <span class="lang-zh">立即申请</span>
+                        <span class="lang-en">Apply Now</span>
+                        <span class="arrow">→</span>
+                    </a>
+                    <button class="btn-consult" onclick="scheduleConsultation()">
+                        <span class="lang-zh">预约咨询</span>
+                        <span class="lang-en">Schedule Consultation</span>
+                    </button>
+                </div>
+                <div class="contact-info">
+                    <p>
+                        <span class="lang-zh">微信: YondeLabs-Abrielle</span>
+                        <span class="lang-en">WeChat: YondeLabs-Abrielle</span>
+                    </p>
+                    <p>
+                        <span class="lang-zh">邮箱: info@yondelabs.com</span>
+                        <span class="lang-en">Email: info@yondelabs.com</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>
+                        <span class="lang-zh">关于我们</span>
+                        <span class="lang-en">About Us</span>
+                    </h4>
+                    <p><strong>Yonde Labs 凌研阁</strong></p>
+                    <p>
+                        <span class="lang-zh">专注为优秀高中生提供顶尖大学实验室科研体验的教育机构</span>
+                        <span class="lang-en">Educational institution focused on providing top-tier university lab research experiences for outstanding high school students</span>
+                    </p>
+                    <p class="tagline">
+                        <span class="lang-zh">Beyond what you know — 走进世界科研最前沿</span>
+                        <span class="lang-en">Beyond what you know — Step into the forefront of global research</span>
+                    </p>
+                </div>
+                <div class="footer-section">
+                    <h4>
+                        <span class="lang-zh">快速链接</span>
+                        <span class="lang-en">Quick Links</span>
+                    </h4>
+                    <ul>
+                        <li><a href="#partner-universities">
+                            <span class="lang-zh">合作大学</span>
+                            <span class="lang-en">Partner Universities</span>
+                        </a></li>
+                        <li><a href="#program">
+                            <span class="lang-zh">项目详情</span>
+                            <span class="lang-en">Program Details</span>
+                        </a></li>
+                        <li><a href="#research-areas">
+                            <span class="lang-zh">研究领域</span>
+                            <span class="lang-en">Research Areas</span>
+                        </a></li>
+                        <li><a href="#achievements">
+                            <span class="lang-zh">学生成果</span>
+                            <span class="lang-en">Student Achievements</span>
+                        </a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>
+                        <span class="lang-zh">联系我们</span>
+                        <span class="lang-en">Contact</span>
+                    </h4>
+                    <p>📍 Cambridge, MA 02139</p>
+                    <p>📧 info@yondelabs.com</p>
+                    <p>📱 WeChat: YondeLabs-Abrielle</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Yonde Labs 凌研阁. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- WeChat Consultation Modal -->
+    <div id="wechatModal" class="modal">
+        <div class="modal-content wechat-modal-content">
+            <span class="close" onclick="closeWechatModal()">&times;</span>
+            <h2>
+                <span class="lang-zh">预约咨询</span>
+                <span class="lang-en">Schedule Consultation</span>
+            </h2>
+            <p class="wechat-instruction">
+                <span class="lang-zh">添加微信预约一对一咨询</span>
+                <span class="lang-en">Add WeChat to schedule your one-on-one consultation</span>
+            </p>
+            <div class="wechat-info">
+                <p class="wechat-id">
+                    <strong>
+                        <span class="lang-zh">微信号：</span>
+                        <span class="lang-en">WeChat ID: </span>
+                    </strong>
+                    YondeLabs-Abrielle
+                </p>
+                <div class="wechat-qr">
+                    <img src="images/weixin.jpg" alt="WeChat QR Code">
+                    <p class="qr-label">
+                        <span class="lang-zh">扫码添加</span>
+                        <span class="lang-en">Scan to Add</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Modal -->
+    <div id="applicationModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>
+                <span class="lang-zh">申请表</span>
+                <span class="lang-en">Application Form</span>
+            </h2>
+            <form id="applicationForm">
+                <div class="form-group">
+                    <label>
+                        <span class="lang-zh">姓名</span>
+                        <span class="lang-en">Name</span>
+                        *
+                    </label>
+                    <input type="text" required>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <span class="lang-zh">邮箱</span>
+                        <span class="lang-en">Email</span>
+                        *
+                    </label>
+                    <input type="email" required>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <span class="lang-zh">电话</span>
+                        <span class="lang-en">Phone</span>
+                        *
+                    </label>
+                    <input type="tel" required>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <span class="lang-zh">年级</span>
+                        <span class="lang-en">Grade</span>
+                        *
+                    </label>
+                    <select required>
+                        <option>
+                            <span class="lang-zh">9年级</span>
+                            <span class="lang-en">Grade 9</span>
+                        </option>
+                        <option>
+                            <span class="lang-zh">10年级</span>
+                            <span class="lang-en">Grade 10</span>
+                        </option>
+                        <option>
+                            <span class="lang-zh">11年级</span>
+                            <span class="lang-en">Grade 11</span>
+                        </option>
+                        <option>
+                            <span class="lang-zh">12年级</span>
+                            <span class="lang-en">Grade 12</span>
+                        </option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <span class="lang-zh">感兴趣的研究方向</span>
+                        <span class="lang-en">Research Interest</span>
+                        *
+                    </label>
+                    <select required>
+                        <option>
+                            <span class="lang-zh">人工智能</span>
+                            <span class="lang-en">AI</span>
+                        </option>
+                        <option>
+                            <span class="lang-zh">生物医学</span>
+                            <span class="lang-en">Biomedical</span>
+                        </option>
+                        <option>
+                            <span class="lang-zh">航空航天</span>
+                            <span class="lang-en">Aerospace</span>
+                        </option>
+                        <option>
+                            <span class="lang-zh">材料科学</span>
+                            <span class="lang-en">Materials Science</span>
+                        </option>
+                        <option>
+                            <span class="lang-zh">其他</span>
+                            <span class="lang-en">Other</span>
+                        </option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <span class="lang-zh">个人陈述</span>
+                        <span class="lang-en">Personal Statement</span>
+                    </label>
+                    <textarea rows="4" placeholder="请简述你的科研兴趣和目标... / Please briefly describe your research interests and goals..."></textarea>
+                </div>
+                <button type="submit" class="submit-btn">
+                    <span class="lang-zh">提交申请</span>
+                    <span class="lang-en">Submit Application</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="research-website-script.js"></script>
+</body>
+</html>

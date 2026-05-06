@@ -1,0 +1,74 @@
+=== Ocean Blues Color Palette V2 ===
+
+Primary Colors (深至浅):
+--color-navy-deepest: #03256C     /* 最深蓝 - 页脚、深色区域 */
+--color-navy-primary: #2541B2     /* 主蓝色 - 主要按钮、标题 */
+--color-blue-medium: #3266A6      /* 中蓝 - 次要元素、链接 */
+--color-cyan-bright: #06BEE1      /* 明亮青 - 强调、图标、互动 */
+--color-white: #FFFFFF            /* 白色 - 文字、背景 */
+
+Neutral Colors (配合使用):
+--color-gray-light: #F5F7FA       /* 浅灰 - 背景、分隔 */
+--color-gray: #666666             /* 中灰 - 次要文字 */
+--color-text-dark: #1A1A1A        /* 深灰 - 主要文字 */
+
+Gradients (渐变效果):
+--gradient-hero: linear-gradient(135deg, #03256C 0%, #2541B2 50%, #06BEE1 100%)
+--gradient-cta: linear-gradient(90deg, #2541B2 0%, #06BEE1 100%)
+--gradient-card: linear-gradient(180deg, #03256C 0%, #2541B2 100%)
+--gradient-accent: linear-gradient(90deg, #3266A6 0%, #06BEE1 100%)
+
+Usage Guide (使用指南 - 和上次一样的分配方式):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NAVIGATION BAR:
+- Background: #2541B2 with 95% opacity + blur
+- Hover state: #3266A6
+- Active state: #06BEE1
+
+HERO SECTION:
+- Background: gradient-hero (从 #03256C 到 #06BEE1)
+- Main headline: #FFFFFF
+- Subtitle: rgba(255, 255, 255, 0.9)
+
+BUTTONS:
+- Primary CTA: background #2541B2, hover #06BEE1
+- Secondary CTA: border #2541B2, hover background #3266A6
+- Accent buttons: background #06BEE1, hover #2541B2
+
+LINKS & INTERACTIVE:
+- Default links: #3266A6
+- Hover links: #06BEE1
+- Active/clicked: #2541B2
+
+SECTIONS:
+- Dark sections: background #03256C
+- Medium sections: background #2541B2
+- Light sections: background #F5F7FA or #FFFFFF
+- Accent sections: background with #06BEE1 elements
+
+CARDS:
+- Background: #FFFFFF
+- Border: rgba(50, 102, 166, 0.2)
+- Hover shadow: #06BEE1 with 20% opacity
+
+ICONS & ACCENTS:
+- Primary icons: #06BEE1
+- Secondary icons: #3266A6
+- Decorative elements: #06BEE1
+
+FOOTER:
+- Background: #03256C
+- Text: rgba(255, 255, 255, 0.8)
+- Links: #06BEE1
+
+TEXT COLORS:
+- On white backgrounds: #1A1A1A (dark gray)
+- On dark backgrounds (#03256C, #2541B2): #FFFFFF
+- On medium backgrounds (#3266A6): #FFFFFF
+- On light blue (#06BEE1): #03256C or #2541B2
+
+ANNOUNCEMENT BANNER:
+- Background: #2541B2
+- Text: #FFFFFF
+- Link underline: #06BEE1

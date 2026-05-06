@@ -1,0 +1,50 @@
+YONDE LABS COLOR SCHEME
+========================
+
+This document defines the official color palette for the Yonde Labs research program website.
+
+PRIMARY COLORS
+--------------
+#00072D - Deep Navy (Footer background, darkest sections)
+#001C55 - Dark Blue (Navigation bar, dark sections)
+#0A2472 - Royal Blue (Primary buttons, call-to-action elements)
+#0E6BA8 - Bright Blue (Links, interactive elements)
+#A6E1FA - Light Blue (Accent elements, highlights, borders)
+
+USAGE GUIDE
+-----------
+1. Hero Section: Use gradient background transitioning between #0A2472 and #0E6BA8
+2. Navigation Bar: Background color #001C55
+3. Primary Buttons: Base color #0A2472, add gradient effect on hover
+4. Links: Text color #0E6BA8, lighten to #A6E1FA on hover
+5. Accent Elements: Use #A6E1FA for borders, highlights, and decorative elements
+6. Footer: Background color #00072D
+
+SUPPORTING COLORS
+-----------------
+Text Colors:
+- Primary text: #FFFFFF (white)
+- Secondary text: #A6E1FA (light blue)
+- Muted text: rgba(166, 225, 250, 0.6)
+
+Background Colors:
+- Dark backgrounds: #00072D, #001C55
+- Card backgrounds: rgba(10, 36, 114, 0.3)
+- Glass effect: rgba(166, 225, 250, 0.1)
+
+Status Colors:
+- Success: #10b981
+- Warning: #f59e0b
+- Error: #ef4444
+
+GRADIENTS
+---------
+Primary Gradient: linear-gradient(135deg, #0A2472 0%, #0E6BA8 100%)
+Hero Gradient: linear-gradient(180deg, #001C55 0%, #00072D 100%)
+Button Hover: linear-gradient(135deg, #0E6BA8 0%, #A6E1FA 100%)
+
+SHADOWS & EFFECTS
+-----------------
+Standard shadow: 0 4px 6px rgba(0, 7, 45, 0.3)
+Glow effect: 0 0 20px rgba(166, 225, 250, 0.4)
+Strong glow: 0 0 40px rgba(166, 225, 250, 0.6)
