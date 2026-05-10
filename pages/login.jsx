@@ -37,23 +37,46 @@ export default function Login() {
     setError(null)
     setLoading(true)
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    })
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
 
-    if (error) {
-      if (error.message.toLowerCase().includes('email not confirmed')) {
-        setError('Please verify your email before signing in. Check your inbox for a verification link.')
-      } else {
-        setError('Incorrect email or password. Please try again.')
+      if (error) {
+        if (error.message.toLowerCase().includes('email not confirmed')) {
+          setError('Please verify your email before signing in. Check your inbox for a verification link.')
+        } else {
+          setError('Incorrect email or password. Please try again.')
+        }
+        setLoading(false)
+        return
       }
-      setLoading(false)
-      return
-    }
 
-    const role = data.user.user_metadata?.role
-    router.push(role === 'admin' ? '/admin' : '/dashboard')
+      const role = data.user.user_metadata?.role
+      if (role === 'admin') {
+        router.replace('/dashboard')
+        return
+      }
+
+      const { data: existing, error: applicationError } = await supabase
+        .from('applications')
+        .select('id')
+        .eq('user_id', data.user.id)
+        .limit(1)
+        .maybeSingle()
+
+      if (applicationError) {
+        setError('Something went wrong. Please try again or contact info@yondelabs.com.')
+        setLoading(false)
+        return
+      }
+
+      router.replace(existing ? '/dashboard' : '/apply')
+    } catch {
+      setError('Something went wrong. Please try again or contact info@yondelabs.com.')
+      setLoading(false)
+    }
   }
 
   return (
@@ -109,7 +132,7 @@ export default function Login() {
       <p className={styles.switchText}>
         Don&apos;t have an account?{' '}
         <Link href="/register" className={styles.switchLink}>
-          Create one
+          Register
         </Link>
       </p>
 

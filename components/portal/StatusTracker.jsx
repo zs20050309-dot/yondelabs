@@ -4,121 +4,161 @@ const STAGES = [
   {
     key: 'submitted',
     label: 'Application Submitted',
-    icon: '✓',
-    message:
-      "We've received your application. Our team will review it and reach out within 2 weeks.",
   },
   {
     key: 'interview',
     label: 'Interview Scheduled',
-    icon: '◎',
-    message:
-      "Congratulations! You've been selected for an interview. Our team will contact you shortly to schedule.",
   },
   {
     key: 'offer',
     label: 'Offer Sent',
-    icon: '★',
-    message:
-      "You've been admitted! Please check your email for your official offer and next steps.",
   },
 ]
 
-const REJECTED_MESSAGE =
-  'Thank you for applying to the Yonde Research Scholar Program. After careful review, we are unable to offer you a place at this time. We encourage you to apply again in a future cohort.'
+const REVIEWED_MESSAGE =
+  'Your application has been reviewed. We appreciate your interest in YondeLabs.'
 
-function stageIndex(status) {
-  const i = STAGES.findIndex((s) => s.key === status)
-  return i >= 0 ? i : 0
+function formatDate(isoString) {
+  if (!isoString) return '—'
+  const date = new Date(isoString)
+  if (Number.isNaN(date.getTime())) return '—'
+
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
 }
 
-export default function StatusTracker({ status }) {
-  const isRejected = status === 'rejected'
-  const current = isRejected ? -1 : stageIndex(status)
-
-  function circleClass(i) {
-    if (isRejected) return `${styles.circle} ${styles.circleMuted}`
-    if (i < current) return `${styles.circle} ${styles.circleCompleted}`
-    if (i === current) return `${styles.circle} ${styles.circleActive}`
-    return `${styles.circle} ${styles.circleUpcoming}`
+function stepState(status, index) {
+  if (status === 'rejected') {
+    return index === 0 ? 'completed' : 'inactive'
   }
 
-  function circleContent(stage, i) {
-    if (isRejected) return <span aria-hidden="true">{stage.icon}</span>
-    if (i < current) return <span className={styles.check}>✓</span>
-    return <span aria-hidden="true">{stage.icon}</span>
+  if (status === 'offer') {
+    return 'completed'
   }
 
-  function labelClass(i) {
-    if (isRejected) return styles.label
-    if (i === current) return `${styles.label} ${styles.labelActive}`
-    return styles.label
+  if (status === 'interview') {
+    if (index === 0) return 'completed'
+    if (index === 1) return 'active'
+    return 'inactive'
   }
 
-  function connectorDone(i) {
-    if (isRejected) return false
-    return current > i
+  return index === 0 ? 'completed' : 'inactive'
+}
+
+function connectorDone(status, index) {
+  if (status === 'rejected') return false
+  if (status === 'offer') return true
+  if (status === 'interview') return index === 0
+  return false
+}
+
+function circleClass(state) {
+  if (state === 'completed') return `${styles.circle} ${styles.circleCompleted}`
+  if (state === 'active') return `${styles.circle} ${styles.circleActive}`
+  return `${styles.circle} ${styles.circleUpcoming}`
+}
+
+function labelClass(state) {
+  if (state === 'inactive') return styles.label
+  return `${styles.label} ${styles.labelActive}`
+}
+
+function subLabel(state, index, submittedAt) {
+  if (index === 0) return formatDate(submittedAt)
+  if (state === 'inactive') return 'Pending'
+  if (state === 'active') return 'In progress'
+  return 'Completed'
+}
+
+function circleContent(state) {
+  if (state === 'completed') {
+    return <span className={styles.check}>✓</span>
   }
 
-  const showActiveMessage = !isRejected && current >= 0 && current < STAGES.length
-  const activeMessage = showActiveMessage ? STAGES[current].message : null
+  if (state === 'active') {
+    return <span className={styles.activeDot} aria-hidden="true" />
+  }
+
+  return null
+}
+
+export default function StatusTracker({ status, submittedAt }) {
+  const isReviewed = status === 'rejected'
+
+  function renderStep(stage, index, variant) {
+    const state = stepState(status, index)
+
+    return (
+      <div key={`${variant}-${stage.key}`} className={styles.stepBody}>
+        <div className={labelClass(state)}>{stage.label}</div>
+        <div className={styles.subLabel}>{subLabel(state, index, submittedAt)}</div>
+      </div>
+    )
+  }
 
   return (
-    <div className={styles.wrapper}>
+    <section className={styles.card}>
+      <h2 className={styles.title}>Application Progress</h2>
+
       <div className={styles.desktop}>
-        <div className={styles.desktopCircles}>
-          {STAGES.flatMap((stage, i) => {
-            const nodes = [
-              <div key={`${stage.key}-c`} className={styles.dCircleWrap}>
-                <div className={circleClass(i)}>{circleContent(stage, i)}</div>
-              </div>,
-            ]
-            if (i < STAGES.length - 1) {
-              nodes.push(
-                <div
-                  key={`${stage.key}-conn`}
-                  className={`${styles.dConn} ${connectorDone(i) ? styles.dConnDone : ''}`}
-                />
-              )
-            }
-            return nodes
+        <div className={styles.stepGrid}>
+          <div
+            className={`${styles.dConn} ${
+              connectorDone(status, 0) ? styles.dConnDone : ''
+            } ${styles.dConnFirst}`}
+            aria-hidden="true"
+          />
+          <div
+            className={`${styles.dConn} ${
+              connectorDone(status, 1) ? styles.dConnDone : ''
+            } ${styles.dConnSecond}`}
+            aria-hidden="true"
+          />
+
+          {STAGES.map((stage, index) => {
+            const state = stepState(status, index)
+
+            return (
+              <div key={`${stage.key}-desktop`} className={styles.desktopStep}>
+                <div className={styles.dCircleWrap} aria-hidden="true">
+                  <div className={circleClass(state)}>{circleContent(state)}</div>
+                </div>
+                {renderStep(stage, index, 'desktop')}
+              </div>
+            )
           })}
-        </div>
-        <div className={styles.desktopLabels}>
-          {STAGES.map((stage, i) => (
-            <div key={`${stage.key}-lbl`} className={styles.dLabelSlot}>
-              <div className={labelClass(i)}>{stage.label}</div>
-            </div>
-          ))}
         </div>
       </div>
 
       <div className={styles.mobile}>
-        {STAGES.map((stage, i) => (
+        {STAGES.map((stage, index) => (
           <div key={stage.key} className={styles.mobileStep}>
             <div className={styles.rail}>
-              <div className={circleClass(i)}>{circleContent(stage, i)}</div>
-              {i < STAGES.length - 1 ? (
+              <div className={circleClass(stepState(status, index))}>
+                {circleContent(stepState(status, index))}
+              </div>
+              {index < STAGES.length - 1 ? (
                 <div
-                  className={`${styles.vline} ${connectorDone(i) ? styles.vlineDone : ''}`}
+                  className={`${styles.vline} ${
+                    connectorDone(status, index) ? styles.vlineDone : ''
+                  }`}
                 />
               ) : null}
             </div>
-            <div className={styles.mobileBody}>
-              <div className={labelClass(i)}>{stage.label}</div>
-            </div>
+            {renderStep(stage, index, 'mobile')}
           </div>
         ))}
       </div>
 
-      {showActiveMessage ? <div className={styles.messageCard}>{activeMessage}</div> : null}
-
-      {isRejected ? (
-        <div className={styles.rejectedBox}>
-          <div className={styles.rejectedTitle}>Application Reviewed</div>
-          <div>{REJECTED_MESSAGE}</div>
+      {isReviewed ? (
+        <div className={styles.reviewedBox}>
+          <div className={styles.reviewedTitle}>Application Reviewed</div>
+          <div>{REVIEWED_MESSAGE}</div>
         </div>
       ) : null}
-    </div>
+    </section>
   )
 }

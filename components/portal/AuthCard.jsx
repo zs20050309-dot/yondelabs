@@ -1,21 +1,23 @@
 import { useState } from 'react'
 import styles from '../../styles/portal.module.css'
 
-const LAB_ITEMS = [
-  { label: 'MIT Media Lab' },
-  { label: 'Stanford HAI' },
-  { label: 'UC Berkeley' },
-  { label: 'MIT CSAIL' },
-  { label: 'Stanford d.school' },
-  { label: 'MIT Koch Institute' },
-  { label: 'Berkeley AI Research' },
-  { label: 'Stanford Medicine' },
+const universityLogos = [
+  { name: 'Harvard University', src: '/images/uni-logos/harvard.png' },
+  { name: 'Massachusetts Institute of Technology', src: '/images/uni-logos/MIT.png' },
+  { name: 'Stanford University', src: '/images/uni-logos/stanford.png' },
+  { name: 'California Institute of Technology', src: '/images/uni-logos/CalTech.svg' },
+  { name: 'Vanderbilt University', src: '/images/uni-logos/Vanderbilt.png' },
+  { name: 'Texas A&M University', src: '/images/uni-logos/Texas_A&M.png', shape: 'seal' },
+  { name: 'Yale University', src: '/images/uni-logos/Yale.png', shape: 'seal' },
+  { name: 'Cornell University', src: '/images/uni-logos/Cornell-rbg.png', shape: 'cornell' },
+  { name: 'University of California, Berkeley', src: '/images/uni-logos/ucb.png', shape: 'seal' },
+  { name: 'University of Cambridge', src: '/images/uni-logos/cambridge.png', shape: 'cambridge' },
+  { name: 'University of Oxford', src: '/images/uni-logos/Oxford.svg', shape: 'compact' },
 ]
-
-const ITEMS_DOUBLED = [...LAB_ITEMS, ...LAB_ITEMS]
 
 export default function AuthCard({ children, eyebrow, title, subtitle }) {
   const [logoFailed, setLogoFailed] = useState(false)
+  const tripled = [...universityLogos, ...universityLogos, ...universityLogos]
 
   return (
     <div className={styles.authPage}>
@@ -38,7 +40,7 @@ export default function AuthCard({ children, eyebrow, title, subtitle }) {
                 </div>
               ) : (
                 <img
-                  src="/images/logos/yondelabs-logo.svg"
+                  src="/images/logos/yondelabs-white.svg"
                   alt="YondeLabs"
                   className={styles.lpLogoImg}
                   onError={() => setLogoFailed(true)}
@@ -58,21 +60,27 @@ export default function AuthCard({ children, eyebrow, title, subtitle }) {
               <em className={styles.leftTitleAccent}>know.</em>
             </h1>
             <p className={styles.leftDesc}>
-              Real research at MIT, Stanford &amp; Berkeley.
+              Real research at MIT, Stanford, Berkeley &amp; beyond.
               Work side-by-side with PhD mentors and
               produce outcomes that matter.
             </p>
           </div>
 
-          {/* BOTTOM: Scrolling lab badges */}
+          {/* BOTTOM: University logos */}
           <div className={styles.leftFoot}>
-            <div className={styles.marqueeLabel}>Partner Institutions</div>
-            <div className={styles.marqueeWrapper}>
+            <p className={styles.partnerLabel}>PARTNER INSTITUTIONS</p>
+            <div className={styles.marqueeOuter}>
               <div className={styles.marqueeTrack}>
-                {ITEMS_DOUBLED.map((item, i) => (
-                  <div key={i} className={styles.marqueeItem}>
-                    <div className={styles.marqueeDot} />
-                    <span className={styles.marqueeText}>{item.label}</span>
+                {tripled.map((uni, i) => (
+                  <div key={`${uni.name}-${i}`} className={styles.marqueeItem}>
+                    <img
+                      src={uni.src}
+                      alt={uni.name}
+                      className={styles.universityLogo}
+                      data-logo-shape={uni.shape || 'wordmark'}
+                      loading="eager"
+                      decoding="async"
+                    />
                   </div>
                 ))}
               </div>
@@ -84,10 +92,22 @@ export default function AuthCard({ children, eyebrow, title, subtitle }) {
 
       {/* RIGHT PANEL — form area */}
       <div className={styles.rightPanel}>
-        {eyebrow && <div className={styles.formEyebrow}>{eyebrow}</div>}
-        {title && <h2 className={styles.heading}>{title}</h2>}
-        {subtitle && <p className={styles.subtext}>{subtitle}</p>}
-        {children}
+        <div className={styles.formCard}>
+          <div className={styles.rightLogoBar}>
+            <img
+              src="/images/logos/yondelabs-logo.svg"
+              alt="YondeLabs"
+              className={styles.rightLogoImg}
+              onError={(e) => {
+                e.target.style.display = 'none'
+              }}
+            />
+          </div>
+          {eyebrow && <div className={styles.formEyebrow}>{eyebrow}</div>}
+          {title && <h2 className={styles.heading}>{title}</h2>}
+          {subtitle && <p className={styles.subtext}>{subtitle}</p>}
+          {children}
+        </div>
       </div>
 
     </div>

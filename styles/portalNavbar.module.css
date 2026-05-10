@@ -1,0 +1,110 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 0 clamp(32px, 5vw, 84px);
+  background: var(--color-white);
+  border-bottom: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+.headerLeft {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.logo {
+  height: 90px;
+  width: auto;
+  display: block;
+}
+
+.logoText {
+  color: var(--color-navy-primary);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.headerRight {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+}
+
+.studentName {
+  min-width: 0;
+  max-width: 280px;
+  overflow: hidden;
+  color: #111827;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.navDivider {
+  width: 1px;
+  height: 18px;
+  background: #d1d5db;
+  flex: 0 0 auto;
+}
+
+.logout {
+  border: 0;
+  background: none;
+  color: var(--color-cyan-bright);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 800;
+  padding: 8px 0;
+  white-space: nowrap;
+}
+
+.logout:hover,
+.headerLeft:hover .logoText {
+  color: var(--color-blue-medium);
+}
+
+@media (max-width: 768px) {
+  .header {
+    gap: 16px;
+    padding: 0 18px;
+  }
+
+  .logo {
+    height: 78px;
+  }
+
+  .studentName {
+    max-width: 138px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 420px) {
+  .headerRight {
+    gap: 10px;
+  }
+
+  .studentName {
+    max-width: 112px;
+  }
+
+  .navDivider {
+    height: 16px;
+  }
+}

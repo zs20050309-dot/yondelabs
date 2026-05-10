@@ -1,46 +1,63 @@
 .authPage {
-  min-height: 100vh;
+  position: relative;
+  min-height: 100svh;
+  height: 100svh;
   display: flex;
   font-family: 'Inter', sans-serif;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(3, 37, 108, 0.94) 0%,
+      rgba(3, 37, 108, 0.86) 42%,
+      rgba(37, 65, 178, 0.58) 74%,
+      rgba(37, 65, 178, 0.34) 100%
+    ),
+    url('/images/hero1.jpg') center / cover no-repeat,
+    #03256C;
+  overflow: hidden;
 }
 
 /* ── LEFT PANEL ── */
 .leftPanel {
-  flex: 1.1;
+  flex: 1 1 auto;
+  min-width: 0;
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: 48px 48px 44px;
-  min-height: 100vh;
+  padding:
+    clamp(1.9rem, 3vw, 3rem)
+    clamp(2.6rem, 4.6vw, 6rem)
+    clamp(1.45rem, 2.5vw, 2.6rem);
+  min-height: 100svh;
+  height: 100svh;
+  box-sizing: border-box;
 }
 
 .photoBg {
-  position: absolute;
-  inset: 0;
-  background: url('/images/hero1.jpg') center / cover no-repeat;
+  display: none;
 }
 
 .photoOverlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    145deg,
-    rgba(3, 37, 108, 0.90) 0%,
-    rgba(37, 65, 178, 0.84) 50%,
-    rgba(18, 100, 168, 0.80) 100%
-  );
+  display: none;
 }
 
 .gridPattern {
   position: absolute;
   inset: 0;
-  opacity: 0.06;
+  opacity: 0.18;
   background-image:
-    linear-gradient(rgba(6, 190, 225, 1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(6, 190, 225, 1) 1px, transparent 1px);
-  background-size: 48px 48px;
+    radial-gradient(circle, rgba(6, 190, 225, 0.55) 1px, transparent 1.4px),
+    linear-gradient(135deg, transparent 62%, rgba(6, 190, 225, 0.18) 62.3%, transparent 62.7%),
+    linear-gradient(145deg, transparent 69%, rgba(255, 255, 255, 0.12) 69.2%, transparent 69.55%);
+  background-position:
+    1.5rem 3.5rem,
+    -10rem 0,
+    -12rem 4rem;
+  background-size:
+    1.25rem 1.25rem,
+    58rem 58rem,
+    60rem 60rem;
 }
 
 .leftContent {
@@ -48,8 +65,13 @@
   z-index: 2;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
   height: 100%;
-  min-height: calc(100vh - 88px);
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
 }
 
 .leftTop {
@@ -62,10 +84,12 @@
 }
 
 .lpLogoImg {
-  height: 56px;
+  height: clamp(3.85rem, 4.55vw, 5.15rem);
   width: auto;
-  filter: brightness(0) invert(1);
+  max-width: 310px;
+  object-fit: contain;
   display: block;
+  filter: brightness(0) invert(1);
 }
 
 .lpLogoFallback {
@@ -97,24 +121,36 @@
 }
 
 .leftMid {
-  flex: 1;
+  position: relative;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding: 48px 0;
+  gap: clamp(0.9rem, 1.35vw, 1.35rem);
+  width: min(100%, 48rem);
+  margin-left: 0;
+  margin-top: clamp(0.4rem, 1.8vh, 1.75rem);
+  padding: 0;
+}
+
+.leftMid::before {
+  display: none;
 }
 
 .portalPill {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(6, 190, 225, 0.10);
-  border: 1px solid rgba(6, 190, 225, 0.30);
+  background: rgba(6, 190, 225, 0.13);
+  border: 1px solid rgba(6, 190, 225, 0.38);
   border-radius: 99px;
-  padding: 7px 18px;
+  padding: 0.66rem 1.55rem;
   width: fit-content;
   align-self: flex-start;
-  margin-bottom: 32px;
+  margin-bottom: clamp(0.35rem, 1.1vw, 1rem);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 16px 42px rgba(3, 37, 108, 0.18);
+  backdrop-filter: blur(10px);
 }
 
 .portalDot {
@@ -126,148 +162,288 @@
 }
 
 .portalLabel {
-  font-size: 11px;
+  font-size: 0.72rem;
   font-weight: 700;
   color: #06BEE1;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.26em;
   text-transform: uppercase;
   font-family: 'Inter', sans-serif;
   white-space: nowrap;
 }
 
 .leftTitle {
-  font-size: 64px;
-  font-weight: 900;
+  font-size: clamp(4rem, 6.65vw, 7.6rem);
+  font-weight: 850;
   color: #ffffff;
   line-height: 0.98;
-  letter-spacing: -2px;
-  margin-bottom: 24px;
+  letter-spacing: 0;
+  margin: 0;
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
+  text-wrap: balance;
+  text-shadow: 0 12px 36px rgba(3, 37, 108, 0.28);
+}
+
+.leftTitle::after {
+  content: '';
+  display: block;
+  width: clamp(4.5rem, 6vw, 5.75rem);
+  height: 0.26rem;
+  margin-top: clamp(0.9rem, 1.35vw, 1.35rem);
+  border-radius: 999px;
+  background: #06BEE1;
+  box-shadow: 0 0 24px rgba(6, 190, 225, 0.35);
 }
 
 .leftTitleAccent {
   color: #06BEE1;
   font-style: normal;
   display: block;
-  font-size: 72px;
-  font-weight: 900;
-  letter-spacing: -3px;
-  line-height: 1.0;
-  margin-top: 4px;
+  font-size: inherit;
+  font-weight: 850;
+  letter-spacing: 0;
+  line-height: 0.98;
+  margin-top: 0.25rem;
+  text-shadow: 0 0 30px rgba(6, 190, 225, 0.25);
 }
 
 .leftDesc {
-  font-size: 16px;
+  font-size: clamp(0.98rem, 1.08vw, 1.2rem);
   font-weight: 400;
-  color: rgba(255, 255, 255, 0.55);
-  line-height: 1.8;
-  max-width: 340px;
-  margin-top: 20px;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.5;
+  max-width: 42rem;
+  margin: 0;
   font-family: 'Inter', sans-serif;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
 }
 
 .leftFoot {
+  padding-bottom: 2rem;
   flex-shrink: 0;
+  overflow: visible;
+  width: min(100%, 70rem);
 }
 
-.marqueeLabel {
-  font-size: 10px;
+.partnerLabel {
+  font-size: 0.625rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.3);
-  margin-bottom: 10px;
+  color: rgba(255, 255, 255, 0.35);
+  margin-bottom: 1rem;
 }
 
-.marqueeWrapper {
+.marqueeOuter {
+  position: relative;
   overflow: hidden;
   width: 100%;
-  mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
-  -webkit-mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+  min-width: 0;
+  padding: 0.625rem 0;
+  border-radius: 8px;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(166, 225, 250, 0.10) 0%,
+      rgba(166, 225, 250, 0.20) 45%,
+      rgba(6, 190, 225, 0.10) 100%
+    ),
+    rgba(3, 37, 108, 0.18);
+  border-top: 1px solid rgba(166, 225, 250, 0.22);
+  border-bottom: 1px solid rgba(166, 225, 250, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 12px 26px rgba(3, 37, 108, 0.12);
+  backdrop-filter: blur(10px) saturate(1.1);
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  );
 }
 
 .marqueeTrack {
   display: flex;
-  gap: 12px;
+  align-items: center;
+  gap: 3.5rem;
   width: max-content;
-  animation: marqueeScroll 28s linear infinite;
+  animation: seamlessScroll 36s linear infinite;
+  will-change: transform;
+}
+
+.marqueeOuter:hover .marqueeTrack {
+  animation-play-state: paused;
 }
 
 .marqueeItem {
   display: flex;
   align-items: center;
-  gap: 7px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 7px;
-  padding: 7px 14px;
-  white-space: nowrap;
+  justify-content: center;
   flex-shrink: 0;
+  height: 48px;
+  padding: 0 2px;
 }
 
-.marqueeDot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #06BEE1;
-  flex-shrink: 0;
+.universityLogo {
+  height: 36px;
+  width: auto;
+  max-width: 178px;
+  object-fit: contain;
+  filter: grayscale(0.35) saturate(0.82) contrast(1.12) brightness(0.90);
+  mix-blend-mode: multiply;
+  opacity: 0.82;
+  transition: filter 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+  display: block;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
-.marqueeText {
-  font-size: 12px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.65);
+.universityLogo[data-logo-shape='seal'] {
+  height: 46px;
+  max-width: 112px;
 }
 
-@keyframes marqueeScroll {
+.universityLogo[data-logo-shape='cornell'] {
+  height: 52px;
+  max-width: 220px;
+  filter: grayscale(0.22) saturate(0.92) contrast(1.14) brightness(0.96);
+  mix-blend-mode: normal;
+  opacity: 0.94;
+}
+
+.universityLogo[data-logo-shape='cambridge'] {
+  width: 208px;
+  height: auto;
+  max-width: none;
+  filter: grayscale(0.35) saturate(0.82) contrast(1.12) brightness(0.90);
+  mix-blend-mode: multiply;
+  opacity: 0.84;
+  margin-inline: -0.75rem;
+}
+
+.universityLogo[data-logo-shape='compact'] {
+  height: 40px;
+  max-width: 150px;
+}
+
+.marqueeItem:hover .universityLogo {
+  filter: grayscale(0.18) saturate(0.95) contrast(1.12) brightness(0.94);
+  opacity: 1;
+  transform: scale(1.03);
+}
+
+@keyframes seamlessScroll {
   0% {
     transform: translateX(0);
   }
   100% {
-    transform: translateX(-50%);
+    transform: translateX(-33.333%);
   }
 }
 
 /* ── RIGHT PANEL ── */
 .rightPanel {
-  width: 440px;
-  background: #ffffff;
+  flex: 0 0 clamp(31rem, 36vw, 43rem);
+  position: relative;
+  box-sizing: border-box;
+  background: transparent;
   display: flex;
-  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  padding: 64px 52px;
-  min-height: 100vh;
+  padding: clamp(1.4rem, 2.8vw, 3.3rem);
+  min-height: 100svh;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.rightPanel::before,
+.rightPanel::after {
+  display: none;
+}
+
+.rightPanel::before {
+  width: 44rem;
+  height: 44rem;
+  right: -22rem;
+  top: 8rem;
+}
+
+.rightPanel::after {
+  width: 56rem;
+  height: 56rem;
+  right: -29rem;
+  top: 11rem;
+  opacity: 0.58;
+}
+
+.formCard {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 31rem);
+  max-height: calc(100svh - 2.8rem);
+  padding: clamp(1.75rem, 2.6vw, 2.75rem) clamp(1.85rem, 2.7vw, 2.75rem);
+  border-radius: 1.75rem;
+  background:
+    linear-gradient(160deg, rgba(251, 254, 255, 0.96) 0%, rgba(235, 246, 255, 0.90) 100%);
+  border: 2px solid rgba(255, 255, 255, 0.82);
+  box-shadow:
+    0 2.2rem 4.4rem rgba(3, 37, 108, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(18px) saturate(1.12);
+}
+
+.rightLogoBar {
+  display: flex;
+  align-items: center;
+  margin-bottom: clamp(1.15rem, 2.2vh, 1.8rem);
+  padding-top: 0;
+}
+
+.rightLogoImg {
+  height: clamp(3.25rem, 3.9vw, 4.15rem);
+  width: auto;
+  max-width: 16rem;
+  object-fit: contain;
+  display: block;
+  opacity: 0.95;
 }
 
 .formEyebrow {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
   color: #06BEE1;
-  margin-bottom: 14px;
+  margin-bottom: 0.85rem;
   font-family: 'Inter', sans-serif;
 }
 
 .heading {
-  font-size: 30px;
-  font-weight: 800;
+  font-size: clamp(2rem, 2.55vw, 2.75rem);
+  font-weight: 850;
   color: #03256C;
-  letter-spacing: -0.6px;
-  line-height: 1.15;
-  margin-bottom: 10px;
+  letter-spacing: 0;
+  line-height: 0.98;
+  margin-bottom: 0.75rem;
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 .subtext {
-  font-size: 14.5px;
+  font-size: 0.96rem;
   font-weight: 400;
-  color: #8a8880;
-  line-height: 1.7;
-  margin-bottom: 36px;
+  color: #626F84;
+  line-height: 1.55;
+  margin-bottom: 1.45rem;
   font-family: 'Inter', sans-serif;
 }
 
@@ -275,13 +451,13 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 0.95rem;
 }
 
 .inputGroup {
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 0.48rem;
 }
 
 .labelRow {
@@ -291,54 +467,73 @@
 }
 
 .label {
-  font-size: 11px;
-  font-weight: 700;
-  color: #1A1A1A;
-  letter-spacing: 0.08em;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #081B4A;
+  letter-spacing: 0.075em;
   text-transform: uppercase;
   font-family: 'Inter', sans-serif;
 }
 
 .input {
   width: 100%;
-  padding: 14px 16px;
-  border: 1.5px solid #E9E7E2;
-  border-radius: 10px;
-  font-family: 'Inter', sans-serif;
-  font-size: 15px;
-  font-weight: 400;
+  min-height: 3.2rem;
+  padding: 0.78rem 1rem;
+  font-size: 0.95rem;
   color: #1A1A1A;
-  background: #F8F7F5;
+  background: rgba(255, 255, 255, 0.74);
+  border: 1.5px solid #C8D5E8;
+  border-radius: 0.72rem;
+  font-family: 'Inter', sans-serif;
   outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
   box-sizing: border-box;
-  -webkit-font-smoothing: antialiased;
-  letter-spacing: 0.01em;
 }
 
 .input:focus {
   border-color: #2541B2;
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(37, 65, 178, 0.08);
+  background: #FFFFFF;
+  box-shadow: 0 0 0 4px rgba(37, 65, 178, 0.12);
 }
 
 .input::placeholder {
-  color: #C5C3BA;
+  color: #A8B5C9;
 }
 
 .inputWrapper {
   position: relative;
   display: flex;
   align-items: center;
+  border: 1.5px solid #C8D5E8;
+  border-radius: 0.72rem;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  overflow: visible;
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.inputWrapper:focus-within {
+  border-color: #2541B2;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 4px rgba(37, 65, 178, 0.12);
 }
 
 .inputWrapper .input {
-  padding-right: 44px;
+  padding-right: 3.25rem;
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+.inputWrapper .input:focus {
+  border: none;
+  box-shadow: none;
 }
 
 .eyeButton {
   position: absolute;
-  right: 14px;
+  right: 1rem;
+  width: 2.25rem;
+  height: 2.25rem;
   background: none;
   border: none;
   cursor: pointer;
@@ -361,97 +556,114 @@
 }
 
 .submitButton {
+  position: relative;
   width: 100%;
-  padding: 15px;
-  background: linear-gradient(95deg, #2541B2 0%, #3266A6 100%);
-  color: #ffffff;
+  min-height: 3.45rem;
+  padding: 0.85rem 1.35rem;
   border: none;
-  border-radius: 10px;
-  font-family: 'Inter', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
+  border-radius: 0.78rem;
   cursor: pointer;
-  transition: all 0.18s;
-  letter-spacing: 0.05em;
-  box-shadow: 0 5px 24px rgba(37, 65, 178, 0.30);
-  margin-top: 8px;
+  font-size: 0.98rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+  color: #ffffff;
+  background: linear-gradient(100deg, #0734C7 0%, #06BEE1 100%);
+  box-shadow: 0 0.9rem 1.8rem rgba(6, 190, 225, 0.26);
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+  margin-top: 0.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
 }
 
-.submitButton:hover {
-  background: linear-gradient(90deg, #1e35a0 0%, #06BEE1 100%);
-  box-shadow: 0 6px 24px rgba(6, 190, 225, 0.28);
+.submitButton::after {
+  content: none;
+}
+
+.submitButton:hover:not(:disabled) {
+  background: linear-gradient(100deg, #0B3EE5 0%, #14D0EE 100%);
+  box-shadow: 0 1rem 2.2rem rgba(6, 190, 225, 0.38);
   transform: translateY(-1px);
 }
 
-.submitButton:active {
+.submitButton:active:not(:disabled) {
   transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(6, 190, 225, 0.2);
 }
 
 .submitButton:disabled {
-  background: #D3D1C7;
-  box-shadow: none;
+  opacity: 0.55;
   cursor: not-allowed;
   transform: none;
 }
 
 .errorMessage {
-  background: #FEF2F2;
-  border: 1px solid #FECACA;
-  border-radius: 10px;
-  padding: 12px 16px;
-  font-size: 13px;
-  color: #991B1B;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(220, 38, 38, 0.06);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-left: 3px solid #DC2626;
+  border-radius: 0.72rem;
+  color: #B91C1C;
+  font-size: 0.8125rem;
   line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.inputError {
+  border-color: #DC2626 !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
 }
 
 .infoBanner {
-  background: #EFF6FF;
-  border: 1px solid #BFDBFE;
-  border-radius: 10px;
-  padding: 12px 16px;
-  font-size: 13px;
-  color: #1D4ED8;
+  padding: 0.75rem 1rem;
+  background: rgba(6, 190, 225, 0.07);
+  border: 1px solid rgba(6, 190, 225, 0.25);
+  border-left: 3px solid #06BEE1;
+  border-radius: 0.72rem;
+  color: #0369A1;
+  font-size: 0.8125rem;
   line-height: 1.5;
-  margin-bottom: 20px;
+  margin-bottom: 1rem;
 }
 
 .successBanner {
-  background: #F0FDF4;
-  border: 1px solid #BBF7D0;
-  border-radius: 10px;
-  padding: 12px 16px;
-  font-size: 13px;
-  color: #166534;
+  padding: 0.75rem 1rem;
+  background: rgba(22, 163, 74, 0.06);
+  border: 1px solid rgba(22, 163, 74, 0.2);
+  border-left: 3px solid #16A34A;
+  border-radius: 0.72rem;
+  color: #15803D;
+  font-size: 0.8125rem;
   line-height: 1.5;
-  margin-bottom: 20px;
+  margin-bottom: 1rem;
 }
 
 .divider {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin: 24px 0;
+  gap: 1rem;
+  margin: 1.1rem 0 1rem;
 }
 
 .dividerLine {
   flex: 1;
   height: 1px;
-  background: #F1EFE8;
+  background: #C9D4E5;
 }
 
 .dividerText {
-  font-size: 11.5px;
-  color: #C5C3BA;
+  font-size: 0.82rem;
+  color: #728096;
   white-space: nowrap;
 }
 
 .switchText {
-  font-size: 14px;
-  color: #888780;
+  font-size: 0.92rem;
+  color: #68758A;
   text-align: center;
 }
 
@@ -482,43 +694,192 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  margin-top: 20px;
+  margin-top: 1.25rem;
 }
 
 .securityText {
-  font-size: 11px;
-  color: #C5C3BA;
+  font-size: 0.76rem;
+  color: #7A879B;
   letter-spacing: 0.02em;
 }
 
+@media (max-width: 1180px) {
+  .leftPanel {
+    padding:
+      clamp(2.25rem, 3.6vw, 3.4rem)
+      clamp(2.5rem, 4.2vw, 4rem)
+      clamp(2rem, 3vw, 3rem);
+  }
+
+  .rightPanel {
+    flex-basis: 31rem;
+    padding: 2rem;
+  }
+
+  .formCard {
+    width: min(100%, 29rem);
+    padding: 2.4rem 2.35rem;
+    border-radius: 1.9rem;
+  }
+
+  .rightLogoBar {
+    margin-bottom: 2rem;
+  }
+
+  .heading {
+    font-size: 2.35rem;
+  }
+}
+
 /* ── MOBILE ── */
-@media (max-width: 768px) {
+@media (max-width: 980px) {
   .authPage {
     flex-direction: column;
+    background:
+      linear-gradient(160deg, rgba(3, 37, 108, 0.94) 0%, rgba(37, 65, 178, 0.78) 58%, rgba(37, 65, 178, 0.42) 100%),
+      url('/images/hero1.jpg') center / cover no-repeat,
+      #03256C;
+    height: auto;
+    min-height: 100svh;
+    overflow: visible;
   }
+
   .leftPanel {
-    min-height: 200px;
-    padding: 32px 28px;
+    min-height: auto;
+    height: auto;
+    padding: 2rem 1.5rem 1.75rem;
     flex: none;
   }
+
   .leftContent {
     min-height: 0;
+    gap: 1.75rem;
   }
+
+  .lpLogoImg {
+    height: 3.8rem;
+    max-width: 13rem;
+  }
+
   .leftMid {
-    padding: 16px 0;
+    width: 100%;
+    margin-left: 0;
+    margin-top: 0;
+    padding: 0.5rem 0 0;
+    gap: 0.75rem;
   }
-  .leftTitle {
-    font-size: 28px;
-  }
-  .leftDesc {
+
+  .leftMid::before {
     display: none;
   }
+
+  .portalPill {
+    padding: 0.62rem 1rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .portalLabel {
+    font-size: 0.64rem;
+    letter-spacing: 0.18em;
+  }
+
+  .leftTitle {
+    font-size: clamp(2.65rem, 12vw, 4.5rem);
+    line-height: 1;
+  }
+
+  .leftTitle::after {
+    width: 3.75rem;
+    height: 0.22rem;
+    margin-top: 0.95rem;
+  }
+
+  .leftTitleAccent {
+    font-size: inherit;
+    letter-spacing: 0;
+  }
+
+  .leftDesc {
+    display: block;
+    max-width: 32rem;
+    font-size: 0.98rem;
+    line-height: 1.55;
+  }
+
   .leftFoot {
     display: none;
   }
+
+  .rightPanel::before,
+  .rightPanel::after {
+    display: none;
+  }
+
+  .rightLogoBar {
+    display: flex;
+    margin-bottom: 1.35rem;
+  }
+
+  .rightLogoImg {
+    height: 3.45rem;
+    max-width: 13.25rem;
+  }
+
+  .formCard {
+    width: min(100%, 35rem);
+    max-height: none;
+    padding: 2rem 1.35rem;
+    border-radius: 1.55rem;
+  }
+
+  .heading {
+    font-size: clamp(2rem, 8vw, 2.65rem);
+    line-height: 1.04;
+  }
+
+  .subtext {
+    font-size: 0.98rem;
+    margin-bottom: 1.85rem;
+  }
+
+  .submitButton {
+    min-height: 3.7rem;
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+  }
+
   .rightPanel {
+    flex: none;
     width: 100%;
+    height: auto;
     min-height: auto;
-    padding: 40px 28px;
+    padding: 1.25rem 1rem 2rem;
+    background: transparent;
+    overflow: visible;
+  }
+}
+
+@media (max-width: 420px) {
+  .formCard {
+    padding: 1.65rem 1rem;
+    border-radius: 1.25rem;
+  }
+
+  .form {
+    gap: 1.05rem;
+  }
+
+  .input,
+  .inputWrapper {
+    min-height: 3.55rem;
+  }
+
+  .divider {
+    gap: 0.65rem;
+  }
+
+  .dividerText,
+  .forgotLink {
+    font-size: 0.76rem;
   }
 }

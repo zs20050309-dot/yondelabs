@@ -30,24 +30,29 @@ export default function Register() {
 
     setLoading(true)
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: window.location.origin + '/auth/callback',
-        data: {
-          role: 'student'
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: window.location.origin + '/auth/callback',
+          data: {
+            role: 'student'
+          }
         }
+      })
+
+      if (error) {
+        setError('Something went wrong. Please try again or contact info@yondelabs.com.')
+        setLoading(false)
+        return
       }
-    })
 
-    if (error) {
-      setError(error.message)
+      router.push('/login?registered=true')
+    } catch {
+      setError('Something went wrong. Please try again or contact info@yondelabs.com.')
       setLoading(false)
-      return
     }
-
-    router.push('/login?registered=true')
   }
 
   return (
@@ -100,7 +105,7 @@ export default function Register() {
       </div>
       <p className={styles.switchText}>
         Already have an account?{' '}
-        <Link href="/login" className={styles.switchLink}>Sign in</Link>
+        <Link href="/login" className={styles.switchLink}>Login</Link>
       </p>
     </AuthCard>
   )
