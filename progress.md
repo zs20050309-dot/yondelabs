@@ -4,7 +4,25 @@ Last updated: 2026-05-24
 
 ---
 
-## Session: 2026-05-24 (cont. 2) — Status-change email notifications (Resend)
+## Session: 2026-05-24 (cont. 3) — Supabase migration 指南中文化
+
+### Background
+用户反馈看不懂英文，要求把 `docs/supabase-migration-guide.md` 翻译成中文。
+
+### Files modified
+- `docs/supabase-migration-guide.md` — 整篇覆盖为中文版。结构、SQL、文件路径、英文专有名词（SQL Editor、Dashboard、RLS、CHECK 约束、Run 按钮、Cmd/Ctrl 快捷键等）保留不译。语气保持原文那种"非技术用户友好 + 谨慎别瞎试"的风格。
+- `progress.md` — 本条记录。
+
+### Decision
+- **直接覆盖原英文文件**，不保留双语版本。用户是唯一受众；引用这份指南的地方（CLAUDE.md、progress.md、SQL 文件注释）都是文件路径引用，不依赖文件内容是英文还是中文。
+- SQL migration 本身（`docs/sql/migrations/*.sql`）**没动** —— SQL 是代码，注释里的英文是给未来跨语言开发者看的标准做法。
+
+### Pending — 用户反馈
+- 邮件通知 setup guide (`docs/email-notifications-setup-guide.md`) 同样是英文，同样的用户、同样的"看不懂"问题 → 等用户确认是否一起翻译。
+
+---
+
+
 
 ### Background
 管理员翻 application 状态后，学生只能靠刷 dashboard 知道。本段实现状态变更自动发邮件。学生在 `submitted → interview / offer / rejected` 三类转变时收到 transactional 邮件。
