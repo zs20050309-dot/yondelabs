@@ -4,6 +4,32 @@ Last updated: 2026-05-24
 
 ---
 
+## Session: 2026-05-24 (cont.) — Doc currency + wizard mobile polish
+
+### Background
+本会话上一段把 native form 上线后，旧文档（Spec.md / CLAUDE.md）仍引用 `middleware.js`、admin 仍写为 pending、status flow 没含 `draft`，与 shipping 状态脱节。同时 wizard 没在真机测过，step dot 点击区不够大、超窄屏 footer 按钮可能挤。
+
+### Files modified
+- `Spec.md` — 顶部加 doc-currency 提示；§1 file structure 标注 `middleware.js` 实际为 `proxy.js`；§5 标题与正文同步。
+- `CLAUDE.md` — Currently Completed/Pending 列表重写；Key Spec Reference 加 `draft` 状态、提到 schema 是 admin 渲染的 source of truth。
+- `styles/wizard.module.css` — step dot 按钮加 `min-height: 44px`（iOS HIG tap target）；超窄屏（≤420px）`primaryBtn / secondaryBtn` 加 `flex: 1 1 0; min-width: 0`，让 Previous / Submit 平分宽度且能正确收缩。
+- `progress.md` — 本条记录。
+
+### Verification
+- 起 dev server：`✓ Ready in 551ms`，端口被占用自动 fallback 到 3001，无编译错误。
+- 路由 smoke test：
+  - `/login` → 200 OK ✓
+  - `/apply` → 307 → `/login?message=Please+log+in+to+continue.` ✓
+  - `/apply/ra` → 307 → `/login?...` ✓ (新动态路由被 proxy 正确保护)
+  - `/apply/garbage` → 307 → `/login?...` ✓ (未登录先 proxy 拦截；登录后客户端路由会 redirect 回 `/apply`)
+- Build 再跑一次确认 CSS 改动不破坏构建：`✓ Compiled successfully`，11 个路由全过。
+
+### Known limitations
+- 真机视觉 QA 仍未做（开发环境无 device farm）。下次跑完 Supabase migration 之后可以用 Chrome devtools mobile mode 走一遍完整流程。
+- 国家 `<select>` 在移动端原生 picker 里 254 个选项滚动比较累；type-ahead 搜索框是另一个改进点，本次不做。
+
+---
+
 ## Session: 2026-05-24 — Native In-App Application Form (replaces Google Forms)
 
 ### Background

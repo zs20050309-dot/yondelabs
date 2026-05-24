@@ -3,6 +3,18 @@
 **Owner:** Assisi  
 **Purpose:** This document is the authoritative technical reference for Cursor to implement the authentication portal. Every file path, function name, API route, and data contract is defined here. Cursor must not deviate from these specifications without explicit instruction.
 
+> **⚠️ Doc currency (updated 2026-05-24):** Parts of this spec are now historical. For the current shipping state, the canonical sources in priority order are:
+> 1. `progress.md` — every change since this spec was written
+> 2. `docs/ai-context/current-project-ai-alignment.md` — current code-level snapshot
+> 3. This file — original intent / unchanged sections
+>
+> Key deltas vs. this spec:
+> - **Route protection** lives in `proxy.js`, not `middleware.js`.
+> - **`pages/apply.jsx` + `pages/apply/[program].jsx`** exist — a native in-app form wizard replaced the planned Google-Form handoff.
+> - **`applications.status`** now includes `'draft'` (added by `docs/sql/migrations/2026-05-24_add_draft_status.sql`).
+> - Form rendering is **schema-driven** from `lib/forms/schema.js` — admin's detail view should reuse the same schema rather than the `FIELD_LABELS` dictionary in §7.5.
+> - The admin panel (§4.4, §6.6, §7.4, §7.5, §8) is **still unimplemented** as of this date.
+
 ---
 
 ## 0. Ground Rules for Implementation
@@ -63,7 +75,7 @@ yondelabs/
 ├── lib/
 │   └── supabaseClient.js            [Assisi] — single shared Supabase client
 │
-├── middleware.js                    [Assisi] — route protection
+├── middleware.js                    [Assisi] — route protection (shipped as `proxy.js`)
 │
 ├── styles/
 │   └── globals.css                  [Ashlyn] — do not touch; only READ for variables
@@ -193,7 +205,7 @@ This is the only Supabase client in the project. Both Assisi and Ashlyn import f
 
 ## 5. Route Protection (Middleware)
 
-**File:** `middleware.js` (at project root, same level as `pages/`)
+**File:** `proxy.js` at project root. (Originally specced as `middleware.js`, shipped as `proxy.js` — Next.js 16 calls the exported function `proxy`. The protected-route list now also covers `/apply/:path*` for the native form wizard.)
 
 This file runs before every page request and handles redirects for unauthenticated users.
 
