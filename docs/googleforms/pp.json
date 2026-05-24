@@ -1,0 +1,234 @@
+[
+  {
+    "title": "Section 0｜Basic Info",
+    "type": "PAGE_BREAK",
+    "required": false
+  },
+  {
+    "title": "01 What is your full legal name?",
+    "type": "TEXT",
+    "required": true
+  },
+  {
+    "title": "02 年级 / Current Grade",
+    "type": "MULTIPLE_CHOICE",
+    "required": false,
+    "options": [
+      "9",
+      "10",
+      "11",
+      "12"
+    ]
+  },
+  {
+    "title": "03 学校名称  / School Name",
+    "type": "TEXT",
+    "required": true
+  },
+  {
+    "title": "04 学校类型 / School  Type",
+    "type": "MULTIPLE_CHOICE",
+    "required": false,
+    "options": [
+      "International School",
+      "Boarding School",
+      "Public School",
+      "Private Day School"
+    ]
+  },
+  {
+    "title": "05 邮箱 / Email Address",
+    "type": "TEXT",
+    "required": true
+  },
+  {
+    "title": "06  What is your preferred messaging platform?",
+    "type": "TEXT",
+    "required": true
+  },
+  {
+    "title": "Section 1｜Academic Direction（学术与申请方向）",
+    "type": "PAGE_BREAK",
+    "required": false
+  },
+  {
+    "title": "1.1 你目前最感兴趣/考虑的申请方向是？（可多选）\nWhat academic fields are you currently interested in? (Select all that apply)",
+    "type": "CHECKBOX",
+    "required": false,
+    "options": [
+      "Biology / Biochemistry",
+      "Environmental Science",
+      "Computer Science / Data",
+      "Social Science (Econ / PoliSci / Sociology, etc.)",
+      "Humanities (History / Literature / Philosophy, etc.)",
+      "Engineering",
+      "Undecided"
+    ]
+  },
+  {
+    "title": "1.2 你目前是否有考虑中的长期方向？（如 pre-med、pre-law 等）如果有，请具体说明；如果暂时还不确定，也可以填写“暂不确定”。  \nDo you currently have a long-term direction in mind? (e.g., pre-med, pre-law, etc.) If yes, please specify. If not, you may write “Not sure yet.”  ",
+    "type": "TEXT",
+    "required": true
+  }
+]
+6:12:22 PM	Info	--- 题目 11 到 20 ---
+6:12:22 PM	Info	[
+  {
+    "title": "Section 2｜Experience Snapshot（过往经历快照）",
+    "type": "PAGE_BREAK",
+    "required": false
+  },
+  {
+    "title": "2.1 你觉得目前最能代表你的 2–3 个经历是？\nWhich experiences best represent you?",
+    "type": "TEXT",
+    "required": false
+  },
+  {
+    "title": "2.2 你更擅长哪类事情？（选 1–2 个最贴近的）\nWhat are your strengths?",
+    "type": "CHECKBOX",
+    "required": false,
+    "options": [
+      "Academic research / reading / writing",
+      "Competitions (academic or sports)",
+      "Organizing events / initiatives",
+      "Creative expression (music, writing, media, etc.)",
+      "Leadership / teamwork",
+      "Technical / data / programming"
+    ]
+  },
+  {
+    "title": "2.3 在你选的这些方面中，哪一个你投入时间最多？你是怎么投入的？\nAmong the strengths you selected, which one have you invested the most time in, and how?",
+    "type": "TEXT",
+    "required": true
+  },
+  {
+    "title": "Section 3｜Interests & Self-Expression（兴趣与表达方式）",
+    "type": "PAGE_BREAK",
+    "required": false
+  },
+  {
+    "title": "3.1 你在校外/校内长期投入时间的兴趣是？\nWhat activities or interests have you consistently invested time in?",
+    "type": "TEXT",
+    "required": true
+  },
+  {
+    "title": "3.2 如果让你选一种“你更舒服的表达方式”，你会选哪种？（可多选）\nWhich form of expression feels most natural to you? (Select all that apply)",
+    "type": "CHECKBOX",
+    "required": false,
+    "options": [
+      "Writing (articles, essays, blogs)",
+      "Speaking / interviewing / podcast",
+      "Music / art / performance",
+      "Data / analysis / visualization",
+      "Building things (projects, platforms, tools)",
+      "Not sure"
+    ]
+  },
+  {
+    "title": "3.3 当你对一个问题产生兴趣时，你通常会如何开始入手？（可多选）\nWhen you are interested in a topic, how do you usually start engaging with it? (Select all that apply)",
+    "type": "CHECKBOX",
+    "required": false,
+    "options": [
+      "Reading / researching",
+      "Experimenting and trying things out",
+      "Asking / talking to people",
+      "Exploring through creative expression",
+      "Not sure / depends"
+    ]
+  },
+  {
+    "title": "Section 4｜Community & Resources（社区与现有资源）",
+    "type": "PAGE_BREAK",
+    "required": false
+  },
+  {
+    "title": "4.1 你目前所处的“社区”包括哪些？（可多选）\nWhich communities are you currently part of? (Select all that apply)",
+    "type": "CHECKBOX",
+    "required": false,
+    "options": [
+      "School clubs / teams",
+      "School teachers you know well",
+      "Local community / NGOs",
+      "Religious / cultural communities",
+      "Online communities",
+      "None of the above / not sure"
+    ]
+  }
+]
+6:12:22 PM	Info	--- 题目 21 到 30 ---
+6:12:22 PM	Info	[
+  {
+    "title": "4.2 请描述 1–3 个你经常参与的组织 / 社区，你在其中通常做的事情（可以是具体任务或你常参与的部分）以及担任的职位（如果有的话）。\nPlease describe 1–3 organizations or communities you are regularly involved in, and what you usually do in each (specific tasks or activities are welcome).",
+    "type": "TEXT",
+    "required": true
+  },
+  {
+    "title": "4.3 你觉得以下哪些资源是“你现在就能用得上的”？（可多选）\nWhich resources do you think you could realistically leverage? (Select all that apply)",
+    "type": "CHECKBOX",
+    "required": false,
+    "options": [
+      "A supportive teacher",
+      "A club / organization you’re active in",
+      "Access to people to interview",
+      "A platform (school newspaper, website, social media, etc.)",
+      "A Physical space (farm, lab, kitchen, studio, etc.)",
+      "Not sure yet"
+    ]
+  },
+  {
+    "title": "Section 5｜Project Initial Thinking（初步想法，不要求成熟）",
+    "type": "PAGE_BREAK",
+    "required": false
+  },
+  {
+    "title": "5.1 你是否想过做一个属于你自己的 project / initiative？\nHave you ever thought about starting your own project or initiative? ",
+    "type": "MULTIPLE_CHOICE",
+    "required": false,
+    "options": [
+      "Yes, I have some ideas",
+      "I’ve thought about it, but not clearly",
+      "Not really"
+    ]
+  },
+  {
+    "title": "5.2 如果有，你目前最模糊的想法是？（可以很不成熟，很多学生都是从没有明确想法开始的）\nIf yes, briefly describe your rough idea (it doesn’t have to be polished—many students start without one).",
+    "type": "TEXT",
+    "required": true
+  },
+  {
+    "title": "Section 6｜Time & Commitment（现实约束）",
+    "type": "PAGE_BREAK",
+    "required": false
+  },
+  {
+    "title": "6.1 你在学期中每周大概可以投入多少时间？\nDuring the school term, approximately how much time can you commit per week?",
+    "type": "MULTIPLE_CHOICE",
+    "required": false,
+    "options": [
+      "< 2 hours",
+      "2–4 hours",
+      "4–6 hours",
+      "6+ hours"
+    ]
+  },
+  {
+    "title": "6.2 你更偏好哪种节奏？\nWhich type of working pace do you usually prefer?",
+    "type": "MULTIPLE_CHOICE",
+    "required": false,
+    "options": [
+      "Structured milestones",
+      "Flexible exploration",
+      "A mix of both"
+    ]
+  },
+  {
+    "title": "What is your parent or guardian's full name?",
+    "type": "TEXT",
+    "required": true
+  },
+  {
+    "title": "What is your parent or guardian's email address?   ",
+    "type": "TEXT",
+    "required": true
+  }
+]

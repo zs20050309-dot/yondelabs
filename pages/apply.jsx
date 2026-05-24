@@ -9,58 +9,66 @@ const PROGRAMS = [
     key: 'ra',
     title: 'In-Person Research Assistant',
     shortTitle: 'RA',
-    description: 'Step into an in-person lab, contribute hands-on to real research, and build toward a recommendation letter grounded in your work.',
-    formUrl: 'https://forms.gle/io4J6YgvmUBCCbUUA',
+    description:
+      'Step into an in-person lab, contribute hands-on to real research, and build toward a recommendation letter grounded in your work.',
     type: 'form',
   },
   {
     key: 'irp',
     title: 'Independent Research Program',
     shortTitle: 'IRP',
-    description: 'Own your research from question to outcome, with support for both a paper-ready deliverable and a compelling application narrative.',
-    formUrl: 'https://forms.gle/tX6EtMNaW1zxGjCR6',
+    description:
+      'Own your research from question to outcome, with support for both a paper-ready deliverable and a compelling application narrative.',
     type: 'form',
   },
   {
     key: 'passion-project',
     title: 'Passion Project',
     shortTitle: 'PP',
-    description: 'Start from genuine interests and shape them into a community-rooted project, guided by a T15 mentor who helps sharpen the story.',
-    formUrl: 'https://forms.gle/jacuFwVv6SukLwTf6',
+    description:
+      'Start from genuine interests and shape them into a community-rooted project, guided by a T15 mentor who helps sharpen the story.',
     type: 'form',
   },
   {
     key: 'isef',
     title: 'ISEF Mentorship',
     shortTitle: 'ISEF',
-    description: 'Prepare with a three-role team: PhD mentor, competition coach, and SSM, with a publication safety net supporting your project path.',
+    description:
+      'Prepare with a three-role team: PhD mentor, competition coach, and SSM, with a publication safety net supporting your project path.',
     contactEmail: 'info@yondelabs.com',
     type: 'contact',
   },
 ]
 
-const FORM_URLS = PROGRAMS.reduce((urls, program) => {
-  if (program.type === 'form') {
-    urls[program.key] = program.formUrl
-  }
-  return urls
-}, {})
+function ctaCopy(state) {
+  if (state === 'submitted') return 'View status →'
+  if (state === 'draft') return 'Continue draft →'
+  return 'Apply Now →'
+}
+
+function badgeCopy(state) {
+  if (state === 'submitted') return 'Submitted'
+  if (state === 'draft') return 'Draft saved'
+  return null
+}
 
 export default function Apply() {
   const router = useRouter()
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
-  const [submittingKey, setSubmittingKey] = useState(null)
   const [error, setError] = useState(null)
+  const [byProgram, setByProgram] = useState({})
   const [isefExpanded, setIsefExpanded] = useState(false)
 
   useEffect(() => {
+    let cancelled = false
     async function load() {
       try {
         const {
           data: { user: currentUser },
         } = await supabase.auth.getUser()
+
+        if (cancelled) return
 
         if (!currentUser) {
           router.replace('/login')
@@ -69,77 +77,58 @@ export default function Apply() {
 
         setUser(currentUser)
 
-        const { data: existing, error: existingError } = await supabase
+        const { data: apps, error: appsError } = await supabase
           .from('applications')
-          .select('id')
+          .select('program, status')
           .eq('user_id', currentUser.id)
-          .limit(1)
-          .maybeSingle()
 
-        if (existingError) {
-          setError('Something went wrong. Please try again or contact info@yondelabs.com.')
+        if (cancelled) return
+
+        if (appsError) {
+          setError('We could not load your applications. Please refresh and try again.')
           setLoading(false)
           return
         }
 
-        if (existing) {
-          router.replace('/dashboard')
-          return
+        const map = {}
+        for (const app of apps || []) {
+          const existing = map[app.program]
+          if (!existing || (existing.status === 'draft' && app.status !== 'draft')) {
+            map[app.program] = app
+          }
         }
-
+        setByProgram(map)
         setLoading(false)
       } catch {
-        setError('Something went wrong. Please try again or contact info@yondelabs.com.')
+        if (cancelled) return
+        setError('Something went wrong. Please refresh and try again.')
         setLoading(false)
       }
     }
-
     load()
+    return () => {
+      cancelled = true
+    }
   }, [router])
 
-  async function handleProgramSelect(program) {
-    if (submitting) return
+  function programState(programKey) {
+    const app = byProgram[programKey]
+    if (!app) return 'new'
+    if (app.status === 'draft') return 'draft'
+    return 'submitted'
+  }
 
-    setError(null)
-
+  function handleProgramSelect(program) {
     if (program.type === 'contact') {
       setIsefExpanded(true)
       return
     }
-
-    if (!user) {
-      router.replace('/login')
+    const state = programState(program.key)
+    if (state === 'submitted') {
+      router.push('/dashboard')
       return
     }
-
-    setIsefExpanded(false)
-    setSubmitting(true)
-    setSubmittingKey(program.key)
-
-    try {
-      const programKey = program.key
-      const { error: insertError } = await supabase
-        .from('applications')
-        .insert({
-          user_id: user.id,
-          program: programKey,
-          status: 'submitted',
-          form_data: {},
-        })
-
-      if (insertError) {
-        setSubmitting(false)
-        setSubmittingKey(null)
-        setError('Something went wrong. Please try again or contact info@yondelabs.com.')
-        return
-      }
-
-      window.location.href = FORM_URLS[programKey]
-    } catch {
-      setSubmitting(false)
-      setSubmittingKey(null)
-      setError('Something went wrong. Please try again or contact info@yondelabs.com.')
-    }
+    router.push(`/apply/${program.key}`)
   }
 
   function handleProgramKeyDown(event, program) {
@@ -171,7 +160,7 @@ export default function Apply() {
           <h1 className={styles.title}>What would you like to apply for?</h1>
           <p className={styles.subtitle}>
             Choose the program that best fits your goals. Each program has its own application
-            process.
+            process, and your progress is saved as you go.
           </p>
         </section>
 
@@ -180,32 +169,42 @@ export default function Apply() {
 
           <div className={styles.grid}>
             {PROGRAMS.map((program) => {
-              const isSubmittingCard = submittingKey === program.key
               const isContact = program.type === 'contact'
+              const state = isContact ? 'new' : programState(program.key)
+              const badge = badgeCopy(state)
               const showIsefMessage = isefExpanded && program.key === 'isef'
 
               return (
                 <div
                   key={program.key}
                   role="button"
-                  tabIndex={submitting ? -1 : 0}
+                  tabIndex={0}
                   className={`${styles.card} ${isContact ? styles.contactCard : ''} ${
-                    submitting ? styles.cardDisabled : ''
-                  } ${showIsefMessage ? styles.cardExpanded : ''}`}
+                    showIsefMessage ? styles.cardExpanded : ''
+                  }`}
                   onClick={() => handleProgramSelect(program)}
                   onKeyDown={(event) => handleProgramKeyDown(event, program)}
-                  aria-disabled={submitting}
                   aria-expanded={showIsefMessage}
                 >
-                  <span className={styles.badge}>{program.shortTitle}</span>
+                  <div className={styles.cardBadgeRow}>
+                    <span className={styles.badge}>{program.shortTitle}</span>
+                    {badge ? (
+                      <span
+                        className={`${styles.statusPill} ${
+                          state === 'submitted' ? styles.statusPillSubmitted : styles.statusPillDraft
+                        }`}
+                      >
+                        {badge}
+                      </span>
+                    ) : null}
+                  </div>
                   <span className={styles.cardTitle}>{program.title}</span>
                   <span className={styles.description}>{program.description}</span>
 
                   <span className={styles.ctaRow}>
                     <span aria-hidden="true" />
                     <span className={isContact ? styles.contactCta : styles.formCta}>
-                      {isSubmittingCard ? <span className={styles.inlineSpinner} aria-hidden /> : null}
-                      {isContact ? 'Get in Touch' : 'Apply Now'} →
+                      {isContact ? 'Get in Touch →' : ctaCopy(state)}
                     </span>
                   </span>
 

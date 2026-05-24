@@ -206,6 +206,36 @@
   padding: 8px 11px;
 }
 
+.cardBadgeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1;
+  padding: 6px 10px;
+}
+
+.statusPillSubmitted {
+  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
+}
+
+.statusPillDraft {
+  background: rgba(6, 190, 225, 0.14);
+  color: #0e7490;
+}
+
 .cardTitle {
   display: block;
   margin-top: 14px;

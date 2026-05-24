@@ -1,6 +1,377 @@
 # Progress Log — YondeLabs Web
 
-Last updated: 2026-05-08
+Last updated: 2026-05-24
+
+---
+
+## Session: 2026-05-24 — Native In-App Application Form (replaces Google Forms)
+
+### Background
+权宜之计阶段 `/apply` 是点击 program card → 立刻向 `applications` insert 空 `form_data` → 跳 Google Form。问题：Supabase 永远拿不到学生答案，dashboard 上 `cohort` 等字段永远显示 `—`，admin 端做不出来，任何"逻辑判断、数据回流"都失去基础。本会话改造为原生内置问卷：JSON schema 驱动的 multi-step wizard，自动草稿（Supabase + localStorage 双写），提交后真把 `form_data` 写库。
+
+### Decisions made this session
+- 字段 key 策略：snake_case；跨 program 同义题共用 key（`gpa`, `research_area`, `parent_email` 等），program 专属字段独立命名。Schema 是 source of truth。
+- UX：multi-step wizard + 顶部进度条 + 底部 sticky footer（Prev / 保存状态 / Next or Submit）。
+- 草稿策略：永不过期。debounce 2s 双写 Supabase + localStorage；离线时 localStorage 兜底；重连时若 localStorage 比 Supabase 新则 push 上去。
+- 已提交不允许编辑：FormWizard 检测到 `submittedAlready` → 显示"联系 admin"指引 + "Apply for another program" CTA。
+- PP 双语题目按用户要求改为只渲染英文（label 仅保留 English，提示语单独放在 helper）。
+- 国家列表清洗 OCR 错字（lran→Iran、Bumma→Burma、Moldov→Moldova、Kenyа Cyrillic→Kenya、所有 "lslands"→"Islands" 等）。
+- RA Q16 `research_area` JSON 类型与副文本冲突（CHECKBOX 但提示 "select one"），按 JSON 类型走多选，避免跨学科选项失效。
+- Section 切分：RA 5 steps、IRP 5 steps、PP 7 steps（沿用 PP 原 PAGE_BREAK 结构）+ Review step。
+- 部分 PP TEXT 题（如 long_term_direction、rough_idea、community_roles 等内容性题目）升级为 textarea，因为原 Google Form TEXT 单行明显不够用。
+
+### Files created
+- `lib/forms/countries.js` — 254 个国家清洗后的常量（修 OCR 错字）。
+- `lib/forms/schema.js` — RA / IRP / PP 三份表单完整 JSON schema 配置（source of truth）。
+- `lib/forms/useDraft.js` — 草稿持久化 hook（Supabase + localStorage 双写，debounce 2s，stale-detection）。
+- `lib/forms/validators.js` — 必填 + email 格式校验。
+- `components/apply/FormWizard.jsx` — wizard 壳（state、step 切换、进度条、提交逻辑、SaveIndicator）。
+- `components/apply/FormStep.jsx` — 单 step 内容容器。
+- `components/apply/ReviewStep.jsx` — 提交前 review 页。
+- `components/apply/FieldRenderer.jsx` — 按 schema field type 调度具体字段组件。
+- `components/apply/fields/TextField.jsx`
+- `components/apply/fields/TextAreaField.jsx`
+- `components/apply/fields/DateField.jsx`
+- `components/apply/fields/SelectField.jsx`
+- `components/apply/fields/RadioField.jsx`
+- `components/apply/fields/CheckboxField.jsx`
+- `styles/wizard.module.css` — wizard 全套样式（约 470 行）。
+- `pages/apply/[program].jsx` — 动态路由页面，承载 wizard。
+- `docs/sql/migrations/2026-05-24_add_draft_status.sql` — Supabase migration（draft status CHECK + RLS + 索引）。
+- `docs/supabase-migration-guide.md` — 给非技术用户的 Supabase SQL Editor 图文操作教程。
+
+### Files modified
+- `pages/apply.jsx` — 拆掉 INSERT + Google Form 跳转逻辑；改为纯导航 + 程序卡片显示 program state（new / draft / submitted）。
+- `pages/dashboard.jsx` — 拉数据时排除 `draft`；额外加载 drafts 列表；只有 drafts 时显示"Drafts in progress"卡片；已提交时加"Need to update? Contact info@yondelabs.com"指引；加"Apply for another program" CTA。
+- `styles/dashboard.module.css` — 加 draft list / emptyCta / anotherProgram / infoBannerLink 样式。
+- `styles/apply.module.css` — 加 program card 上的 statusPill（draft / submitted 徽章）样式。
+- `proxy.js` — matcher 增加 `/apply/:path*`，保护新动态路由。
+- `progress.md` — 本次记录。
+
+### Schema 范围确认
+- RA 共 28 题，分 5 step：basic / academic / credentials / logistics / guardian。
+- IRP 共 27 题，分 5 step：basic / research / commitment / credentials / guardian。
+- PP 共 22 题 + 7 PAGE_BREAK，分 7 step：basic / academic_direction / experience / expression / community / project_thinking / commitment_pp / guardian（最后一 step 含 parent name/email 因为原表里这两题在所有 Section 之外）。
+- ISEF 仍是 contact-only（不走 wizard）。
+
+### Pending — needs user action
+- **运行 Supabase migration**：用户需打开 Supabase Dashboard → SQL Editor → 粘贴 `docs/sql/migrations/2026-05-24_add_draft_status.sql` 内全部内容 → Run。详细图文步骤在 `docs/supabase-migration-guide.md`。在 migration 跑完之前，新表单提交会被 DB 拒绝（CHECK 约束）。
+
+### Verification
+Build:
+```
+npm run build
+```
+
+Result:
+```
+✓ Compiled successfully in 1438ms
+✓ Generating static pages using 9 workers (11/11) in 85ms
+Route (pages):
+  /
+  /404
+  /apply
+  /apply/[program]
+  /auth/callback
+  /dashboard
+  /forgot-password
+  /login
+  /register
+  /reset-password
+ƒ Proxy (Middleware)
+```
+
+Exit code: 0.
+
+Manual smoke testing 待用户在 Supabase migration 跑完后在浏览器中验证：
+- 进入 `/apply` 看到 4 个 program 卡片
+- 点击 RA → 进入 `/apply/ra` 5-step wizard
+- 修改字段 2 秒后 footer 显示 "Saved Xs ago"
+- 关闭浏览器再回来，看到 draft 自动恢复
+- review 页 Submit → 写库 → 跳 `/dashboard` 看到 "Application Submitted"
+
+### Known limitations / explicit non-goals this session
+- 不做"逻辑判断"（条件 show/hide、自动初判 cohort 等），用户说后续单独讨论。
+- 不迁移历史 Google Forms 数据（用户明确不需要）。
+- Admin 端仍未实现（独立工作流，超出本会话范围）。
+- ISEF 仍走 mailto，未来如果要做也是单独流程。
+
+---
+
+## Session: 2026-05-18 — Lab Showcase Program Cards
+
+### Background
+用户要求将 homepage 中左侧照片 panel + 右侧三条 benefit items 的 section 改为左侧照片 panel 保持不变、右侧显示四个 program cards，并要求所有 card 点击进入 `/login`。
+
+### Target section identified
+- 目标 section 位于 `components/home/LabShowcase.jsx`。
+- 原右侧三条 benefit items 为：
+  - `Hands-On Access to $2M+ Equipment`
+  - `Work on Actual Cutting-Edge Research`
+  - `One-on-One PhD Mentorship`
+
+### Files modified
+- `components/home/LabShowcase.jsx`
+- `styles/home.module.css`
+- `progress.md`
+
+### Changes made
+- 保留 `LabShowcase` 左侧 `labGallery` / photo panel / thumbnails 结构不变。
+- 删除右侧旧 `Outcome` JSX 使用和 `Outcome` helper component。
+- 新增 `programCards` 数据数组，包含四张卡：
+  - RA — `In-Person Research Assistant`
+  - IRP — `Independent Research Program`
+  - PP — `Passion Project`
+  - ISEF — `ISEF Mentorship`
+- 使用 Next.js `<Link href="/login">` 渲染每张 card；没有使用 `window.location` 或外部硬编码 URL。
+- 新增 `styles.home.module.css` 中的同组件样式：
+  - `labProgramGrid`
+  - `labProgramCard`
+  - `labProgramBadge`
+  - `labProgramTitle`
+  - `labProgramDescription`
+  - `labProgramCta`
+- Desktop grid 使用 `grid-template-columns: repeat(2, minmax(0, 1fr))`。
+- Mobile media query 中 `labProgramGrid` 改为 `grid-template-columns: 1fr`。
+- Badge 使用 `--color-navy-primary`，CTA 使用 `--color-cyan-bright`。
+- 未修改 `pages/index.js` 结构、routing logic、`proxy.js`、`supabaseClient.js`，未新增 npm package。
+
+### Verification
+Source-level RED check before changes:
+```
+Error: missing program card content: RA
+```
+
+Source-level GREEN check after changes:
+```
+source checks passed
+```
+
+Diff check:
+```
+git diff --check
+```
+
+Result: exit code 0.
+
+Build:
+```
+npm run build
+```
+
+Result:
+```
+✓ Compiled successfully in 700ms
+✓ Generating static pages using 9 workers (10/10) in 36ms
+```
+
+Exit code: 0.
+
+---
+
+## Session: 2026-05-13 — Homepage WeChat and Hard-Coded Chinese Text Removal
+
+### Background
+用户要求从 homepage 中硬删除截图可见的 WeChat references 和 footer 中的硬编码中文品牌副标题，不允许注释保留，不允许删除 `WeChatModal.jsx` 文件，不允许修改 CSS。
+
+### Files modified
+- `components/home/Footer.jsx`
+- `pages/index.js`
+- `progress.md`
+
+### Elements deleted
+- `components/home/Footer.jsx`
+  - Deleted `FinalCta` prop parameter `onConsult`.
+  - Deleted the `Schedule Consultation` / `预约咨询` button using `styles.btnConsult`.
+  - Deleted the Final CTA contact `<p>` containing `微信: YondeLabs-Abrielle` / `WeChat: YondeLabs-Abrielle`.
+  - Deleted `凌研阁` from the About Us `<strong>Yonde Labs 凌研阁</strong>` brand line, leaving `Yonde Labs`.
+  - Deleted the footer Contact column line `<p>📱 WeChat: YondeLabs-Abrielle</p>`.
+  - Deleted `凌研阁` from the footer copyright line, leaving `© 2024 Yonde Labs. All rights reserved.`
+- `pages/index.js`
+  - Deleted the `WeChatModal` import.
+  - Deleted the `wechatOpen` state.
+  - Deleted the `onConsult={() => setWechatOpen(true)}` prop from `<FinalCta />`.
+  - Deleted the `<WeChatModal open={wechatOpen} onClose={() => setWechatOpen(false)} />` usage.
+  - Deleted hard-coded Chinese text from the homepage `<title>`, changing it from `Yonde Labs 凌研阁 | 顶尖科研体验项目` to `Yonde Labs`.
+
+### Notes
+- `components/home/WeChatModal.jsx` was intentionally left in place and unchanged, per user instruction.
+- No CSS/style files were modified.
+- Existing bilingual `Lang zh` copy outside the requested visible WeChat/footer brand removals was not removed.
+
+### Verification
+Source-level RED check before changes:
+```
+Error: Footer must not contain YondeLabs-Abrielle
+```
+
+Source-level GREEN check after changes:
+```
+source checks passed
+```
+
+Build:
+```
+npm run build
+```
+
+Result:
+```
+✓ Compiled successfully in 825ms
+✓ Generating static pages using 9 workers (10/10) in 35ms
+```
+
+Exit code: 0.
+
+---
+
+## Session: 2026-05-13 — Hero Deadline Bar Disable
+
+### Background
+用户要求隐藏 Hero section 中两个 CTA 下方的 deadline info bar，因为日期已过期；要求保留 JSX 代码，方便未来 cohort cycle 重新启用。
+
+### Files modified
+- `components/home/Hero.jsx`
+- `progress.md`
+
+### Changes made
+- 在 `components/home/Hero.jsx` 中保留原 deadline bar JSX，但用 JSX comment 包裹，不再渲染。
+- 添加注释：
+  `DEADLINE BAR DISABLED — dates have passed. Uncomment and update dates for next cohort cycle.`
+- 被注释保留的 block 是 `styles.deadlineBanner` 这一整段：
+  - `Early Decision Deadline:`
+  - `December 15, 2025`
+  - separator `|`
+  - `Regular Decision:`
+  - `March 15, 2026`
+- 未修改两个 Hero CTA、其他 Hero 文案、路由逻辑、CSS/style 文件。
+
+### Verification
+Source-level RED check before changes:
+```
+Error: deadline disabled comment must be present
+```
+
+Source-level GREEN check after changes:
+```
+source checks passed
+```
+
+Build:
+```
+npm run build
+```
+
+Result:
+```
+✓ Compiled successfully in 808ms
+✓ Generating static pages using 9 workers (10/10) in 35ms
+```
+
+Exit code: 0.
+
+---
+
+## Session: 2026-05-11 — RA Label Unification and Announcement Banner Disable
+
+### Background
+用户要求统一 `ra` program key 的展示文案为 `In-Person Research Assistant`，并隐藏首页顶部过期 Winter Cohort announcement banner，同时保留原 banner JSX 方便后续重新启用。
+
+### Files modified
+- `pages/dashboard.jsx`
+- `components/home/AnnouncementBanner.jsx`
+- `docs/ai-context/current-project-ai-alignment.md`
+- `progress.md`
+
+### Changes made
+- 将 `pages/dashboard.jsx` 中 `PROGRAM_LABELS.ra` 从 `Research Apprenticeship Program` 改为 `In-Person Research Assistant`。
+- 检查 `pages/apply.jsx`，`ra` card title 已经是 `In-Person Research Assistant`，未修改该文件。
+- 在 `components/home/AnnouncementBanner.jsx` 中让组件 `return null`，并用 JS block comment 保留原完整 banner JSX。
+- 添加注释：`BANNER DISABLED — re-enable and update text for next cohort announcement.`
+- 更新 `docs/ai-context/current-project-ai-alignment.md` 中 dashboard label 示例，并移除 RA label mismatch 风险备注。
+- 未修改 Supabase program key；数据库值仍为 `ra`。
+- 未修改其他 program label、路由、数据库逻辑或样式文件。
+
+### Verification
+Source-level RED check before changes:
+```
+Error: dashboard ra label must be In-Person Research Assistant
+```
+
+Source-level GREEN check after changes:
+```
+source checks passed
+```
+
+Build:
+```
+npm run build
+```
+
+Result:
+```
+✓ Compiled successfully in 669ms
+✓ Generating static pages using 9 workers (10/10) in 53ms
+```
+
+Exit code: 0.
+
+---
+
+## Session: 2026-05-11 — Current Project AI Alignment Context
+
+### Background
+用户需要将当前官网/申请门户开发进度、架构规范、API 调用方式、spec 与 progress 状态整理成一份可交给其他 AI 阅读的对齐文档。目标是让无法直接读取完整源码的 AI 也能理解当前系统边界与后续开发注意事项。
+
+### Files created
+- `docs/ai-context/current-project-ai-alignment.md`
+
+### Work performed
+- 阅读并对齐当前关键文档与源码：
+  - `CLAUDE.md`
+  - `progress.md`
+  - `Spec.md`
+  - `YondeLabs_PRD.md`
+  - `YondeLabs_Team_Alignment_Doc.md`
+  - `docs/technical-alignment-report.md`
+  - `docs/ai-context/login-website-context-alignment.md`
+  - `pages/index.js`
+  - `pages/login.jsx`
+  - `pages/register.jsx`
+  - `pages/forgot-password.jsx`
+  - `pages/reset-password.jsx`
+  - `pages/auth/callback.jsx`
+  - `pages/apply.jsx`
+  - `pages/dashboard.jsx`
+  - `components/home/*`
+  - `components/portal/*`
+  - `lib/supabaseClient.js`
+  - `proxy.js`
+  - `styles/globals.css`
+- 新文档以当前代码事实为准，明确指出旧技术报告中的已知过期点：
+  - `pages/index.js` 当前已是组件化官网首页，不再是 coming-soon 占位。
+  - `/apply` 当前已实现。
+  - admin 用户当前临时进入 `/dashboard`，因为 `/admin` 尚未实现。
+  - 当前路由保护文件是 `proxy.js`，不是旧文档中的 `middleware.js`。
+- 整理了给其他 AI 的可复制 prompt、路由表、目录职责、Supabase Auth 调用示例、`applications` 表契约、`/apply` Google Form handoff、dashboard 数据流、当前完成/未完成清单与后续建议顺序。
+- `.env.local` 只提取变量名，没有暴露任何实际 secret/value。
+
+### Verification
+- 文档已写入 `docs/ai-context/current-project-ai-alignment.md`。
+- 本次只新增文档与更新进度记录，未改业务代码；无需运行 `npm run build`。
+
+---
+
+## Session: 2026-05-11 — GitHub Account Preference
+
+### Preference
+- 以后所有 GitHub 相关提交、push、PR 创建与仓库操作，默认使用 `zs20050309-dot / Jane99`。
+- 如本地 git commit author 或 GitHub CLI active account 不是 `zs20050309-dot / Jane99`，在提交或创建 PR 前先切换/修正，不要默认继续。
+- 若必须使用其他账号，需先明确告知并等待用户确认。
+
+### Context
+- 上一次 PR 创建账号是 `zs20050309-dot / Jane99`。
+- 上一次 commit author 显示为 `Francesca1226 / Ben99`，后续应避免这种不一致。
 
 ---
 

@@ -6,7 +6,7 @@ import StatusTracker from '../components/portal/StatusTracker'
 import styles from '../styles/dashboard.module.css'
 
 const PROGRAM_LABELS = {
-  ra: 'Research Apprenticeship Program',
+  ra: 'In-Person Research Assistant',
   irp: 'Independent Research Program',
   'passion-project': 'Passion Project',
   isef: 'ISEF Coaching',
@@ -52,6 +52,7 @@ export default function Dashboard() {
   const router = useRouter()
   const [user, setUser] = useState(null)
   const [application, setApplication] = useState(null)
+  const [drafts, setDrafts] = useState([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState(null)
 
@@ -69,26 +70,38 @@ export default function Dashboard() {
 
         setUser(u)
 
-        const { data: application, error } = await supabase
-          .from('applications')
-          .select('*')
-          .eq('user_id', u.id)
-          .order('submitted_at', { ascending: false })
-          .limit(1)
-          .maybeSingle()
+        const [submittedResult, draftsResult] = await Promise.all([
+          supabase
+            .from('applications')
+            .select('*')
+            .eq('user_id', u.id)
+            .neq('status', 'draft')
+            .order('submitted_at', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+          supabase
+            .from('applications')
+            .select('id, program, updated_at')
+            .eq('user_id', u.id)
+            .eq('status', 'draft')
+            .order('updated_at', { ascending: false }),
+        ])
 
-        if (error) {
+        if (submittedResult.error || draftsResult.error) {
           setFetchError('Something went wrong. Please try again or contact info@yondelabs.com.')
           setApplication(null)
+          setDrafts([])
         } else {
           setFetchError(null)
-          setApplication(application)
+          setApplication(submittedResult.data)
+          setDrafts(draftsResult.data || [])
         }
 
         setLoading(false)
       } catch {
         setFetchError('Something went wrong. Please try again or contact info@yondelabs.com.')
         setApplication(null)
+        setDrafts([])
         setLoading(false)
       }
     }
@@ -116,6 +129,9 @@ export default function Dashboard() {
 
   if (!user) return null
 
+  const hasDrafts = drafts.length > 0
+  const noApplicationAtAll = !application && !hasDrafts
+
   return (
     <div className={styles.page}>
       <PortalNavbar user={user} />
@@ -129,12 +145,12 @@ export default function Dashboard() {
             </div>
           ) : null}
 
-          {!fetchError && application == null ? (
+          {!fetchError && noApplicationAtAll ? (
             <>
               <section className={styles.welcomeCard}>
                 <div className={styles.welcomeCopy}>
                   <h1 className={styles.welcomeTitle}>
-                    Welcome back,
+                    Welcome,
                     <span className={styles.welcomeName}>{greetingName}.</span>
                   </h1>
                   <p className={styles.welcomeText}>
@@ -147,11 +163,63 @@ export default function Dashboard() {
                 <div className={styles.emptyIcon} aria-hidden>
                   <span />
                 </div>
-                <div className={styles.emptyTitle}>Application processing</div>
+                <div className={styles.emptyTitle}>Start your application</div>
                 <p className={styles.emptyBody}>
-                  Your application is being processed. If you believe this is an error, please
-                  contact info@yondelabs.com.
+                  Choose a program and get started. Your progress is saved automatically as you go.
                 </p>
+                <button
+                  type="button"
+                  className={styles.emptyCta}
+                  onClick={() => router.push('/apply')}
+                >
+                  Start an application →
+                </button>
+              </section>
+            </>
+          ) : null}
+
+          {!fetchError && !application && hasDrafts ? (
+            <>
+              <section className={styles.welcomeCard}>
+                <div className={styles.welcomeCopy}>
+                  <h1 className={styles.welcomeTitle}>
+                    Welcome back,
+                    <span className={styles.welcomeName}>{greetingName}.</span>
+                  </h1>
+                  <p className={styles.welcomeText}>
+                    You have an application in progress — pick up where you left off.
+                  </p>
+                </div>
+              </section>
+
+              <section className={styles.draftListCard}>
+                <div className={styles.draftListHeader}>
+                  <h2 className={styles.draftListTitle}>Drafts in progress</h2>
+                  <p className={styles.draftListSub}>
+                    Your answers are saved. Come back any time to finish.
+                  </p>
+                </div>
+                <ul className={styles.draftList}>
+                  {drafts.map((draft) => (
+                    <li key={draft.id} className={styles.draftItem}>
+                      <div className={styles.draftItemMain}>
+                        <span className={styles.draftItemProgram}>
+                          {PROGRAM_LABELS[draft.program] || draft.program}
+                        </span>
+                        <span className={styles.draftItemMeta}>
+                          Last edited {formatDate(draft.updated_at)}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        className={styles.draftItemCta}
+                        onClick={() => router.push(`/apply/${draft.program}`)}
+                      >
+                        Continue →
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               </section>
             </>
           ) : null}
@@ -208,13 +276,59 @@ export default function Dashboard() {
                     </span>
                     <span>
                       Your application has been received. Our team will review your materials and
-                      be in touch if we have any questions.
+                      be in touch if we have any questions. Need to update something? Email{' '}
+                      <a href="mailto:info@yondelabs.com" className={styles.infoBannerLink}>
+                        info@yondelabs.com
+                      </a>
+                      .
                     </span>
                   </div>
                 ) : null}
               </section>
 
               <StatusTracker status={application.status} submittedAt={application.submitted_at} />
+
+              {hasDrafts ? (
+                <section className={styles.draftListCard}>
+                  <div className={styles.draftListHeader}>
+                    <h2 className={styles.draftListTitle}>Drafts in progress</h2>
+                    <p className={styles.draftListSub}>
+                      Other programs you’ve started but not yet submitted.
+                    </p>
+                  </div>
+                  <ul className={styles.draftList}>
+                    {drafts.map((draft) => (
+                      <li key={draft.id} className={styles.draftItem}>
+                        <div className={styles.draftItemMain}>
+                          <span className={styles.draftItemProgram}>
+                            {PROGRAM_LABELS[draft.program] || draft.program}
+                          </span>
+                          <span className={styles.draftItemMeta}>
+                            Last edited {formatDate(draft.updated_at)}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          className={styles.draftItemCta}
+                          onClick={() => router.push(`/apply/${draft.program}`)}
+                        >
+                          Continue →
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ) : null}
+
+              <div className={styles.anotherProgramRow}>
+                <button
+                  type="button"
+                  className={styles.anotherProgramBtn}
+                  onClick={() => router.push('/apply')}
+                >
+                  Apply for another program →
+                </button>
+              </div>
 
               <div className={styles.notificationLine}>
                 <svg
