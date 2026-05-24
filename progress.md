@@ -4,7 +4,46 @@ Last updated: 2026-05-24
 
 ---
 
-## Session: 2026-05-24 (cont.) — Doc currency + wizard mobile polish
+## Session: 2026-05-24 (cont. 2) — Status-change email notifications (Resend)
+
+### Background
+管理员翻 application 状态后，学生只能靠刷 dashboard 知道。本段实现状态变更自动发邮件。学生在 `submitted → interview / offer / rejected` 三类转变时收到 transactional 邮件。
+
+### Stack decision
+- **Resend** 作为 transactional email provider（用户拍板）：免费 3000/月 够初期、SDK 简洁、定价后续涨幅缓。
+- **Supabase Edge Function** 承载发信逻辑（不在 Next.js app 里，零网络延迟相关耦合）。
+- **Supabase Database Webhook** 监听 `applications` UPDATE → POST 到 Edge Function（不用写 pg_net SQL，全在 Supabase Dashboard UI 配置）。
+- **共享 secret 鉴权**：Webhook 加 `Authorization: Bearer <WEBHOOK_SECRET>` 头，Function 端校验。比 IP 白名单灵活。
+- **发件人**：`noreply@yondelabs.com`（用户域名，需配置 SPF/DKIM）。
+
+### Files created
+- `supabase/functions/send-status-email/index.ts` — Edge Function：webhook 鉴权 → 解析 payload → 过滤非 notifiable 状态 → 取学生 email + preferred_name + program → 调 Resend API。文本邮件，三种状态各一份模板。
+- `docs/email-notifications-setup-guide.md` — 给非技术用户的完整 setup 指南，约 280 行。覆盖：Resend 注册 / 域名 DNS 配置 / API key 创建 / Edge Function 部署（仅 Supabase Dashboard UI 操作，无需 CLI）/ Webhook 挂接 / 测试 / 故障排查。
+
+### Send rules（已实现）
+- 仅在 UPDATE 事件触发（INSERT / DELETE 一律 skip）
+- `oldStatus === newStatus` → skip
+- `newStatus` 不在 `{interview, offer, rejected}` → skip（draft / submitted 不发邮件，避免「你提交了」这种噪声）
+- `form_data.email` 为空 → skip（理论不会发生，因为表单要求 email 必填；保留兜底）
+- Resend 失败 → 返回 500，Supabase 端 webhook 重试按钮可手动触发
+
+### Pending — needs user action
+- **跑 Resend 全套配置**：详见 `docs/email-notifications-setup-guide.md`，约 30 分钟（多数时间是等 DNS）。在跑完之前，状态变更不会发邮件（但 admin 操作本身正常工作；当前 admin 还没做，所以这条没有阻塞）。
+- 当前 admin 面板还没实现 → 状态实际上只能通过 Supabase Table Editor 手改。配合本次邮件系统已经足够 end-to-end 跑通。
+
+### What's intentionally not done
+- HTML 模板 / 品牌邮件 — 文本版先上线（spam 友好、跨客户端兼容、易维护），未来再加 HTML。
+- `submitted` 确认邮件 — dashboard 已经显示「Application Submitted」，再发邮件是冗余。
+- 多语言模板 — 项目英文 only。
+- 失败重试 — 当前体量不需要，Supabase webhook 后台有手动重试。
+
+### Verification
+- 没有起 Supabase 本地实例（需要 Docker），但 Edge Function 是 standalone Deno 文件，语法层面与项目其他代码无耦合。
+- 部署到 Supabase 之后才能完整测；guide 第 4 部分给出了手动测步骤（在 Table Editor 改一行 status 看是否收到邮件）。
+
+---
+
+
 
 ### Background
 本会话上一段把 native form 上线后，旧文档（Spec.md / CLAUDE.md）仍引用 `middleware.js`、admin 仍写为 pending、status flow 没含 `draft`，与 shipping 状态脱节。同时 wizard 没在真机测过，step dot 点击区不够大、超窄屏 footer 按钮可能挤。
