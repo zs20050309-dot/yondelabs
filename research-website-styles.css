@@ -151,22 +151,12 @@ button {
     max-width: 1400px;
 }
 
-/* Language Toggle - Show only selected language */
-/* Default: ALWAYS show Chinese, hide English */
+/* Language: English only — Chinese content permanently hidden */
 .lang-en {
-    display: none !important;
+    display: block !important;
 }
 
 .lang-zh {
-    display: block !important;
-}
-
-/* Only when body has data-lang="en", show English and hide Chinese */
-body[data-lang="en"] .lang-en {
-    display: block !important;
-}
-
-body[data-lang="en"] .lang-zh {
     display: none !important;
 }
 
@@ -271,26 +261,12 @@ body[data-lang="en"] .lang-zh {
     }
 }
 
-/* Adjust body when banner is visible */
-body:has(.announcement-banner:not(.hidden)) {
-    padding-top: 50px;
-}
-
-/* When banner is hidden, adjust navbar position */
-body:has(.announcement-banner.hidden) .navbar {
-    top: 0;
-}
-
 /* ========================================
    Navigation
    ======================================== */
 
 .navbar {
-    position: fixed;
-    top: 50px;
-    left: 0;
-    right: 0;
-    z-index: 1000;
+    position: relative;
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
@@ -430,9 +406,8 @@ body:has(.announcement-banner.hidden) .navbar {
    ======================================== */
 
 .hero {
-    margin-top: 50px; /* Only 50px for banner - navbar is transparent */
     min-height: 100vh;
-    padding-top: 130px; /* 80px navbar height + 50px spacing */
+    padding-top: 80px;
     background: linear-gradient(135deg, rgba(3, 37, 108, 0.75) 0%, rgba(37, 65, 178, 0.75) 100%),
                 url('images/hero1.jpg') center/cover no-repeat;
     color: var(--color-white);
@@ -440,18 +415,7 @@ body:has(.announcement-banner.hidden) .navbar {
     align-items: center;
     position: relative;
     overflow: hidden;
-    padding-bottom: var(--space-12);  /* 120px bottom padding */
-}
-
-/* When banner is hidden */
-body:has(.announcement-banner.hidden) .hero {
-    margin-top: 0;  /* No banner, start from top */
-    padding-top: 160px;  /* 80px navbar + more spacing */
-    min-height: 100vh;
-}
-
-body:has(.announcement-banner.hidden) .navbar {
-    top: 0;
+    padding-bottom: var(--space-12);
 }
 
 .hero-background {
@@ -2290,22 +2254,9 @@ section {
         right: 10px;
     }
 
-    body:has(.announcement-banner:not(.hidden)) {
-        padding-top: 60px;
-    }
-
-    .navbar {
-        top: 60px;
-    }
-
     .hero {
-        margin-top: 140px;  /* 60px banner + 80px nav */
-        min-height: calc(100vh - 140px);
-    }
-
-    body:has(.announcement-banner.hidden) .hero {
-        margin-top: 80px;
-        min-height: calc(100vh - 80px);
+        min-height: 100vh;
+        padding-top: 60px;
     }
 
     /* Layout adjustments */
