@@ -33,6 +33,8 @@ export default function Hero({ heroRef }) {
             <Lang zh="申请其他时间段" en="Apply for Other Time Periods" />
           </Link>
         </div>
+        {/* DEADLINE BAR DISABLED — dates have passed. Uncomment and update dates for next cohort cycle. */}
+        {/*
         <div className={styles.deadlineBanner}>
           <span className={styles.deadlineLabel}>Early Decision Deadline:</span>
           <span className={styles.deadlineDate}>December 15, 2025</span>
@@ -40,6 +42,7 @@ export default function Hero({ heroRef }) {
           <span className={styles.deadlineLabel}>Regular Decision:</span>
           <span className={styles.deadlineDate}>March 15, 2026</span>
         </div>
+        */}
       </div>
     </section>
   )

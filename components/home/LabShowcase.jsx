@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import styles from '../../styles/home.module.css'
 import { cx, Lang } from './LocalizedText'
 
@@ -5,6 +6,37 @@ const thumbnails = [
   { src: '/images/mit-koch-institute.jpg', alt: 'MIT Koch Institute' },
   { src: '/images/mit-eecs.png', alt: 'MIT EECS' },
   { src: '/images/mit-media-lab.jpg', alt: 'MIT Media Lab' },
+]
+
+const programCards = [
+  {
+    badge: 'RA',
+    title: 'In-Person Research Assistant',
+    description:
+      'Step into an in-person lab, contribute hands-on to real research, and build toward a recommendation letter grounded in your work.',
+    cta: 'Apply Now →',
+  },
+  {
+    badge: 'IRP',
+    title: 'Independent Research Program',
+    description:
+      'Own your research from question to outcome, with support for both a paper-ready deliverable and a compelling application narrative.',
+    cta: 'Apply Now →',
+  },
+  {
+    badge: 'PP',
+    title: 'Passion Project',
+    description:
+      'Start from genuine interests and shape them into a community-rooted project, guided by a T15 mentor who helps sharpen the story.',
+    cta: 'Apply Now →',
+  },
+  {
+    badge: 'ISEF',
+    title: 'ISEF Mentorship',
+    description:
+      'Prepare with a three-role team: PhD mentor, competition coach, and SSM, with a publication safety net supporting your project path.',
+    cta: 'Get in Touch →',
+  },
 ]
 
 export default function LabShowcase({ activeLab, onSelectLab }) {
@@ -33,48 +65,18 @@ export default function LabShowcase({ activeLab, onSelectLab }) {
             </div>
           </div>
 
-          <div className={styles.labOutcomes}>
-            <Outcome
-              number="01"
-              featured
-              titleZh="操作价值 $2M+ 的专业设备"
-              titleEn="Hands-On Access to $2M+ Equipment"
-              bodyZh="使用 MIT / Stanford 实验室的专业级仪器--不是参观，是亲手操作与实验"
-              bodyEn="Use professional-grade instruments in MIT/Stanford labs - not observing, but actually operating and experimenting"
-            />
-            <Outcome
-              number="02"
-              titleZh="参与真实的前沿研究项目"
-              titleEn="Work on Actual Cutting-Edge Research"
-              bodyZh="不是模拟课题，是导师团队正在研究的真实课题--你的工作将成为实验室成果的一部分"
-              bodyEn="Not simulated projects, but real research your mentor's team is actively pursuing - your work becomes part of lab outcomes"
-            />
-            <Outcome
-              number="03"
-              titleZh="获得一线科研导师的深度指导"
-              titleEn="One-on-One PhD Mentorship"
-              bodyZh="博士每天带教，每周与教授讨论，获得 MIT/Stanford 导师正式推荐信"
-              bodyEn="Daily PhD guidance, weekly professor discussions, formal MIT/Stanford recommendation letters"
-            />
+          <div className={styles.labProgramGrid}>
+            {programCards.map((program) => (
+              <Link key={program.badge} href="/login" className={styles.labProgramCard}>
+                <span className={styles.labProgramBadge}>{program.badge}</span>
+                <h3 className={styles.labProgramTitle}>{program.title}</h3>
+                <p className={styles.labProgramDescription}>{program.description}</p>
+                <span className={styles.labProgramCta}>{program.cta}</span>
+              </Link>
+            ))}
           </div>
         </div>
       </div>
     </section>
-  )
-}
-
-function Outcome({ number, titleZh, titleEn, bodyZh, bodyEn, featured }) {
-  return (
-    <div className={cx(styles.outcomeItem, featured && styles.featured)}>
-      <div className={styles.outcomeHeader}>
-        <div className={styles.outcomeNumber}>{number}</div>
-        <h4>
-          <Lang zh={titleZh} en={titleEn} />
-        </h4>
-      </div>
-      <p>
-        <Lang zh={bodyZh} en={bodyEn} />
-      </p>
-    </div>
   )
 }

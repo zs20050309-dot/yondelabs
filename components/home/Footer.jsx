@@ -2,7 +2,7 @@ import Link from 'next/link'
 import styles from '../../styles/home.module.css'
 import { Lang } from './LocalizedText'
 
-export function FinalCta({ onConsult }) {
+export function FinalCta() {
   return (
     <section className={styles.finalCta} data-animate>
       <div className={styles.container}>
@@ -18,14 +18,8 @@ export function FinalCta({ onConsult }) {
               <Lang zh="立即申请" en="Apply Now" />
               <span className={styles.arrow}>→</span>
             </Link>
-            <button className={styles.btnConsult} onClick={onConsult} type="button">
-              <Lang zh="预约咨询" en="Schedule Consultation" />
-            </button>
           </div>
           <div className={styles.contactInfo}>
-            <p>
-              <Lang zh="微信: YondeLabs-Abrielle" en="WeChat: YondeLabs-Abrielle" />
-            </p>
             <p>
               <Lang zh="邮箱: info@yondelabs.com" en="Email: info@yondelabs.com" />
             </p>
@@ -46,7 +40,7 @@ export default function Footer({ onAnchorClick }) {
               <Lang zh="关于我们" en="About Us" />
             </h4>
             <p>
-              <strong>Yonde Labs 凌研阁</strong>
+              <strong>Yonde Labs</strong>
             </p>
             <p>
               <Lang
@@ -78,11 +72,10 @@ export default function Footer({ onAnchorClick }) {
             </h4>
             <p>📍 Cambridge, MA 02139</p>
             <p>📧 info@yondelabs.com</p>
-            <p>📱 WeChat: YondeLabs-Abrielle</p>
           </div>
         </div>
         <div className={styles.footerBottom}>
-          <p>&copy; 2024 Yonde Labs 凌研阁. All rights reserved.</p>
+          <p>&copy; 2024 Yonde Labs. All rights reserved.</p>
         </div>
       </div>
     </footer>

@@ -10,7 +10,6 @@ import { PartnerLabs, PartnerUniversities } from '../components/home/PartnerSect
 import { LongTermValue, OurProcess } from '../components/home/ProcessAndValue'
 import Programs from '../components/home/Programs'
 import ResearchAreas from '../components/home/ResearchAreas'
-import WeChatModal from '../components/home/WeChatModal'
 import styles from '../styles/home.module.css'
 import { cx } from '../components/home/LocalizedText'
 
@@ -21,7 +20,6 @@ export default function Home() {
   const [announcementVisible, setAnnouncementVisible] = useState(true)
   const [scrolled, setScrolled] = useState(false)
   const [activeLab, setActiveLab] = useState(initialLab)
-  const [wechatOpen, setWechatOpen] = useState(false)
   const heroRef = useRef(null)
 
   useEffect(() => {
@@ -76,7 +74,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Yonde Labs 凌研阁 | 顶尖科研体验项目</title>
+        <title>Yonde Labs</title>
         <link rel="icon" type="image/png" href="/images/logos/yondelabs-w.png" />
       </Head>
 
@@ -103,9 +101,8 @@ export default function Home() {
         <Achievements />
         <OurProcess />
         <LongTermValue />
-        <FinalCta onConsult={() => setWechatOpen(true)} />
+        <FinalCta />
         <Footer onAnchorClick={handleAnchorClick} />
-        <WeChatModal open={wechatOpen} onClose={() => setWechatOpen(false)} />
       </div>
     </>
   )
