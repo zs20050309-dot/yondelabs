@@ -16,22 +16,17 @@ import { cx } from '../components/home/LocalizedText'
 const initialLab = { src: '/images/mit-media-lab.jpg', alt: 'MIT Media Lab' }
 
 export default function Home() {
-  const [language, setLanguage] = useState('en')
   const [announcementVisible, setAnnouncementVisible] = useState(true)
-  const [scrolled, setScrolled] = useState(false)
   const [activeLab, setActiveLab] = useState(initialLab)
   const heroRef = useRef(null)
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.pageYOffset > 100)
-
       if (heroRef.current) {
         heroRef.current.style.transform = `translateY(${window.pageYOffset * 0.5}px)`
       }
     }
 
-    handleScroll()
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
@@ -60,16 +55,13 @@ export default function Home() {
     if (!target) return
 
     event.preventDefault()
-    const navbar = document.querySelector(`.${styles.navbar}`)
-    const navbarHeight = navbar ? navbar.offsetHeight : 80
-    const bannerHeight = announcementVisible ? 50 : 0
-    const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - navbarHeight - bannerHeight - 20
+    const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - 20
 
     window.scrollTo({
       top: targetPosition,
       behavior: 'smooth',
     })
-  }, [announcementVisible])
+  }, [])
 
   return (
     <>
@@ -78,19 +70,10 @@ export default function Home() {
         <link rel="icon" type="image/png" href="/images/logos/yondelabs-w.png" />
       </Head>
 
-      <div
-        className={cx(
-          styles.homePage,
-          language === 'en' && styles.en,
-          announcementVisible ? styles.announcementVisible : styles.bannerHidden
-        )}
-      >
+      <div className={cx(styles.homePage, styles.en)}>
         {announcementVisible ? <AnnouncementBanner onClose={() => setAnnouncementVisible(false)} /> : null}
         <Navbar
-          language={language}
-          onLanguageChange={setLanguage}
           onAnchorClick={handleAnchorClick}
-          scrolled={scrolled}
         />
         <Hero heroRef={heroRef} />
         <PartnerUniversities />

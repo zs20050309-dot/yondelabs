@@ -10,9 +10,9 @@ const NAV_ITEMS = [
   { href: '#achievements', zh: '学生成果', en: 'Achievements' },
 ]
 
-export default function Navbar({ language, onLanguageChange, onAnchorClick, scrolled }) {
+export default function Navbar({ onAnchorClick }) {
   return (
-    <nav className={cx(styles.navbar, scrolled && styles.scrolled)}>
+    <nav className={styles.navbar}>
       <div className={styles.navContainer}>
         <a href="#home" className={styles.logoLink} onClick={onAnchorClick}>
           <img src="/images/logos/yondelabs-logo.svg" alt="Yonde Labs" className={styles.companyLogo} />
@@ -29,24 +29,6 @@ export default function Navbar({ language, onLanguageChange, onAnchorClick, scro
           </Link>
         </div>
 
-        <div className={styles.languageSwitch} translate="no">
-          <button
-            className={cx(styles.langBtn, language === 'zh' && styles.active)}
-            onClick={() => onLanguageChange('zh')}
-            type="button"
-            translate="no"
-          >
-            中文
-          </button>
-          <button
-            className={cx(styles.langBtn, language === 'en' && styles.active)}
-            onClick={() => onLanguageChange('en')}
-            type="button"
-            translate="no"
-          >
-            EN
-          </button>
-        </div>
       </div>
     </nav>
   )
