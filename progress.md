@@ -1,6 +1,62 @@
 # Progress Log — YondeLabs Web
 
-Last updated: 2026-05-24
+Last updated: 2026-05-26
+
+---
+
+## Session: 2026-05-26 — CLAUDE.md 架构梳理 + Navbar 修复 + 部署教训
+
+### Background
+用户反馈 yondelabs.com 的 navbar 跟随页面滚动（fixed 定位）且带有中/英切换按钮，要求改为非粘性 navbar 并去掉语言选项。
+
+### ⚠️ 关键教训：本次犯了"改错文件"的典型错误
+
+**错误过程：**
+1. 第一次修改了 `index.html` 和 `research-website-styles.css`（旧静态网站文件）
+2. 推送后用户反馈没有效果，等待许久仍无变化
+3. 经排查发现：Vercel 部署的是 Next.js app，`index.html` / `research-website-styles.css` / `research-website-script.js` 这三个文件**完全不参与构建，对线上没有任何影响**
+
+**根本原因：** 没有在动手前先确认哪些文件实际被 Vercel 构建和服务，误以为根目录的 `index.html` 就是首页。
+
+**正确文件：**
+- Navbar → `components/home/Navbar.jsx`
+- 首页样式 → `styles/home.module.css`
+- 首页逻辑 → `pages/index.js`
+
+**防错规则（已写入 CLAUDE.md）：**
+- `index.html`、`research-website-styles.css`、`research-website-script.js` 是死代码，永远不要修改
+- 所有首页改动 → `components/home/` + `styles/home.module.css`
+- 任何前端视觉问题，先读 `pages/index.js` 确认组件入口，再追到对应 `components/` 文件
+
+### Files modified（第一次，无效的改动）
+- `index.html` — 改了 lang / title / 删语言切换按钮（无效，已提交但对线上无影响）
+- `research-website-styles.css` — 改了 navbar position 和 lang 默认值（无效）
+
+### Files modified（第二次，正确改动）
+- `components/home/Navbar.jsx` — 删掉语言切换 `<div class="languageSwitch">` 整段；移除 `language`、`onLanguageChange`、`scrolled` props
+- `styles/home.module.css` — `.navbar` position: fixed → relative；移除 `.navbar.scrolled`、所有 `body padding-top` 和 `.hero margin-top` 的 fixed nav 补偿；简化移动端 media query
+- `pages/index.js` — 移除 `language` state 和 `setLanguage`；`styles.en` 直接硬编码；简化 `handleAnchorClick`（不再需要减去 navbar 高度）；移除 `scrolled` state
+
+### Files created / modified（架构文档）
+- `CLAUDE.md` — 全面重写：加入"两套文件系统"警告表格、Deployment 信息、完整 Active File Map、Code Ownership 更新
+- `progress.md` — 本条记录
+
+### Deployment
+- Git remote: `https://github.com/zs20050309-dot/yondelabs` (branch: `main`)
+- Vercel 监听 main 分支，push 后自动重新部署
+- 本次最终正确的 commit: `21b98f3`
+
+### Verification
+```
+npm run build
+✓ Compiled successfully
+✓ Generating static pages (11/11)
+Exit code: 0
+```
+
+### What's intentionally NOT done
+- 没有删除 `index.html` 等遗留文件——用户未要求，且删除可能影响 git 历史参考价值
+- 没有修改 `LocalizedText.jsx` / `Lang` 组件本身——组件仍存在，只是首页 wrapper 现在固定加 `styles.en`，zh 内容永远不渲染
 
 ---
 
