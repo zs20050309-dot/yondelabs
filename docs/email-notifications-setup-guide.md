@@ -1,6 +1,6 @@
 # Email Notifications Setup Guide
 
-**Feature:** Status-change emails — students get an email the moment an admin flips their application from `submitted` to `interview` / `offer` / `rejected`.
+**Feature:** Application emails — students get an email when we first receive their application, and again when an admin changes the status to `interview` / `offer` / `rejected`.
 
 **Stack:** Resend (transactional email API) + Supabase Edge Function + Supabase Database Webhook.
 
@@ -13,17 +13,18 @@
 ## What you're building
 
 ```
-Admin changes status in dashboard
+Student submits application
+or admin changes status
         │
         ▼
-applications row UPDATE in Supabase
+applications row INSERT / UPDATE in Supabase
         │
         ▼
 Supabase Database Webhook fires (configured in dashboard UI)
         │  POST → Edge Function URL
         ▼
 send-status-email Edge Function
-        │  (decides if status change is "notifiable")
+        │  (decides if submission/status change is "notifiable")
         ▼
 Resend API call
         │
@@ -184,7 +185,7 @@ Fill out the form:
 |---|---|
 | Name | `application-status-changed` |
 | Table | `applications` |
-| Events | check only **Update** |
+| Events | check **Insert** and **Update** |
 | Type of webhook | **HTTP Request** |
 | Method | `POST` |
 | URL | The function URL from Step 2.5 |
@@ -207,10 +208,11 @@ Easiest option: in the Supabase **Table Editor**, open the `applications` table.
 
 ### Step 4.2: Flip the status
 
-1. Pick a row where `status = 'submitted'`.
-2. Make sure `form_data.email` contains an email address you can check (you can edit the `form_data` cell to point it at your own inbox for testing).
-3. Change the `status` cell to `interview`.
-4. Save.
+1. Make sure `form_data.email` contains an email address you can check.
+2. Test the submission email in one of two ways:
+   - insert a fresh row with `status = 'submitted'`, or
+   - update an existing draft row from `draft` to `submitted`.
+3. Then test the later status emails by changing the same row to `interview`.
 
 Within about 5–10 seconds, you should:
 
@@ -251,7 +253,7 @@ Re-copy both from your stored value. Whitespace or a stray newline at the end is
 
 This is **expected behavior** for these cases:
 - Status didn't actually change (e.g., the row was updated for some other reason).
-- Status changed to `draft` or `submitted` (not notifiable).
+- The row was inserted/updated with a non-notifiable status such as `draft`.
 - `form_data.email` is empty.
 
 No email gets sent. Not a bug.
@@ -277,7 +279,7 @@ If you exceed it, the next tier is $20/month for 50,000 emails — still trivial
 ## What's intentionally *not* set up
 
 - **HTML / branded emails.** First version is plain text. Looks fine on every client, never breaks. When you want branded HTML, edit the Edge Function `TEMPLATES` to add an `html:` field and pass it in the Resend payload.
-- **`submitted` confirmation email.** When a student first submits, no email is sent — the dashboard already says "Application Submitted." If you want a confirmation email anyway, extend the function's notifiable list and add a 4th template.
+- **Custom HTML branding for the submission email.** The first version stays plain text for reliability. If you want branded HTML later, extend the templates with an `html` field and pass it to Resend.
 - **Reply-to.** Currently `noreply@`. If you want students replying to thread with admissions, change `FROM_EMAIL` to a monitored address, or add a `reply_to` field in the Resend payload.
 - **Internationalization.** All emails are English-only per project policy.
 - **Retry on failure.** If Resend fails (rare), no automatic retry. Supabase webhooks have a retry button in the dashboard. Acceptable for current volume.

@@ -1,7 +1,7 @@
 // Supabase Edge Function — send-status-email
 //
 // Invoked by a Supabase Database Webhook configured against the
-// `applications` table for UPDATE events. Decides whether the change is
+// `applications` table for INSERT and UPDATE events. Decides whether the change is
 // notification-worthy and, if so, sends a transactional email via Resend.
 //
 // Required env vars (set in Supabase Dashboard → Project Settings → Edge
@@ -13,7 +13,7 @@
 //   FROM_EMAIL        Sender, default "YondeLabs Admissions <noreply@yondelabs.com>"
 //
 // Send rules:
-//   - Only on status transitions to one of: interview, offer, rejected.
+//   - On INSERT when the row is created directly as submitted.
 //   - Never on draft → submitted (the dashboard already confirms that).
 //   - Never on no-op updates (status unchanged).
 
@@ -38,7 +38,23 @@ type EmailTemplate = {
   text: (ctx: { name: string; programLabel: string }) => string
 }
 
-const TEMPLATES: Record<'interview' | 'offer' | 'rejected', EmailTemplate> = {
+const TEMPLATES: Record<'submitted' | 'interview' | 'offer' | 'rejected', EmailTemplate> = {
+  submitted: {
+    subject: 'We received your YondeLabs application',
+    text: ({ name, programLabel }) => `Hi ${name},
+
+We’ve received your application to the ${programLabel}.
+
+Our admissions team will review your materials and reach out if we have any follow-up questions. You can check your application status any time here:
+${DASHBOARD_URL}
+
+If you need to correct or update anything, please reply to this email or write to info@yondelabs.com.
+
+Thank you for applying to YondeLabs.
+
+- YondeLabs Admissions`,
+  },
+
   interview: {
     subject: 'Your YondeLabs application: interview invitation',
     text: ({ name, programLabel }) => `Hi ${name},
@@ -153,19 +169,31 @@ serve(async (req) => {
     return json(400, { error: 'Invalid JSON body' })
   }
 
-  if (payload.type !== 'UPDATE') {
-    return json(200, { skipped: 'not an update' })
-  }
-
-  const oldStatus = payload.old_record?.status
   const newStatus = payload.record?.status
+  const oldStatus = payload.old_record?.status
 
-  if (!newStatus || oldStatus === newStatus) {
-    return json(200, { skipped: 'status unchanged' })
+  if (!newStatus) {
+    return json(200, { skipped: 'record has no status' })
   }
 
-  const notifiable = newStatus === 'interview' || newStatus === 'offer' || newStatus === 'rejected'
-  if (!notifiable) {
+  let shouldSend = false
+
+  if (payload.type === 'INSERT') {
+    shouldSend = newStatus === 'submitted'
+  } else if (payload.type === 'UPDATE') {
+    if (oldStatus === newStatus) {
+      return json(200, { skipped: 'status unchanged' })
+    }
+    shouldSend =
+      newStatus === 'submitted' ||
+      newStatus === 'interview' ||
+      newStatus === 'offer' ||
+      newStatus === 'rejected'
+  } else {
+    return json(200, { skipped: `payload type "${payload.type}" is not handled` })
+  }
+
+  if (!shouldSend) {
     return json(200, { skipped: `status "${newStatus}" is not a notifiable transition` })
   }
 
@@ -179,7 +207,7 @@ serve(async (req) => {
   const program: string = payload.record.program
   const programLabel = PROGRAM_LABELS[program] || 'YondeLabs program'
 
-  const template = TEMPLATES[newStatus as 'interview' | 'offer' | 'rejected']
+  const template = TEMPLATES[newStatus as 'submitted' | 'interview' | 'offer' | 'rejected']
   const subject = template.subject
   const text = template.text({ name, programLabel })
 

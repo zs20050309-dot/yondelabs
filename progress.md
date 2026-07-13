@@ -1655,3 +1655,28 @@ User reported that after completing the final questionnaire step there was no ob
 ### Verification
 - `npm.cmd run build`
 - Result: build passed successfully with all current routes generated, including `/apply/[program]`, `/dashboard`, and the shared `Proxy`.
+
+## Session: 2026-07-13 - Submission confirmation email for all applications
+
+### Background
+User requested a confirmation email when any application is submitted, not only later status-change emails.
+
+### Files modified
+- `supabase/functions/send-status-email/index.ts` - extended the existing Edge Function to send a `submitted` confirmation email in addition to `interview` / `offer` / `rejected`, and to handle both `INSERT` and `UPDATE` webhook payloads.
+- `docs/email-notifications-setup-guide.md` - updated the setup instructions so the Supabase database webhook listens to both `Insert` and `Update`, and documented how to test the new submission email flow.
+- `progress.md` - this log entry.
+
+### Implementation decision
+- Reused the existing `send-status-email` Edge Function instead of creating a second function.
+- Submission email now fires for:
+  - direct `INSERT` rows created with `status = 'submitted'`
+  - `UPDATE` transitions from draft to submitted
+- Existing status emails for `interview`, `offer`, and `rejected` remain intact.
+
+### Verification
+- `npm.cmd run build`
+- Result: build passed successfully with all current routes generated.
+
+### Pending user action
+- In Supabase Database Webhooks, edit the existing webhook so it listens to **Insert** and **Update** events, not only **Update**.
+- Redeploy the updated `send-status-email` Edge Function code in Supabase before expecting the submission emails to send.
