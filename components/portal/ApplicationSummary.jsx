@@ -4,6 +4,7 @@ const PROGRAM_NAMES = {
   ra: 'Research Scholar Program',
   irp: 'Independent Research Program',
   'passion-project': 'Passion Project',
+  'portfolio-project': 'Portfolio Project',
   isef: 'ISEF Coaching',
 }
 

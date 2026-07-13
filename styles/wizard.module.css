@@ -462,6 +462,16 @@
   font-weight: 700;
 }
 
+.reviewActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid #eef1f6;
+}
+
 /* Footer (sticky)
    ------------------------------------------------------------------ */
 
@@ -677,6 +687,10 @@
     padding: 22px 18px;
   }
 
+  .reviewActions {
+    justify-content: stretch;
+  }
+
   .stepTitle {
     font-size: 1.3rem;
   }
@@ -707,6 +721,12 @@
     order: 3;
     justify-content: center;
     padding-top: 4px;
+  }
+
+  .reviewActions .primaryBtn,
+  .reviewActions .secondaryBtn {
+    flex: 1 1 0;
+    min-width: 0;
   }
 
   .primaryBtn,

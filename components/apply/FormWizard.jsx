@@ -68,6 +68,7 @@ export default function FormWizard({ schema, user }) {
   const totalDataSteps = schema.steps.length
   const reviewStepIndex = totalDataSteps
   const isReview = stepIndex === reviewStepIndex
+  const isLastDataStep = stepIndex === totalDataSteps - 1
 
   useEffect(() => {
     if (draft.initialValues == null || values != null) return
@@ -289,6 +290,10 @@ export default function FormWizard({ schema, user }) {
             errors={errors}
             totalSteps={totalDataSteps}
             onEdit={gotoStep}
+            onBack={goPrev}
+            onSubmit={handleSubmit}
+            submitting={submitting}
+            submitted={submitted}
           />
         ) : (
           <FormStep

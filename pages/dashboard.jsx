@@ -9,6 +9,7 @@ const PROGRAM_LABELS = {
   ra: 'In-Person Research Assistant',
   irp: 'Independent Research Program',
   'passion-project': 'Passion Project',
+  'portfolio-project': 'Portfolio Project',
   isef: 'ISEF Coaching',
 }
 

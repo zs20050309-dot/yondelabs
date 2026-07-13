@@ -699,7 +699,7 @@ Project stack: Next.js 16 Pages Router, React 19, JavaScript/JSX, CSS Modules, S
 
 Current implemented routes: /, /login, /register, /forgot-password, /reset-password, /auth/callback, /apply, /dashboard. Admin is planned but not implemented.
 
-Shared Supabase client: lib/supabaseClient.js. Applications table fields: id, user_id, program, status, submitted_at, updated_at, form_data. Program values: ra, irp, passion-project, isef. Status values: submitted, interview, offer, rejected.
+Shared Supabase client: lib/supabaseClient.js. Applications table fields: id, user_id, program, status, submitted_at, updated_at, form_data. Program values: ra, irp, passion-project, portfolio-project, isef. Status values: submitted, interview, offer, rejected.
 
 Current flow: homepage CTAs go to /login. Register creates Supabase user with role student. Login routes admins temporarily to /dashboard; students with an application to /dashboard; students without an application to /apply. /apply inserts an applications row for RA/IRP/Passion Project and redirects to Google Forms; ISEF only shows contact info. /dashboard reads the latest applications row and renders status.
 

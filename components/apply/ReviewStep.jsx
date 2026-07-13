@@ -6,7 +6,17 @@ function formatValue(value) {
   return String(value)
 }
 
-export default function ReviewStep({ schema, values, errors, totalSteps, onEdit }) {
+export default function ReviewStep({
+  schema,
+  values,
+  errors,
+  totalSteps,
+  onEdit,
+  onBack,
+  onSubmit,
+  submitting,
+  submitted,
+}) {
   const missingRequired = Object.keys(errors).length > 0
 
   return (
@@ -56,6 +66,25 @@ export default function ReviewStep({ schema, values, errors, totalSteps, onEdit 
             </div>
           )
         })}
+      </div>
+
+      <div className={styles.reviewActions}>
+        <button
+          type="button"
+          className={styles.secondaryBtn}
+          onClick={onBack}
+          disabled={submitting || submitted}
+        >
+          Back to previous step
+        </button>
+        <button
+          type="button"
+          className={styles.primaryBtn}
+          onClick={onSubmit}
+          disabled={submitting || submitted}
+        >
+          {submitting ? 'Submitting…' : 'Submit application'}
+        </button>
       </div>
     </section>
   )

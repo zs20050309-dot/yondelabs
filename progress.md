@@ -1,6 +1,6 @@
 # Progress Log — YondeLabs Web
 
-Last updated: 2026-05-26
+Last updated: 2026-07-13
 
 ---
 
@@ -1599,3 +1599,59 @@ db6e7fa backup: initial commit before login portal optimization
 - `lib/supabaseClient.js` 为唯一共享客户端
 - 中间件文件: `proxy.js`
 - 不新增 npm 依赖除非 spec 要求
+---
+
+## Session: 2026-07-13 - Add Portfolio Project native application flow
+
+### Background
+User requested a new "Portfolio Project" program in the `/apply` flow, implemented in the same native schema-driven questionnaire format as the existing application wizards rather than as a separate Google Form handoff.
+
+### Files modified
+- `lib/forms/schema.js` - added `portfolio-project` schema with a multi-step questionnaire based on the supplied Google Form content; reused the shared basic-info fields and added portfolio-specific interest, background, track, and guardian sections.
+- `pages/apply.jsx` - added a new Portfolio Project card to the program-selection grid so students can start the new wizard from the same UI as RA / IRP / PP.
+- `pages/dashboard.jsx` - added a display label for `portfolio-project` in dashboard summaries and draft lists.
+- `components/portal/ApplicationSummary.jsx` - added a display label for `portfolio-project` in the legacy summary card mapping.
+- `supabase/functions/send-status-email/index.ts` - added a display label for `portfolio-project` so future status emails resolve the program name correctly.
+- `CLAUDE.md` - documented the required Supabase migration for the new program key under Currently Pending.
+- `docs/ai-context/current-project-ai-alignment.md` - updated the canonical program-value list to include `portfolio-project`.
+- `progress.md` - this log entry.
+
+### Files created
+- `docs/sql/migrations/2026-07-13_add_portfolio_project_program.sql` - migration to extend `applications.program` CHECK constraint with `portfolio-project`.
+
+### Database decision
+- Reused the existing `applications` table.
+- Did **not** add a new table because the current architecture already models one application row per user/program with schema-driven `form_data`.
+- Added a migration instead, because Supabase must accept the new `program` value or submissions will fail at the database constraint.
+
+### Verification
+- Source-level verification completed for:
+  - `/apply` program card registration
+  - `getSchema('portfolio-project')` availability via `FORM_SCHEMAS`
+  - dashboard and email label mappings
+- `npm run build` was **not run** in this session because `node_modules` is currently missing in this workspace, so Next.js cannot start until dependencies are installed.
+
+### Pending user action
+- Run the new SQL migration in Supabase:
+  - `docs/sql/migrations/2026-07-13_add_portfolio_project_program.sql`
+- Install project dependencies locally before attempting build/dev verification:
+  - `npm install`
+
+## Session: 2026-07-13 - Review step submit CTA fix
+
+### Background
+User reported that after completing the final questionnaire step there was no obvious way to submit the application, even though the shared wizard expected submission from the sticky footer review state.
+
+### Files modified
+- `components/apply/ReviewStep.jsx` - added an in-page review action row with "Back to previous step" and "Submit application" buttons so submission is visible inside the review screen itself.
+- `components/apply/FormWizard.jsx` - passed the shared submit/back handlers into `ReviewStep` so the new in-page action row uses the same logic as the footer.
+- `styles/wizard.module.css` - added responsive layout styles for the new review action row.
+- `progress.md` - this log entry.
+
+### Behavior change
+- The review step now shows a visible submit button inside the main card, instead of relying only on the sticky footer.
+- Successful submission still uses the existing shared flow and redirects to `/dashboard`, which matches the desired post-submit screen.
+
+### Verification
+- `npm.cmd run build`
+- Result: build passed successfully with all current routes generated, including `/apply/[program]`, `/dashboard`, and the shared `Proxy`.
