@@ -66,11 +66,21 @@ function labelClass(state) {
   return `${styles.label} ${styles.labelActive}`
 }
 
-function subLabel(state, index, submittedAt) {
+function subLabel(state, index, submittedAt, interviewScheduledAt) {
   if (index === 0) return formatDate(submittedAt)
+  if (index === 1 && interviewScheduledAt) return formatDate(interviewScheduledAt)
+  if (index === 1 && state === 'active') return 'Choose a time'
   if (state === 'inactive') return 'Pending'
   if (state === 'active') return 'In progress'
   return 'Completed'
+}
+
+function stageLabel(stage, index, status, interviewScheduledAt) {
+  if (index === 1 && status === 'interview' && !interviewScheduledAt) {
+    return 'Interview Invitation Sent'
+  }
+
+  return stage.label
 }
 
 function circleContent(state) {
@@ -85,19 +95,23 @@ function circleContent(state) {
   return null
 }
 
-export default function StatusTracker({ status, submittedAt }) {
+export default function StatusTracker({ status, submittedAt, interviewScheduledAt }) {
   const isReviewed = status === 'rejected'
 
   function renderStep(stage, index, variant) {
     const state = stepState(status, index)
 
     return (
-      <div key={`${variant}-${stage.key}`} className={styles.stepBody}>
-        <div className={labelClass(state)}>{stage.label}</div>
-        <div className={styles.subLabel}>{subLabel(state, index, submittedAt)}</div>
-      </div>
-    )
-  }
+        <div key={`${variant}-${stage.key}`} className={styles.stepBody}>
+          <div className={labelClass(state)}>
+            {stageLabel(stage, index, status, interviewScheduledAt)}
+          </div>
+          <div className={styles.subLabel}>
+            {subLabel(state, index, submittedAt, interviewScheduledAt)}
+          </div>
+        </div>
+      )
+    }
 
   return (
     <section className={styles.card}>

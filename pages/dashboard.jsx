@@ -49,6 +49,11 @@ function getStatusMeta(status) {
   return STATUS_LABELS[status] || STATUS_LABELS.submitted
 }
 
+function getInterviewStatusLabel(application) {
+  if (application?.status !== 'interview') return null
+  return application.interview_scheduled_at ? 'Interview Scheduled' : 'Interview Invitation Sent'
+}
+
 export default function Dashboard() {
   const router = useRouter()
   const [user, setUser] = useState(null)
@@ -115,7 +120,9 @@ export default function Dashboard() {
   const programLabel = application ? PROGRAM_LABELS[application.program] || '—' : '—'
   const cohort = application?.form_data?.cohort || '—'
   const submittedDate = formatDate(application?.submitted_at)
+  const interviewDate = formatDate(application?.interview_scheduled_at)
   const currentStatus = application ? getStatusMeta(application.status) : null
+  const interviewStatusLabel = getInterviewStatusLabel(application)
 
   if (loading) {
     return (
@@ -264,7 +271,7 @@ export default function Dashboard() {
                             {currentStatus.icon}
                           </span>
                         ) : null}
-                        {currentStatus.label}
+                        {interviewStatusLabel || currentStatus.label}
                       </span>
                     </div>
                   </div>
@@ -285,9 +292,45 @@ export default function Dashboard() {
                     </span>
                   </div>
                 ) : null}
+
+                {application.status === 'interview' && !application.interview_scheduled_at ? (
+                  <div className={styles.infoBanner}>
+                    <span className={styles.infoBannerIcon} aria-hidden="true">
+                      i
+                    </span>
+                    <span>
+                      We’ve invited you to schedule your interview. Please check your inbox for the
+                      Calendly booking link. If you can’t find it, email{' '}
+                      <a href="mailto:info@yondelabs.com" className={styles.infoBannerLink}>
+                        info@yondelabs.com
+                      </a>
+                      .
+                    </span>
+                  </div>
+                ) : null}
+
+                {application.status === 'interview' && application.interview_scheduled_at ? (
+                  <div className={styles.infoBanner}>
+                    <span className={styles.infoBannerIcon} aria-hidden="true">
+                      i
+                    </span>
+                    <span>
+                      Your interview is booked for {interviewDate === '—' ? 'your selected time' : interviewDate}.
+                      Calendly has already sent your Zoom details separately. Need help? Email{' '}
+                      <a href="mailto:info@yondelabs.com" className={styles.infoBannerLink}>
+                        info@yondelabs.com
+                      </a>
+                      .
+                    </span>
+                  </div>
+                ) : null}
               </section>
 
-              <StatusTracker status={application.status} submittedAt={application.submitted_at} />
+              <StatusTracker
+                status={application.status}
+                submittedAt={application.submitted_at}
+                interviewScheduledAt={application.interview_scheduled_at}
+              />
 
               {hasDrafts ? (
                 <section className={styles.draftListCard}>

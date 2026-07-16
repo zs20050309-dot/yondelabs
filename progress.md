@@ -1677,6 +1677,118 @@ User requested a confirmation email when any application is submitted, not only 
 - `npm.cmd run build`
 - Result: build passed successfully with all current routes generated.
 
+### Follow-up
+- `jsconfig.json` - added an explicit `$schema` entry for `https://json.schemastore.org/jsconfig` to help editors attach the correct schema and stop false errors under `baseUrl`.
+
+## Session: 2026-07-14 - Remove unused jsconfig alias
+
+### Background
+User still saw editor errors under `baseUrl` and `paths` in `jsconfig.json`.
+
+### Files modified
+- `pages/_app.js` - replaced the only `@/styles/globals.css` alias import with a direct relative import.
+- `jsconfig.json` - removed the unused alias configuration and simplified the file to only exclude `node_modules` and `supabase/functions`.
+- `progress.md` - this log entry.
+
+### Verification
+- Attempted `npm.cmd run build`
+- Result: blocked by a Windows file lock on `.next` (`EPERM ... unlink ... .next\\static\\...`), which usually means the dev server is still running and holding the build output directory open.
+
+## Session: 2026-07-14 - Clear editor errors in jsconfig and Edge Function
+
+### Background
+User reported red editor errors in `jsconfig.json` and `supabase/functions/send-status-email/index.ts`.
+
+### Files modified
+- `jsconfig.json` - removed the invalid `next-env.d.ts` include entry because that file does not exist in this repo, and excluded `supabase/functions` from the JS project config.
+- `supabase/functions/send-status-email/index.ts` - added `// @ts-nocheck` so the Deno Edge Function does not show false-positive editor errors in the Next.js workspace.
+- `progress.md` - this log entry.
+
+### Verification
+- `npm.cmd run build`
+- Result: build passed successfully with all current routes generated.
+
+## Session: 2026-07-14 - jsconfig alias cleanup
+
+### Background
+User asked to fix `jsconfig.json`.
+
+### Files modified
+- `jsconfig.json` - normalized the `@/*` alias mapping from `["./*"]` to `["*"]` and added explicit `include` / `exclude` entries for editor and tooling compatibility.
+- `progress.md` - this log entry.
+
 ### Pending user action
 - In Supabase Database Webhooks, edit the existing webhook so it listens to **Insert** and **Update** events, not only **Update**.
 - Redeploy the updated `send-status-email` Edge Function code in Supabase before expecting the submission emails to send.
+
+## Session: 2026-07-14 - Limit emails to submission confirmation only
+
+### Background
+User clarified that the email feature should send only a single "application received" confirmation email, with custom wording from Ashlyn, and should not send interview / offer / rejected notifications.
+
+### Files modified
+- `supabase/functions/send-status-email/index.ts` - simplified the Edge Function so it now sends only one submission-confirmation email for `INSERT submitted` and `draft -> submitted`, and removed later status-notification behavior.
+- `docs/email-notifications-setup-guide.md` - rewrote the setup guide so it matches the new scope: submission confirmation only, no later status emails.
+- `progress.md` - this log entry.
+
+### Behavior change
+- Email sends only when an application is first received.
+- No email sends for `interview`, `offer`, or `rejected`.
+- The email body now uses the user-provided Ashlyn / CEO signoff copy.
+
+### Verification
+- `npm.cmd run build`
+- Result: build passed successfully with all current routes generated.
+
+## Session: 2026-07-14 - Harden submission email recipient validation
+
+### Background
+After webhook auth was fixed, the Edge Function began invoking successfully but Resend rejected some sends with a `422 validation_error` because the `to` field coming from `applications.form_data.email` was malformed.
+
+### Files modified
+- `supabase/functions/send-status-email/index.ts` - added recipient normalization and email-format validation before calling Resend, so malformed values are skipped cleanly instead of failing the whole function invocation.
+- `progress.md` - this log entry.
+
+### Behavior change
+- The submission email function now trims the student email address and strips a leading `mailto:` if present.
+- If `form_data.email` is missing or not a valid email address, the function returns a skipped response instead of producing a Resend 422 error.
+
+### Next step
+- Redeploy `send-status-email` in Supabase so the validation patch is live.
+
+## Session: 2026-07-14 - Calendly interview scheduling automation
+
+### Background
+User requested a second automation flow for interviews:
+- when an application is moved into interview review, email the student a Calendly booking link
+- after Calendly confirms the booking, send a follow-up email telling the student the Zoom details were sent
+
+### Files created
+- `supabase/functions/send-interview-invite/index.ts` - Edge Function triggered from Supabase database updates when an application transitions into `status = 'interview'`; sends the Calendly booking email and records `interview_invite_sent_at`.
+- `supabase/functions/handle-calendly-booking/index.ts` - public Calendly webhook endpoint; matches the booked invitee back to an application row, stores the interview metadata, and sends the post-booking confirmation email.
+- `docs/sql/migrations/2026-07-14_add_interview_scheduling_fields.sql` - migration adding `contact_email`, interview timestamps, Calendly URI fields, and indexes.
+- `docs/calendly-interview-automation-guide.md` - end-to-end setup guide for Supabase triggers, secrets, Calendly webhook URL, and testing.
+
+### Files modified
+- `lib/forms/useDraft.js` - mirrors the student email into `applications.contact_email` during draft saves and final submission so automation/webhook matching does not depend on JSON-path filtering.
+- `pages/dashboard.jsx` - adds interview-aware dashboard messaging; `interview` now renders as `Interview Invitation Sent` until a real `interview_scheduled_at` exists, then flips to `Interview Scheduled`.
+- `components/portal/StatusTracker.jsx` - accepts `interviewScheduledAt` and shows a truthful second-step label/sub-label (`Choose a time` before booking, scheduled date after booking).
+- `CLAUDE.md` - documents the new interview metadata migration and clarifies that email automation still requires external dashboard setup.
+- `progress.md` - this log entry.
+
+### Implementation decisions
+- Reused the existing `applications` table instead of creating a second scheduling table.
+- Added dedicated interview metadata columns so scheduling state is queryable and visible in the dashboard.
+- Kept the existing `interview` status value, but made the UI label dynamic so the portal remains accurate before and after Calendly booking.
+- Used a tokenized public webhook URL for Calendly (`handle-calendly-booking?token=...`) so the function can accept external POSTs with JWT verification disabled.
+
+### Required external setup
+- Deploy both new Edge Functions in Supabase.
+- Add secrets: `RESEND_API_KEY`, `FROM_EMAIL`, `WEBHOOK_SECRET`, `CALENDLY_BOOKING_URL`, `CALENDLY_WEBHOOK_TOKEN`.
+- Run the new SQL migration.
+- Create the database trigger for `send-interview-invite`.
+- Create the Calendly webhook for `invitee.created`.
+
+### Verification
+- `npm.cmd run build`
+- Result: build passed successfully with all current routes generated.

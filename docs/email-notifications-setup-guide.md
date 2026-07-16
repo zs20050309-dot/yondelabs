@@ -1,294 +1,164 @@
 # Email Notifications Setup Guide
 
-**Feature:** Application emails — students get an email when we first receive their application, and again when an admin changes the status to `interview` / `offer` / `rejected`.
+**Feature:** Submission confirmation emails only. Students get one email when we first receive their application.
 
-**Stack:** Resend (transactional email API) + Supabase Edge Function + Supabase Database Webhook.
+**Stack:** Resend + Supabase Edge Function + Supabase Database Webhook / trigger.
 
-**Total setup time:** ~30 minutes (mostly waiting for DNS verification).
-
-**You only do this once.** After it's set up, sending emails happens automatically; no code change needed when admins update statuses in the panel.
-
----
-
-## What you're building
-
-```
-Student submits application
-or admin changes status
-        │
-        ▼
-applications row INSERT / UPDATE in Supabase
-        │
-        ▼
-Supabase Database Webhook fires (configured in dashboard UI)
-        │  POST → Edge Function URL
-        ▼
-send-status-email Edge Function
-        │  (decides if submission/status change is "notifiable")
-        ▼
-Resend API call
-        │
-        ▼
-Email arrives in student's inbox
-```
+**What this version does**
+- Sends an email when an application is first received.
+- Works for all programs in the `applications` table.
+- Does **not** send interview / offer / rejected emails.
 
 ---
 
-## Before you start
+## What triggers the email
 
-You'll need these accounts. Sign up first if you don't have them:
+The `send-status-email` Edge Function sends an email only when one of these happens:
 
-| Service | URL | Free tier |
-|---|---|---|
-| Resend | <https://resend.com/signup> | 3,000 emails/month free |
-| Supabase | <https://supabase.com> | Already set up (your existing project) |
-| DNS for yondelabs.com | Wherever your domain is registered (Namecheap, Cloudflare, Squarespace, etc.) | — |
+1. a row is inserted into `applications` with `status = 'submitted'`
+2. a row is updated from `draft` to `submitted`
 
-You'll also need access to your domain's DNS settings — wherever you bought `yondelabs.com`.
-
----
-
-# Part 1 — Set up Resend
-
-### Step 1.1: Sign up for Resend
-
-1. Go to <https://resend.com/signup>.
-2. Sign up with the email you want associated with the YondeLabs Resend account.
-3. Verify the signup email.
-
-### Step 1.2: Add `yondelabs.com` as a sending domain
-
-1. In the Resend dashboard, click **Domains** in the left sidebar.
-2. Click **+ Add Domain**.
-3. Enter `yondelabs.com` (no `https://`, no slashes, just the domain).
-4. Region: pick the one closest to your students (e.g., `us-east-1` for US, `eu-west-1` for Asia/EU).
-5. Click **Add**.
-
-Resend will show you several DNS records you need to add: typically one SPF, one MX, and three DKIM records.
-
-**Keep this page open.** You'll come back to it after the next step.
-
-### Step 1.3: Add the DNS records to your domain registrar
-
-This is the most fiddly part. The exact UI depends on where you registered `yondelabs.com`.
-
-For each row Resend gave you (SPF, MX, DKIM_1, DKIM_2, DKIM_3):
-
-1. Open your domain's DNS management page.
-2. Click "Add new record" (or similar).
-3. Match the **Type** (TXT / MX / CNAME) from Resend.
-4. Copy the **Host / Name** from Resend (often `send`, `resend._domainkey`, etc.).
-5. Copy the **Value / Content** from Resend exactly. **Do not paste with extra spaces.**
-6. Leave TTL at the default (usually 1 hour / 3600 seconds is fine).
-7. Save.
-
-**Common gotchas:**
-- Some registrars auto-append your domain to the **Host** field. If Resend says `send.yondelabs.com`, you may need to enter just `send`. If it says `@`, you may need to enter `@` or leave blank.
-- DKIM records are long — make sure you copy the *entire* value, including all characters at the end.
-- Cloudflare users: set the proxy to **DNS only** (gray cloud, not orange) for these records.
-
-### Step 1.4: Wait for verification
-
-1. Go back to the Resend Domains page.
-2. Click **Verify DNS Records** (or refresh — it auto-checks every few minutes).
-
-DNS propagation can take 5 minutes to 48 hours, but is usually under 30 minutes. You can move on to Part 2 while you wait — but you cannot **test** until Resend says "verified" with a green check on all rows.
-
-### Step 1.5: Create an API key
-
-1. In Resend, click **API Keys** in the left sidebar.
-2. Click **+ Create API Key**.
-3. Name it `yondelabs-edge-function` (or any name you'll recognize).
-4. Permission: **Sending access**.
-5. Domain restriction: select `yondelabs.com` (so this key can only send from your domain — defense in depth).
-6. Click **Add**.
-
-**Copy the API key now (it starts with `re_...`)**. You will not be able to see it again — Resend hides it after this screen closes. If you lose it, just delete and create a new one.
-
-Paste it somewhere safe for the next step (a sticky note, password manager — not a public Google Doc).
+It will skip:
+- draft autosaves
+- updates where status did not change
+- later status changes like `interview`, `offer`, or `rejected`
 
 ---
 
-# Part 2 — Deploy the Edge Function to Supabase
+## Part 1 - Resend
 
-### Step 2.1: Generate a webhook secret
+1. Create a Resend account at <https://resend.com/signup>.
+2. Add `yondelabs.com` as a sending domain.
+3. Add the DNS records Resend gives you at your domain registrar.
+4. Wait until the domain shows as verified.
+5. Create an API key with sending access.
 
-This is a shared password between Supabase and the Edge Function. You'll create it now and use it in two places.
+You will use that key as `RESEND_API_KEY`.
 
-Open a terminal and run:
+---
 
-```bash
-openssl rand -hex 32
-```
+## Part 2 - Supabase Edge Function
 
-You'll get something like `7a3f9c2e1b4d8a6f0e2d3c5b1a9f8e7d6c4b3a2f1e0d9c8b7a6f5e4d3c2b1a0f`. Copy this value somewhere safe.
+Open your Supabase project, then:
 
-If you don't have `openssl` or don't want to use a terminal, use <https://www.random.org/strings/?num=1&len=64&digits=on&upperalpha=on&loweralpha=on> — set length 64.
+1. Go to `Edge Functions`
+2. Open `send-status-email`
+3. Replace the code with:
+   [index.ts](C:/Users/hadiq/OneDrive/Desktop/yondelabs/supabase/functions/send-status-email/index.ts)
+4. Click `Deploy`
 
-### Step 2.2: Create the function in Supabase
-
-1. Open <https://supabase.com/dashboard> and pick the YondeLabs project.
-2. In the left sidebar, click **Edge Functions**.
-3. Click **+ Create a new function**.
-4. Name: `send-status-email` (must match exactly — the code expects this name).
-5. Verify JWT: **OFF**. Supabase webhooks don't carry a Supabase JWT, so we authenticate with our own shared secret instead.
-6. Click **Create function**.
-
-A code editor opens with default boilerplate.
-
-### Step 2.3: Paste the function code
-
-1. Open the file in this repo: `supabase/functions/send-status-email/index.ts`.
-2. Select all (Cmd+A / Ctrl+A) → copy.
-3. In the Supabase web editor: select all the boilerplate → paste over it with our code.
-4. Click **Deploy function** (top right).
-
-Wait for "Deployed successfully" — usually under 30 seconds.
-
-### Step 2.4: Set environment secrets
-
-1. Still in the function page, click **Secrets** (left submenu under your function).
-2. Click **+ Add new secret** four times, adding:
+Then set these secrets for the function:
 
 | Name | Value |
 |---|---|
-| `RESEND_API_KEY` | The `re_...` key from Resend Step 1.5 |
-| `WEBHOOK_SECRET` | The 64-char random string from Step 2.1 |
-| `DASHBOARD_URL` | `https://yondelabs.com/dashboard` (or your staging URL if testing) |
+| `RESEND_API_KEY` | your Resend API key |
+| `WEBHOOK_SECRET` | a random secret string you choose |
 | `FROM_EMAIL` | `YondeLabs Admissions <noreply@yondelabs.com>` |
 
-3. Click **Save** after each one.
-
-### Step 2.5: Copy your function URL
-
-At the top of the function page, you'll see a URL like:
-
-```
-https://abcdefghij.supabase.co/functions/v1/send-status-email
-```
-
-Copy this. You need it in Part 3.
+Note:
+- `DASHBOARD_URL` is no longer required for this version.
+- The `WEBHOOK_SECRET` is not something Supabase gives you. You create it yourself and use the same value in the trigger/webhook header.
 
 ---
 
-# Part 3 — Hook up the Database Webhook
+## Part 3 - Connect the database to the function
 
-### Step 3.1: Create the webhook
+If the Supabase UI shows `Database -> Webhooks`, configure it there.
 
-1. In the Supabase dashboard, click **Database** in the left sidebar.
-2. Click **Webhooks** (under Database — *not* "Webhooks" under Auth, which is different).
-3. Click **Create a new hook**.
+If that menu is missing, use SQL Editor and create the trigger manually.
 
-Fill out the form:
+### Option A - Database Webhooks UI
+
+Use these settings:
 
 | Field | Value |
 |---|---|
-| Name | `application-status-changed` |
+| Name | `application-submission-email` |
 | Table | `applications` |
-| Events | check **Insert** and **Update** |
-| Type of webhook | **HTTP Request** |
+| Events | `Insert` and `Update` |
 | Method | `POST` |
-| URL | The function URL from Step 2.5 |
-| HTTP Headers | Add one: `Authorization` = `Bearer <your WEBHOOK_SECRET from 2.1>` |
+| URL | `https://YOUR_PROJECT_REF.supabase.co/functions/v1/send-status-email` |
+| Header | `Authorization: Bearer YOUR_WEBHOOK_SECRET` |
 
-For the **Conditions** section, you *could* filter to "only when status changes" here, but our Edge Function already does that check, so leave conditions empty. Belt + suspenders is fine.
+### Option B - SQL Editor
 
-### Step 3.2: Save and verify
+Open `SQL Editor -> New query` and run:
 
-1. Click **Create webhook**.
-2. The webhook should appear in the list with a green "Active" indicator.
+```sql
+drop trigger if exists "application_email_webhook" on public.applications;
+
+create trigger "application_email_webhook"
+after insert or update
+on public.applications
+for each row
+execute function supabase_functions.http_request(
+  'https://YOUR_PROJECT_REF.supabase.co/functions/v1/send-status-email',
+  'POST',
+  '{"Content-Type":"application/json","Authorization":"Bearer YOUR_WEBHOOK_SECRET"}',
+  '{}',
+  '1000'
+);
+```
+
+Replace:
+- `YOUR_PROJECT_REF`
+- `YOUR_WEBHOOK_SECRET`
+
+The secret here must exactly match the `WEBHOOK_SECRET` you set on the Edge Function.
 
 ---
 
-# Part 4 — Test it
+## Part 4 - Test it
 
-### Step 4.1: Create or pick a test application
+Use one of these tests:
 
-Easiest option: in the Supabase **Table Editor**, open the `applications` table. You should see at least one row (from a real student submission, or insert a test row manually if needed).
+1. insert a new `applications` row with `status = 'submitted'`
+2. update an existing `applications` row from `draft` to `submitted`
 
-### Step 4.2: Flip the status
+Before testing, make sure:
+- `form_data.email` contains a real inbox you can access
+- the Resend domain is verified
 
-1. Make sure `form_data.email` contains an email address you can check.
-2. Test the submission email in one of two ways:
-   - insert a fresh row with `status = 'submitted'`, or
-   - update an existing draft row from `draft` to `submitted`.
-3. Then test the later status emails by changing the same row to `interview`.
+Expected result:
+- the Edge Function runs
+- one submission confirmation email is sent
 
-Within about 5–10 seconds, you should:
-
-1. See the webhook fire (Supabase → Webhooks → click the hook → "Logs" tab — there should be a new entry with status 200).
-2. See an entry in Edge Functions → Logs for `send-status-email`.
-3. Receive the email at the address from `form_data.email`.
-
-### Step 4.3: Repeat for `offer` and `rejected`
-
-Flip the same row through `offer` and `rejected`, confirming each one fires an email and the wording is correct.
+Not expected:
+- no email for `draft`
+- no email for `interview`
+- no email for `offer`
+- no email for `rejected`
 
 ---
 
 ## Troubleshooting
 
-### Webhook fires but no email arrives
+### 401 Unauthorized
 
-1. **Check Resend logs.** Resend → **Emails** in the left sidebar. Recent sends are listed there with status. If the send shows as `bounced` or `complained`, the recipient's email server rejected it.
-2. **Check spam folder.** If a brand-new sender domain, first emails sometimes land in spam until reputation builds. Mark as "Not Spam" to train.
-3. **Verify DNS again.** Resend → Domains. If anything went from green to red, fix it.
-4. **Check Edge Function logs.** Supabase → Edge Functions → `send-status-email` → Logs. Look for `Email send failed`. If yes, the error detail will say why (usually invalid API key or unverified domain).
+The `Authorization: Bearer ...` header does not match `WEBHOOK_SECRET`.
 
-### Webhook doesn't fire at all
+### 200 skipped
 
-1. **Confirm the webhook is enabled.** Database → Webhooks. Toggle should be green.
-2. **Confirm the table and event.** Should be `applications` table, `Update` event only.
-3. **Manual trigger.** Click the webhook → "Test" tab → "Send test". This sends a fake payload — useful to verify the function URL and auth header are correct.
+This is expected when:
+- the row is still `draft`
+- the status did not change
+- the change was not a submission event
+- `form_data.email` is missing
 
-### Edge Function returns 401 Unauthorized
+### No email arrives
 
-The webhook secret doesn't match. Most likely either:
-- The `Authorization` header value isn't `Bearer <secret>` (case-sensitive, space matters).
-- The `WEBHOOK_SECRET` env var on the function doesn't exactly match what's in the webhook's Authorization header.
-
-Re-copy both from your stored value. Whitespace or a stray newline at the end is the usual culprit.
-
-### Edge Function returns 200 but with `skipped: ...` in the body
-
-This is **expected behavior** for these cases:
-- Status didn't actually change (e.g., the row was updated for some other reason).
-- The row was inserted/updated with a non-notifiable status such as `draft`.
-- `form_data.email` is empty.
-
-No email gets sent. Not a bug.
-
-### Email lands in spam consistently
-
-Several reasons:
-- **DNS records didn't all verify.** Re-check Resend → Domains. Every row must be green.
-- **Sender reputation is low** (brand-new domain). Resolves itself over a few days of legitimate sending. Don't send bulk in this period.
-- **Email content triggers spam filters.** Our templates are plain text and short, which should be fine, but if you customize them, avoid spam-trigger words (FREE, GUARANTEED, etc.).
-- **Add a `Reply-To` header.** Future improvement: add `Reply-To: info@yondelabs.com` so students can reply directly. Quick edit to the Edge Function.
-
----
-
-## Cost expectations
-
-Resend free tier covers **3,000 emails/month and up to 100 emails/day**. With 4 programs and small cohorts, you're realistically well under 100 status-change emails per week. The free tier will outlast MVP.
-
-If you exceed it, the next tier is $20/month for 50,000 emails — still trivial.
-
----
-
-## What's intentionally *not* set up
-
-- **HTML / branded emails.** First version is plain text. Looks fine on every client, never breaks. When you want branded HTML, edit the Edge Function `TEMPLATES` to add an `html:` field and pass it in the Resend payload.
-- **Custom HTML branding for the submission email.** The first version stays plain text for reliability. If you want branded HTML later, extend the templates with an `html` field and pass it to Resend.
-- **Reply-to.** Currently `noreply@`. If you want students replying to thread with admissions, change `FROM_EMAIL` to a monitored address, or add a `reply_to` field in the Resend payload.
-- **Internationalization.** All emails are English-only per project policy.
-- **Retry on failure.** If Resend fails (rare), no automatic retry. Supabase webhooks have a retry button in the dashboard. Acceptable for current volume.
+Check:
+- Resend domain verification
+- Resend send logs
+- Supabase Edge Function logs
+- the email value inside `form_data.email`
 
 ---
 
 ## Reference
 
-- Edge Function source: `supabase/functions/send-status-email/index.ts`
+- Edge Function source:
+  [index.ts](C:/Users/hadiq/OneDrive/Desktop/yondelabs/supabase/functions/send-status-email/index.ts)
 - Resend docs: <https://resend.com/docs>
-- Supabase Database Webhooks: <https://supabase.com/docs/guides/database/webhooks>
-- Supabase Edge Functions: <https://supabase.com/docs/guides/functions>
+- Supabase database webhooks: <https://supabase.com/docs/guides/database/webhooks>
+- Supabase edge functions: <https://supabase.com/docs/guides/functions>

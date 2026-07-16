@@ -1,36 +1,36 @@
-// Supabase Edge Function — send-status-email
+// @ts-nocheck
+// Supabase Edge Function - send-status-email
 //
 // Invoked by a Supabase Database Webhook configured against the
-// `applications` table for INSERT and UPDATE events. Decides whether the change is
-// notification-worthy and, if so, sends a transactional email via Resend.
+// `applications` table for INSERT and UPDATE events. Sends exactly one kind of
+// email: a submission confirmation when an application is first received.
 //
-// Required env vars (set in Supabase Dashboard → Project Settings → Edge
-// Functions → Secrets):
+// Required env vars (set in Supabase Dashboard -> Project Settings -> Edge
+// Functions -> Secrets):
 //   RESEND_API_KEY    Resend API key (re_...)
 //   WEBHOOK_SECRET    Shared secret. The Database Webhook must send it
 //                     in the `Authorization: Bearer <secret>` header.
-//   DASHBOARD_URL     Public URL students land on (default: production URL)
 //   FROM_EMAIL        Sender, default "YondeLabs Admissions <noreply@yondelabs.com>"
 //
 // Send rules:
 //   - On INSERT when the row is created directly as submitted.
-//   - Never on draft → submitted (the dashboard already confirms that).
-//   - Never on no-op updates (status unchanged).
+//   - On UPDATE when a draft becomes submitted.
+//   - Never on later status changes such as interview / offer / rejected.
+//   - Never on draft saves or no-op updates.
 
 // deno-lint-ignore-file no-explicit-any
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') ?? ''
 const WEBHOOK_SECRET = Deno.env.get('WEBHOOK_SECRET') ?? ''
-const DASHBOARD_URL = Deno.env.get('DASHBOARD_URL') ?? 'https://yondelabs.com/dashboard'
 const FROM_EMAIL = Deno.env.get('FROM_EMAIL') ?? 'YondeLabs Admissions <noreply@yondelabs.com>'
 
 const PROGRAM_LABELS: Record<string, string> = {
-  ra: 'In-Person Research Assistant',
-  irp: 'Independent Research Program',
+  ra: 'Research Scholar',
+  irp: 'Independent Research',
   'passion-project': 'Passion Project',
   'portfolio-project': 'Portfolio Project',
-  isef: 'ISEF Coaching',
+  isef: 'ISEF Mentorship',
 }
 
 type EmailTemplate = {
@@ -38,69 +38,21 @@ type EmailTemplate = {
   text: (ctx: { name: string; programLabel: string }) => string
 }
 
-const TEMPLATES: Record<'submitted' | 'interview' | 'offer' | 'rejected', EmailTemplate> = {
-  submitted: {
-    subject: 'We received your YondeLabs application',
-    text: ({ name, programLabel }) => `Hi ${name},
+const SUBMITTED_TEMPLATE: EmailTemplate = {
+  subject: 'Your Yonde Labs application has been received',
+  text: ({ name, programLabel }) => `Hi ${name},
 
-We’ve received your application to the ${programLabel}.
+Thank you for applying to the Yonde Labs ${programLabel} Program.
 
-Our admissions team will review your materials and reach out if we have any follow-up questions. You can check your application status any time here:
-${DASHBOARD_URL}
+We would like to confirm that your application has been successfully received and is currently under review by our team. We evaluate candidates on a rolling basis, giving each application the individual attention it deserves. If your profile is a strong match for our current cohort, we'll be in touch within one week to invite you to a short Zoom interview (~15-30 min) with one of our mentors.
 
-If you need to correct or update anything, please reply to this email or write to info@yondelabs.com.
+We receive applications from driven students around the world, and we're thoughtful about who we bring into the Yonder Scholar community - so we appreciate your patience as we review your materials carefully.
 
-Thank you for applying to YondeLabs.
+We'll follow up soon either way.
 
-- YondeLabs Admissions`,
-  },
-
-  interview: {
-    subject: 'Your YondeLabs application: interview invitation',
-    text: ({ name, programLabel }) => `Hi ${name},
-
-Congratulations — your application to the ${programLabel} has moved to the interview stage.
-
-Our admissions team will reach out shortly to schedule a time that works for you. There is nothing you need to do right now.
-
-You can view your application status anytime at:
-${DASHBOARD_URL}
-
-If you have questions in the meantime, reply to this email or write to info@yondelabs.com.
-
-— YondeLabs Admissions`,
-  },
-
-  offer: {
-    subject: 'Welcome to YondeLabs — admission decision',
-    text: ({ name, programLabel }) => `Hi ${name},
-
-We're delighted to share that you've been admitted to the ${programLabel}.
-
-Your official offer details and next steps will arrive in a separate email from our admissions coordinator within the next 1–2 business days. Please look out for it.
-
-You can view your dashboard at:
-${DASHBOARD_URL}
-
-If anything doesn't reach you, write to info@yondelabs.com and we'll resend immediately.
-
-Welcome aboard.
-
-— YondeLabs Admissions`,
-  },
-
-  rejected: {
-    subject: 'Your YondeLabs application has been reviewed',
-    text: ({ name, programLabel }) => `Hi ${name},
-
-Thank you for applying to the ${programLabel} and for sharing your work with us.
-
-After careful review, we are not able to offer you a place in this cohort. We know how much thought goes into an application like this, and we appreciate the time you put in.
-
-You're welcome to apply again in a future cycle. If you'd like specific feedback or to talk through future fit, write to info@yondelabs.com and we'll be glad to follow up.
-
-— YondeLabs Admissions`,
-  },
+Best,
+Ashlyn
+CEO, Yonde Labs`,
 }
 
 type WebhookPayload = {
@@ -122,8 +74,16 @@ function authorize(req: Request): boolean {
   if (!WEBHOOK_SECRET) return false
   const header = req.headers.get('authorization') || req.headers.get('Authorization')
   if (!header) return false
-  const expected = `Bearer ${WEBHOOK_SECRET}`
-  return header === expected
+  return header === `Bearer ${WEBHOOK_SECRET}`
+}
+
+function normalizeEmail(value: unknown): string {
+  if (typeof value !== 'string') return ''
+  return value.trim().replace(/^mailto:/i, '')
+}
+
+function isValidEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
 }
 
 async function sendEmail(to: string, subject: string, text: string) {
@@ -147,6 +107,19 @@ async function sendEmail(to: string, subject: string, text: string) {
   }
 
   return await res.json()
+}
+
+function shouldSendSubmissionEmail(payload: WebhookPayload, newStatus: string, oldStatus: string | undefined) {
+  if (payload.type === 'INSERT') {
+    return newStatus === 'submitted'
+  }
+
+  if (payload.type === 'UPDATE') {
+    if (oldStatus === newStatus) return false
+    return oldStatus === 'draft' && newStatus === 'submitted'
+  }
+
+  return false
 }
 
 serve(async (req) => {
@@ -176,43 +149,33 @@ serve(async (req) => {
     return json(200, { skipped: 'record has no status' })
   }
 
-  let shouldSend = false
-
-  if (payload.type === 'INSERT') {
-    shouldSend = newStatus === 'submitted'
-  } else if (payload.type === 'UPDATE') {
-    if (oldStatus === newStatus) {
-      return json(200, { skipped: 'status unchanged' })
-    }
-    shouldSend =
-      newStatus === 'submitted' ||
-      newStatus === 'interview' ||
-      newStatus === 'offer' ||
-      newStatus === 'rejected'
-  } else {
-    return json(200, { skipped: `payload type "${payload.type}" is not handled` })
-  }
-
-  if (!shouldSend) {
-    return json(200, { skipped: `status "${newStatus}" is not a notifiable transition` })
+  if (!shouldSendSubmissionEmail(payload, newStatus, oldStatus)) {
+    return json(200, { skipped: `status "${newStatus}" is not a notifiable submission event` })
   }
 
   const formData = payload.record.form_data || {}
-  const to: string = formData.email || ''
+  const to = normalizeEmail(formData.email)
   if (!to) {
     return json(200, { skipped: 'no email on file in form_data' })
   }
 
+  if (!isValidEmail(to)) {
+    return json(200, {
+      skipped: 'invalid email in form_data',
+      email: to,
+    })
+  }
+
   const name: string = formData.preferred_name || formData.full_name || 'there'
   const program: string = payload.record.program
-  const programLabel = PROGRAM_LABELS[program] || 'YondeLabs program'
-
-  const template = TEMPLATES[newStatus as 'submitted' | 'interview' | 'offer' | 'rejected']
-  const subject = template.subject
-  const text = template.text({ name, programLabel })
+  const programLabel = PROGRAM_LABELS[program] || 'Yonde Labs'
 
   try {
-    const result = await sendEmail(to, subject, text)
+    const result = await sendEmail(
+      to,
+      SUBMITTED_TEMPLATE.subject,
+      SUBMITTED_TEMPLATE.text({ name, programLabel })
+    )
     return json(200, { sent: true, to, status: newStatus, resendId: result.id })
   } catch (err: any) {
     console.error('send-status-email error', err)

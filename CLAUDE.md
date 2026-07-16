@@ -172,7 +172,8 @@ docs/                   ← Guides, SQL migrations, AI context
 
 - [ ] **Run Supabase migration** for `draft` status — `docs/sql/migrations/2026-05-24_add_draft_status.sql`, guide at `docs/supabase-migration-guide.md`. New form submissions will fail at the DB CHECK constraint until this is run.
 - [ ] **Run Supabase migration** for `portfolio-project` program support — `docs/sql/migrations/2026-07-13_add_portfolio_project_program.sql`. New Portfolio Project submissions will fail at the DB CHECK constraint until this is run.
+- [ ] **Run Supabase migration** for interview scheduling metadata — `docs/sql/migrations/2026-07-14_add_interview_scheduling_fields.sql`. Calendly interview automation relies on these columns.
 - [ ] Admin panel (`pages/admin/index.jsx`, `components/admin/ApplicationTable.jsx`, `components/admin/ApplicationDetail.jsx`, `pages/api/admin/update-status.js`) — should reuse `lib/forms/schema.js` to render application details
-- [ ] Status-change email notifications (Supabase Edge Functions — code written, needs Resend + DNS setup)
+- [ ] Email automations external setup — submission confirmation + interview scheduling code are written, but Resend / Supabase / Calendly secrets and webhooks still need to be configured in the dashboards
 - [ ] Conditional form logic / auto-classification rules (deferred — needs rule spec)
 - [ ] File uploads (transcripts, portfolios) — Supabase Storage hookups not built
