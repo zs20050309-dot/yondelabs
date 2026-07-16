@@ -38,11 +38,12 @@ export async function proxy(req) {
   }
 
   if (AUTH_ROUTES.includes(pathname) && session) {
-    return NextResponse.redirect(new URL('/dashboard', req.url))
+    const role = session.user.app_metadata?.role || session.user.user_metadata?.role
+    return NextResponse.redirect(new URL(role === 'admin' ? '/admin' : '/dashboard', req.url))
   }
 
   if (pathname.startsWith('/admin') && session) {
-    const role = session.user.user_metadata?.role
+    const role = session.user.app_metadata?.role || session.user.user_metadata?.role
     if (role !== 'admin') {
       return NextResponse.redirect(new URL('/dashboard', req.url))
     }

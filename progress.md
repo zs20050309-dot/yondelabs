@@ -1792,3 +1792,40 @@ User requested a second automation flow for interviews:
 ### Verification
 - `npm.cmd run build`
 - Result: build passed successfully with all current routes generated.
+## Session: 2026-07-16 - Admin application progress MVP
+
+### Background
+User requested the first admin implementation for viewing student applications and moving students through application stages. Progress-time calculations were explicitly deferred to a later phase.
+
+### Files created
+- `pages/admin/index.jsx` - newest-first all-applications dashboard with search, stage filters, summary counts, profile access, and stage actions.
+- `components/admin/ApplicationDetail.jsx` - student application profile, schema-driven form answers, stage timeline, archive, restore, and advance actions.
+- `lib/admin/stages.js` - shared admin stage, program, label, and applicant display helpers.
+- `styles/admin.module.css` - minimal responsive admissions dashboard styling.
+- `docs/sql/migrations/2026-07-16_add_admin_application_progress.sql` - stage history, admin read policies, existing-record backfill, and transactional stage movement RPC.
+- `YONDE_ADMIN.md` - admin-specific architecture, conventions, setup, and handoff documentation.
+
+### Files modified
+- `pages/login.jsx` - redirects authenticated admin users to `/admin` after login.
+- `proxy.js` - prefers protected `app_metadata.role` while retaining the existing `user_metadata.role` fallback.
+- `progress.md` - this log entry.
+
+### Behavior
+- Admins can see every submitted application on one page.
+- Admins can inspect the complete application form using the existing form schema.
+- Admins can move applications from submitted to interview and from interview to offer.
+- Admins can archive an application or restore it to submitted.
+- Every status change is recorded with timestamp and acting admin.
+- Existing student dashboard statuses and interview automation remain compatible.
+
+### Required setup
+- Run `docs/sql/migrations/2026-07-16_add_admin_application_progress.sql` in Supabase before opening the admin dashboard.
+- Prefer setting admin roles in Supabase `app_metadata`; the old user metadata role remains temporarily supported.
+
+### Deferred
+- Days-since-last-action calculations and stale-progress highlighting.
+- Joined/completed workflow, mentor assignments, hour tracking, and profile PDF.
+
+### Verification
+- `npm.cmd run build`
+- Result: passed successfully; Next.js generated the new `/admin` route.

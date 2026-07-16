@@ -53,9 +53,9 @@ export default function Login() {
         return
       }
 
-      const role = data.user.user_metadata?.role
+      const role = data.user.app_metadata?.role || data.user.user_metadata?.role
       if (role === 'admin') {
-        router.replace('/dashboard')
+        router.replace('/admin')
         return
       }
 
