@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { getSchema } from '../../lib/forms/schema'
+import { supabase } from '../../lib/supabaseClient'
 import {
   ADMIN_STAGES,
   NEXT_STATUS,
@@ -30,10 +32,43 @@ function displayValue(value) {
 }
 
 export default function ApplicationDetail({ application, history, moving, onMove, onClose }) {
+  const [downloading, setDownloading] = useState(false)
+  const [downloadError, setDownloadError] = useState('')
   if (!application) return null
 
   const schema = getSchema(application.program)
   const nextStatus = NEXT_STATUS[application.status]
+
+  async function downloadPdf() {
+    setDownloading(true)
+    setDownloadError('')
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) throw new Error('Please sign in again.')
+      const response = await fetch(`/api/admin/applications/${application.id}/pdf`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}))
+        throw new Error(body.error || 'PDF download failed.')
+      }
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const disposition = response.headers.get('content-disposition') || ''
+      const filename = disposition.match(/filename="([^"]+)"/)?.[1] || 'application.pdf'
+      const link = document.createElement('a')
+      link.href = url
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      setDownloadError(error.message || 'PDF download failed.')
+    } finally {
+      setDownloading(false)
+    }
+  }
 
   return (
     <aside className={styles.detailPanel} aria-label="Application details">
@@ -53,6 +88,17 @@ export default function ApplicationDetail({ application, history, moving, onMove
         <div><span>Submitted</span><strong>{formatDate(application.submitted_at)}</strong></div>
         <div><span>Current stage</span><strong>{STATUS_LABELS[application.status] || application.status}</strong></div>
       </div>
+
+      <div className={styles.documentActions}>
+        <div>
+          <strong>Submitted application PDF</strong>
+          <span>A copy is automatically emailed to Ashlyn after submission.</span>
+        </div>
+        <button type="button" className={styles.secondaryButton} disabled={downloading} onClick={downloadPdf}>
+          {downloading ? 'Preparing PDF...' : 'Download PDF'}
+        </button>
+      </div>
+      {downloadError ? <div className={styles.inlineError}>{downloadError}</div> : null}
 
       <section className={styles.detailSection}>
         <div className={styles.sectionHeading}>
@@ -141,4 +187,3 @@ export default function ApplicationDetail({ application, history, moving, onMove
     </aside>
   )
 }
-

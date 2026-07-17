@@ -22,7 +22,9 @@ Do not create a second repository or a separate frontend for the admissions work
 ```text
 pages/admin/index.jsx                         Admin dashboard
 components/admin/ApplicationDetail.jsx       Profile, progress, and form answers
+pages/api/admin/applications/[id]/pdf.js      Protected PDF download endpoint
 styles/admin.module.css                      Admin-only minimal UI
+lib/admin/applicationPdf.js                   Schema-driven PDF generator
 lib/admin/stages.js                          Stage, program, and label definitions
 docs/sql/migrations/2026-07-16_add_admin_application_progress.sql
                                                History table, policies, and stage RPC
@@ -43,6 +45,8 @@ pages/login.jsx                               Admin login redirect
 - Restores archived applications to `submitted`.
 - Records every move in `application_stage_history`.
 - Shows the date and time each recorded stage was completed.
+- Downloads a formatted PDF of any submitted application.
+- Automatically emails each submitted application PDF to `ashlyndong@gmail.com`.
 
 ## Stage Contract
 
@@ -89,6 +93,17 @@ Stage movement must use the `advance_application_stage` RPC. Do not update `appl
 
 Programs without a local schema fall back to rendering the raw `form_data` keys.
 
+## Application PDFs
+
+The admin download endpoint verifies the Supabase access token and admin role before loading an application. It generates the PDF in memory and returns it with `Cache-Control: private, no-store`; PDFs are not saved publicly or persisted in the database.
+
+The `send-status-email` Supabase Edge Function also generates a PDF when an application is inserted as `submitted` or changes from `draft` to `submitted`. It sends:
+
+1. the existing confirmation email to the student, when the form email is valid
+2. a separate internal email with the PDF attachment to `ashlyndong@gmail.com`
+
+The internal PDF email is still sent when the student's email is missing or malformed. Redeploy `send-status-email` in Supabase after changing the function. No new secret is required.
+
 ## Authentication and Authorization
 
 The route middleware and UI accept the admin role from:
@@ -123,7 +138,6 @@ It does not deploy automatically when the frontend is pushed.
 - Completed/joined program category and final enrollment stage
 - Mentor directory and student assignments
 - Allocated, used, and remaining mentoring hours
-- Student profile PDF download
 - Internal notes and archive reasons
 - Bulk actions and exports
 

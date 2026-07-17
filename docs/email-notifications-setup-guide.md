@@ -1,11 +1,12 @@
-# Email Notifications Setup Guide
+# Submission Confirmation and Application PDF Setup
 
-**Feature:** Submission confirmation emails only. Students get one email when we first receive their application.
+**Feature:** Students get one confirmation email, and Ashlyn receives the submitted application as a PDF.
 
 **Stack:** Resend + Supabase Edge Function + Supabase Database Webhook / trigger.
 
 **What this version does**
 - Sends an email when an application is first received.
+- Generates the completed application PDF and emails it to `ashlyndong@gmail.com`.
 - Works for all programs in the `applications` table.
 - Does **not** send interview / offer / rejected emails.
 
@@ -17,6 +18,8 @@ The `send-status-email` Edge Function sends an email only when one of these happ
 
 1. a row is inserted into `applications` with `status = 'submitted'`
 2. a row is updated from `draft` to `submitted`
+
+For the same event, the function sends a separate internal email with the PDF attachment to `ashlyndong@gmail.com`. The internal email is still sent if the student's form email is missing or malformed.
 
 It will skip:
 - draft autosaves

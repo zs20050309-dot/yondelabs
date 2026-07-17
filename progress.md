@@ -1829,3 +1829,37 @@ User requested the first admin implementation for viewing student applications a
 ### Verification
 - `npm.cmd run build`
 - Result: passed successfully; Next.js generated the new `/admin` route.
+## Session: 2026-07-17 - Application PDF download and automatic email
+
+### Background
+User requested a downloadable PDF for each submitted form in the admin dashboard and automatic PDF delivery to `ashlyndong@gmail.com` immediately after submission.
+
+### Files created
+- `lib/admin/applicationPdf.js` - schema-driven, multi-page application PDF generator with wrapped answers, metadata, footers, and page numbers.
+- `pages/api/admin/applications/[id]/pdf.js` - admin-authenticated PDF download endpoint using the caller's Supabase session and RLS.
+
+### Files modified
+- `components/admin/ApplicationDetail.jsx` - adds the Download PDF action.
+- `styles/admin.module.css` - styles the PDF document action.
+- `supabase/functions/send-status-email/index.ts` - generates a PDF and sends it as a separate Resend attachment to `ashlyndong@gmail.com` for every submission event.
+- `docs/email-notifications-setup-guide.md` - documents automatic internal PDF delivery.
+- `YONDE_ADMIN.md` - documents PDF security, download behavior, and Edge Function redeployment.
+- `package.json` / `package-lock.json` - add `pdf-lib`.
+- `progress.md` - this log entry.
+
+### Behavior
+- Admins can download a student's submitted form as a PDF from the profile drawer.
+- Each new submission automatically sends the PDF to `ashlyndong@gmail.com`.
+- Student confirmation remains a separate email.
+- Internal PDF delivery still occurs if the student's email is missing or invalid.
+- Generated PDFs are kept in memory and are not exposed through public storage.
+
+### Required external setup
+- Redeploy the updated `send-status-email` Supabase Edge Function.
+- Keep the existing `RESEND_API_KEY`, `FROM_EMAIL`, and `WEBHOOK_SECRET` secrets configured.
+
+### Verification
+- Generated a representative three-page RA application PDF.
+- Rendered every page to PNG and visually checked spacing, wrapping, page breaks, and footers.
+- Result: no clipped text, overlaps, broken sections, or unreadable content.
+- `npm.cmd run build` passed with the new dynamic PDF endpoint.
