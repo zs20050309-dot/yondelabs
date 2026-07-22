@@ -10,6 +10,7 @@ import {
   studentName,
 } from '../../lib/admin/stages'
 import styles from '../../styles/admin.module.css'
+import StudentCourseHours from './StudentCourseHours'
 
 function formatDate(value, includeTime = false) {
   if (!value) return '—'
@@ -99,6 +100,8 @@ export default function ApplicationDetail({ application, history, moving, onMove
         </button>
       </div>
       {downloadError ? <div className={styles.inlineError}>{downloadError}</div> : null}
+
+      <StudentCourseHours application={application} />
 
       <section className={styles.detailSection}>
         <div className={styles.sectionHeading}>

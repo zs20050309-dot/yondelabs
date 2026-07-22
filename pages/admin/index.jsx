@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
 import ApplicationDetail from '../../components/admin/ApplicationDetail'
+import CoursePlanManager from '../../components/admin/CoursePlanManager'
 import { supabase } from '../../lib/supabaseClient'
 import {
   NEXT_STATUS,
@@ -11,6 +12,7 @@ import {
   studentName,
 } from '../../lib/admin/stages'
 import styles from '../../styles/admin.module.css'
+import { formatHours, sumMinutes } from '../../lib/courseHours'
 
 function formatDate(value) {
   if (!value) return '—'
@@ -30,10 +32,11 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [movingId, setMovingId] = useState(null)
   const [error, setError] = useState('')
+  const [showCoursePlans, setShowCoursePlans] = useState(false)
 
   const loadApplications = useCallback(async () => {
     const [applicationsResult, historyResult] = await Promise.all([
-      supabase.from('applications').select('*').neq('status', 'draft').order('submitted_at', { ascending: false }),
+      supabase.from('applications').select('*, student_course_enrollments(id, allocated_minutes, status, created_at, class_sessions(duration_minutes))').neq('status', 'draft').order('submitted_at', { ascending: false }),
       supabase.from('application_stage_history').select('*').order('changed_at', { ascending: true }),
     ])
 
@@ -127,6 +130,7 @@ export default function AdminDashboard() {
       <main className={styles.main}>
         <div className={styles.titleRow}>
           <div><span className={styles.eyebrow}>Admissions</span><h1>Student applications</h1><p>Review new profiles and move students through each application stage.</p></div>
+          <button type="button" className={styles.primaryButton} onClick={() => setShowCoursePlans(true)}>Manage course plans</button>
         </div>
 
         <section className={styles.stats} aria-label="Application summary">
@@ -152,16 +156,19 @@ export default function AdminDashboard() {
 
           <div className={styles.tableWrap}>
             <table>
-              <thead><tr><th>Student</th><th>Program</th><th>Submitted</th><th>Stage</th><th><span className={styles.srOnly}>Actions</span></th></tr></thead>
+              <thead><tr><th>Student</th><th>Program</th><th>Submitted</th><th>Stage</th><th>Course hours</th><th><span className={styles.srOnly}>Actions</span></th></tr></thead>
               <tbody>
                 {filtered.map((application) => {
                   const nextStatus = NEXT_STATUS[application.status]
+                  const enrollment = [...(application.student_course_enrollments || [])].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]
+                  const usedMinutes = sumMinutes(enrollment?.class_sessions)
                   return (
                     <tr key={application.id}>
                       <td><button type="button" className={styles.studentLink} onClick={() => setSelectedId(application.id)}><strong>{studentName(application)}</strong><span>{studentEmail(application)}</span></button></td>
                       <td>{PROGRAM_LABELS[application.program] || application.program}</td>
                       <td>{formatDate(application.submitted_at)}</td>
                       <td><span className={`${styles.status} ${styles[`status_${application.status}`]}`}>{STATUS_LABELS[application.status] || application.status}</span></td>
+                      <td>{enrollment ? <span className={styles.courseHoursCell}><strong>{formatHours(usedMinutes)}</strong><span> / {formatHours(enrollment.allocated_minutes)}</span></span> : <span className={styles.noCourse}>Not assigned</span>}</td>
                       <td className={styles.rowActions}>
                         <button type="button" className={styles.viewButton} onClick={() => setSelectedId(application.id)}>View profile</button>
                         {nextStatus ? <button type="button" className={styles.moveButton} disabled={movingId === application.id} onClick={() => moveApplication(application, nextStatus)}>{movingId === application.id ? 'Updating…' : `Move to ${STATUS_LABELS[nextStatus]}`}</button> : null}
@@ -177,7 +184,7 @@ export default function AdminDashboard() {
       </main>
 
       {selected ? <><button type="button" className={styles.backdrop} onClick={() => setSelectedId(null)} aria-label="Close profile" /><ApplicationDetail application={selected} history={selectedHistory} moving={movingId === selected.id} onMove={moveApplication} onClose={() => setSelectedId(null)} /></> : null}
+      {showCoursePlans ? <><button type="button" className={styles.backdrop} onClick={() => setShowCoursePlans(false)} aria-label="Close course plans" /><CoursePlanManager onClose={() => setShowCoursePlans(false)} /></> : null}
     </div>
   )
 }
-

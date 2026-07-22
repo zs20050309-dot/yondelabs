@@ -1,0 +1,97 @@
+.eyebrow { color: #2541b2; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.studentCard { margin-top: 22px; border: 1px solid #e1e6ed; border-radius: 14px; background: #fff; padding: 28px; box-shadow: 0 8px 22px rgba(15, 31, 64, .05); }
+.studentHeader { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.studentHeader h2 { margin-top: 6px; color: #13213b; font-size: 22px; }
+.studentHeader p { margin-top: 7px; color: #6c778b; font-size: 13px; line-height: 1.5; }
+.enrollmentStatus { border-radius: 99px; background: #edf2ff; color: #2541b2; padding: 6px 10px; font-size: 11px; font-weight: 700; text-transform: capitalize; }
+.hourStats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 24px; }
+.hourStats div { border-radius: 10px; background: #f6f8fb; padding: 15px; }
+.hourStats span, .hourStats strong { display: block; }
+.hourStats span { color: #778297; font-size: 11px; }
+.hourStats strong { margin-top: 5px; color: #17233a; font-size: 20px; }
+.progressTrack { height: 8px; margin-top: 20px; overflow: hidden; border-radius: 99px; background: #e6eaf0; }
+.progressTrack span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #2541b2, #06bee1); }
+.progressCaption { display: flex; justify-content: space-between; margin-top: 7px; color: #7b8597; font-size: 11px; }
+.studentColumns { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 28px; padding-top: 24px; border-top: 1px solid #e9ecf1; }
+.studentColumns h3 { margin-bottom: 13px; color: #1b2942; font-size: 14px; }
+.moduleList, .sessionList { display: grid; gap: 8px; }
+.moduleRow, .sessionRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid #e8ebf0; border-radius: 9px; padding: 11px 12px; }
+.moduleRow div strong, .moduleRow div span, .sessionRow div strong, .sessionRow div span { display: block; }
+.moduleRow strong, .sessionRow strong { color: #28354b; font-size: 12px; }
+.moduleRow span, .sessionRow span { color: #7a8598; font-size: 10px; }
+.moduleRow div span, .sessionRow div span { margin-top: 4px; }
+.emptyText { color: #7a8598; font-size: 12px; }
+@media (max-width: 720px) {
+  .studentCard { padding: 21px; }
+  .hourStats { grid-template-columns: 1fr; }
+  .studentColumns { grid-template-columns: 1fr; }
+}
+.adminCourseSection { margin: 4px 0 24px; border: 1px solid #dfe5ee; border-radius: 11px; background: #f9fafc; padding: 18px; }
+.adminSectionHeader { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+.adminSectionHeader h3 { margin-top: 5px; color: #1b2942; font-size: 18px; }
+.adminError { margin: 12px 0; border: 1px solid #efc9cc; border-radius: 8px; background: #fff3f4; color: #962d35; padding: 10px 12px; font-size: 11px; }
+.assignmentForm, .sessionForm, .compactForm { display: grid; gap: 12px; margin-top: 16px; }
+.assignmentForm { grid-template-columns: 2fr 1fr 1fr auto; align-items: end; }
+.assignmentForm p { grid-column: 1 / -1; color: #748095; font-size: 12px; }
+.assignmentForm label, .sessionForm label, .compactForm label, .allocationEditor label { color: #6d788b; font-size: 10px; font-weight: 700; }
+.assignmentForm input, .assignmentForm select, .sessionForm input, .sessionForm select, .sessionForm textarea, .compactForm input, .compactForm textarea, .allocationEditor input, .moduleForm input, .editableModule input { width: 100%; margin-top: 5px; border: 1px solid #d6dde7; border-radius: 7px; background: #fff; padding: 9px 10px; color: #243148; font: inherit; font-size: 12px; }
+.assignmentForm button, .sessionForm button, .compactForm button, .moduleForm button, .allocationEditor button, .editableModule button { border: 1px solid #2541b2; border-radius: 7px; background: #2541b2; color: #fff; cursor: pointer; padding: 9px 11px; font: inherit; font-size: 11px; font-weight: 700; }
+.adminHourSummary { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 9px; margin-top: 15px; }
+.adminHourSummary div { border-radius: 8px; background: #fff; padding: 11px; }
+.adminHourSummary span, .adminHourSummary strong { display: block; }
+.adminHourSummary span { color: #7a8598; font-size: 10px; }
+.adminHourSummary strong { margin-top: 4px; color: #253148; font-size: 13px; }
+.allocationEditor { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+.allocationEditor label { width: 125px; }
+.allocationEditor button { border-color: #ccd4df; background: #fff; color: #465268; }
+.sessionForm { grid-template-columns: 1.2fr 1.5fr .7fr; margin-top: 20px; padding-top: 17px; border-top: 1px solid #e1e6ed; }
+.sessionForm h4 { grid-column: 1 / -1; color: #253148; font-size: 13px; }
+.notesField { grid-column: 1 / -1; }
+.sessionForm > button { justify-self: start; }
+.adminSessionList { display: grid; gap: 7px; margin-top: 16px; }
+.adminSessionList > div { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 12px; border-top: 1px solid #e2e7ee; padding-top: 9px; }
+.adminSessionList div div strong, .adminSessionList div div span { display: block; }
+.adminSessionList strong { color: #2d394e; font-size: 11px; }
+.adminSessionList span, .adminSessionList p { margin-top: 3px; color: #7a8598; font-size: 10px; }
+.adminSessionList button, .textButton, .closeButton { border: 0; background: transparent; color: #6b7689; cursor: pointer; font: inherit; font-size: 11px; }
+.managerPanel { position: fixed; z-index: 21; inset: 4vh 4vw; overflow: auto; border-radius: 15px; background: #fff; box-shadow: 0 22px 60px rgba(15, 29, 54, .22); padding: 27px; }
+.managerHeader { display: flex; justify-content: space-between; gap: 20px; padding-bottom: 20px; border-bottom: 1px solid #e6eaf0; }
+.managerHeader h2 { margin-top: 5px; color: #18263f; font-size: 26px; }
+.managerHeader p { margin-top: 5px; color: #748095; font-size: 12px; }
+.closeButton { align-self: flex-start; font-size: 28px; line-height: 1; }
+.managerGrid { display: grid; grid-template-columns: 280px 1fr; min-height: 520px; margin-top: 20px; border: 1px solid #e1e6ed; border-radius: 11px; overflow: hidden; }
+.planSidebar { border-right: 1px solid #e1e6ed; background: #f8f9fb; padding: 17px; }
+.compactForm { margin-top: 0; padding-bottom: 17px; border-bottom: 1px solid #dfe4eb; }
+.compactForm h3 { color: #253148; font-size: 13px; }
+.planList { display: grid; gap: 6px; margin-top: 15px; }
+.planList > button { border: 1px solid transparent; border-radius: 8px; background: transparent; cursor: pointer; padding: 10px; text-align: left; }
+.planList strong, .planList span { display: block; }
+.planList strong { color: #2b374c; font-size: 12px; }
+.planList span { margin-top: 4px; color: #7a8598; font-size: 10px; }
+.planSelected { border-color: #cdd8ff !important; background: #edf2ff !important; }
+.planEditor { padding: 24px; }
+.planEditorHeader { display: flex; justify-content: space-between; gap: 20px; }
+.planEditorHeader h3 { color: #17233a; font-size: 21px; }
+.planEditorHeader p { margin-top: 6px; color: #748095; font-size: 12px; }
+.planEditorHeader > div:last-child { text-align: right; }
+.planEditorHeader > div:last-child strong, .planEditorHeader > div:last-child span { display: block; }
+.planEditorHeader > div:last-child strong { color: #2541b2; font-size: 19px; }
+.planEditorHeader > div:last-child span { color: #7a8598; font-size: 10px; }
+.textButton { margin-top: 8px; padding: 0; }
+.editableModules { display: grid; gap: 7px; margin-top: 25px; }
+.editableModule { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 8px; border: 1px solid #e2e7ee; border-radius: 8px; padding: 10px 12px; }
+.editableModule div strong, .editableModule div span { display: block; }
+.editableModule div strong { color: #2a374c; font-size: 12px; }
+.editableModule div span { margin-top: 3px; color: #7b8698; font-size: 10px; }
+.editableModule input:nth-child(2) { width: 90px; }
+.editableModule .dangerText { border-color: transparent; background: transparent; color: #a33b43; }
+.moduleForm { display: grid; grid-template-columns: 1fr 110px auto; gap: 8px; margin-top: 14px; }
+.managerEmpty { display: grid; min-height: 400px; place-items: center; color: #7b8698; font-size: 12px; }
+@media (max-width: 850px) {
+  .managerPanel { inset: 2vh 2vw; padding: 18px; }
+  .managerGrid { grid-template-columns: 1fr; }
+  .planSidebar { border-right: 0; border-bottom: 1px solid #e1e6ed; }
+  .assignmentForm, .sessionForm { grid-template-columns: 1fr; }
+  .assignmentForm p, .sessionForm h4, .notesField { grid-column: auto; }
+  .adminHourSummary { grid-template-columns: 1fr; }
+}

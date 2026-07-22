@@ -1863,3 +1863,40 @@ User requested a downloadable PDF for each submitted form in the admin dashboard
 - Rendered every page to PNG and visually checked spacing, wrapping, page breaks, and footers.
 - Result: no clipped text, overlaps, broken sections, or unreadable content.
 - `npm.cmd run build` passed with the new dynamic PDF endpoint.
+## Session: 2026-07-22 - Course plans and student hour tracking
+
+### Background
+User requested customizable course plans made of modules, admin-managed class-hour entries with dates and times, and a read-only student portal section showing course-hour usage.
+
+### Files created
+- `docs/sql/migrations/2026-07-22_add_course_hours_tracking.sql` - course plans, modules, enrollments, class sessions, indexes, and admin/student RLS policies.
+- `lib/courseHours.js` - shared hour/minute conversions and total calculations.
+- `components/admin/CoursePlanManager.jsx` - create plans, add/edit/delete modules, configure planned hours, and archive plans.
+- `components/admin/StudentCourseHours.jsx` - assign plans, customize allocations, log/delete dated classes, and manage enrollment status.
+- `components/portal/CourseHours.jsx` - student-facing allocated/used/remaining hours, modules, progress, and class history.
+- `styles/courseHours.module.css` - responsive shared course-hours UI.
+
+### Files modified
+- `pages/admin/index.jsx` - adds course-plan management and all-student hour summaries.
+- `components/admin/ApplicationDetail.jsx` - adds course assignment and class logging to student profiles.
+- `pages/dashboard.jsx` - adds the read-only Course Hours section for enrolled students.
+- `styles/admin.module.css` - adds course-plan entry-point and hours-table styling.
+- `YONDE_ADMIN.md` - documents the data model, admin workflow, student behavior, setup, and verification.
+- `progress.md` - this entry.
+
+### Behavior
+- Admins build reusable course plans with custom modules and expected hours.
+- Each student enrollment can override the total allocated hours.
+- Every completed class records module, date/time, duration, notes, and acting admin.
+- Used hours are derived from immutable class entries rather than a manually maintained total.
+- Students see course information only after an admin assigns a plan.
+- Students can read only their own course records; admin RLS controls all writes.
+
+### Required setup
+- Run `docs/sql/migrations/2026-07-22_add_course_hours_tracking.sql` in the Supabase SQL Editor after the 2026-07-16 admin migration.
+
+### Verification
+- `npm.cmd run build`
+- Result: passed successfully with `/admin`, `/dashboard`, and the existing PDF endpoint generated.
+- `git diff --check`
+- Result: passed with no whitespace errors.

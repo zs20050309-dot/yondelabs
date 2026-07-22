@@ -22,12 +22,19 @@ Do not create a second repository or a separate frontend for the admissions work
 ```text
 pages/admin/index.jsx                         Admin dashboard
 components/admin/ApplicationDetail.jsx       Profile, progress, and form answers
+components/admin/CoursePlanManager.jsx       Reusable plans and module hours
+components/admin/StudentCourseHours.jsx      Assignment and class logging
+components/portal/CourseHours.jsx            Student read-only hours section
 pages/api/admin/applications/[id]/pdf.js      Protected PDF download endpoint
 styles/admin.module.css                      Admin-only minimal UI
+styles/courseHours.module.css                 Shared course-hours portal UI
 lib/admin/applicationPdf.js                   Schema-driven PDF generator
 lib/admin/stages.js                          Stage, program, and label definitions
+lib/courseHours.js                            Minute conversion and total helpers
 docs/sql/migrations/2026-07-16_add_admin_application_progress.sql
                                                History table, policies, and stage RPC
+docs/sql/migrations/2026-07-22_add_course_hours_tracking.sql
+                                               Plans, modules, enrollments, sessions, RLS
 proxy.js                                      Admin route protection
 pages/login.jsx                               Admin login redirect
 ```
@@ -47,6 +54,11 @@ pages/login.jsx                               Admin login redirect
 - Shows the date and time each recorded stage was completed.
 - Downloads a formatted PDF of any submitted application.
 - Automatically emails each submitted application PDF to `ashlyndong@gmail.com`.
+- Creates reusable course plans with custom modules and planned hours.
+- Assigns a plan and custom total-hour allocation to a student.
+- Logs each completed class by module, date/time, duration, and notes.
+- Shows used and allocated hours for every assigned student in the main table.
+- Lets students see allocated, used, remaining, module, and class-history details.
 
 ## Stage Contract
 
@@ -132,12 +144,52 @@ The migration:
 
 It does not deploy automatically when the frontend is pushed.
 
+## Course Plans and Hours
+
+Run this migration after the admin progress migration:
+
+```text
+docs/sql/migrations/2026-07-22_add_course_hours_tracking.sql
+```
+
+The course-hours model has four tables:
+
+```text
+course_plans                  Reusable course definition
+course_modules                Ordered modules and planned minutes
+student_course_enrollments    Student assignment and allocated minutes
+class_sessions                Dated class usage entries
+```
+
+Time is stored as integer minutes to prevent decimal rounding problems. The portal converts minutes into hours for display.
+
+### Admin workflow
+
+1. Open `/admin` and select **Manage course plans**.
+2. Create a plan, then add modules and expected hours.
+3. Open a student's profile and assign the plan with an allocation and start date.
+4. After every class, select the module and record the class date/time, hours used, and notes.
+5. Correct a mistake by deleting the class entry and adding it again.
+6. Pause, resume, or complete the student's course enrollment as needed.
+
+### Student behavior
+
+The student dashboard shows no course section until an enrollment exists. Once assigned, it displays:
+
+- total allocated hours
+- hours used from class-session entries
+- remaining hours
+- overall usage percentage
+- planned and used hours by module
+- dated class history
+
+Students have read-only RLS access to their own enrollment, assigned plan/modules, and sessions. Only admins can create or modify these records.
+
 ## Deferred Admin Work
 
 - Days since last action / progress time checks
 - Completed/joined program category and final enrollment stage
 - Mentor directory and student assignments
-- Allocated, used, and remaining mentoring hours
 - Internal notes and archive reasons
 - Bulk actions and exports
 
@@ -151,6 +203,7 @@ For every admin change:
 2. Confirm a non-admin cannot access `/admin`.
 3. Confirm an admin can list all non-draft applications.
 4. Move a test application and confirm both `applications.status` and `application_stage_history` change.
-5. Confirm moving to `interview` still triggers the existing interview workflow after its external webhook seltup is complete.
-
-h jg h
+5. Confirm moving to `interview` still triggers the existing interview workflow after its external webhook setup is complete.
+6. Create a course plan and confirm its module total is correct.
+7. Assign the plan to a test student and log a class.
+8. Confirm the admin table and student dashboard show the same used-hour total.
