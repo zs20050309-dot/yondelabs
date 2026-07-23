@@ -17,6 +17,7 @@ export default function StudentCourseHours({ application }) {
   const [plans, setPlans] = useState([])
   const [enrollment, setEnrollment] = useState(null)
   const [sessions, setSessions] = useState([])
+  const [milestoneProgress, setMilestoneProgress] = useState([])
   const [planId, setPlanId] = useState('')
   const [allocatedHours, setAllocatedHours] = useState('')
   const [startDate, setStartDate] = useState(new Date().toISOString().slice(0, 10))
@@ -29,11 +30,11 @@ export default function StudentCourseHours({ application }) {
 
   async function load() {
     const [plansResult, enrollmentResult] = await Promise.all([
-      supabase.from('course_plans').select('*, course_modules(*)').eq('active', true).order('created_at', { ascending: false }),
-      supabase.from('student_course_enrollments').select('*, course_plans(*, course_modules(*))').eq('application_id', application.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+      supabase.from('course_plans').select('*, course_modules(*), course_milestones(*)').eq('active', true).order('created_at', { ascending: false }),
+      supabase.from('student_course_enrollments').select('*, course_plans(*, course_modules(*), course_milestones(*))').eq('application_id', application.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
     ])
     if (plansResult.error || enrollmentResult.error) {
-      setError('Course hours are unavailable until the course-hours migration is applied.')
+      setError('Course hours or milestones are unavailable. Run the 2026-07-22 and 2026-07-23 course migrations.')
       return
     }
     setPlans(plansResult.data || [])
@@ -41,10 +42,15 @@ export default function StudentCourseHours({ application }) {
     setEnrollment(current)
     if (current) {
       setAllocatedHours(String(current.allocated_minutes / 60))
-      const sessionsResult = await supabase.from('class_sessions').select('*, course_modules(title)').eq('enrollment_id', current.id).order('session_at', { ascending: false })
+      const [sessionsResult, progressResult] = await Promise.all([
+        supabase.from('class_sessions').select('*, course_modules(title)').eq('enrollment_id', current.id).order('session_at', { ascending: false }),
+        supabase.from('student_milestone_progress').select('*').eq('enrollment_id', current.id),
+      ])
       setSessions(sessionsResult.data || [])
+      setMilestoneProgress(progressResult.data || [])
     } else {
       setSessions([])
+      setMilestoneProgress([])
     }
   }
 
@@ -52,7 +58,11 @@ export default function StudentCourseHours({ application }) {
 
   const selectedPlan = plans.find((plan) => plan.id === planId)
   const modules = enrollment?.course_plans?.course_modules || []
+  const milestones = [...(enrollment?.course_plans?.course_milestones || [])].sort((a, b) => a.sort_order - b.sort_order)
   const usedMinutes = useMemo(() => sumMinutes(sessions), [sessions])
+  const allowsOverage = Boolean(enrollment?.course_plans?.allow_overage)
+  const additionalMinutes = enrollment ? Math.max(usedMinutes - enrollment.allocated_minutes, 0) : 0
+  const milestoneProgressMap = new Map(milestoneProgress.map((item) => [item.milestone_id, item]))
 
   function choosePlan(value) {
     setPlanId(value)
@@ -120,6 +130,19 @@ export default function StudentCourseHours({ application }) {
     setBusy(false)
   }
 
+  async function updateMilestone(milestoneId, status) {
+    setBusy(true)
+    setError('')
+    const { error: updateError } = await supabase.rpc('set_student_milestone_status', {
+      p_enrollment_id: enrollment.id,
+      p_milestone_id: milestoneId,
+      p_status: status,
+    })
+    if (updateError) setError(updateError.message)
+    else await load()
+    setBusy(false)
+  }
+
   async function setEnrollmentStatus(status) {
     setBusy(true)
     const { error: updateError } = await supabase.from('student_course_enrollments').update({
@@ -139,7 +162,7 @@ export default function StudentCourseHours({ application }) {
         <form className={styles.assignmentForm} onSubmit={assignCourse}>
           <p>Assign a course plan when this student joins a program.</p>
           <label>Course plan<select value={planId} onChange={(event) => choosePlan(event.target.value)} required><option value="">Choose a plan</option>{plans.map((plan) => <option key={plan.id} value={plan.id}>{plan.name}</option>)}</select></label>
-          <label>Total allocated hours<input type="number" min="0.25" step="0.25" value={allocatedHours} onChange={(event) => setAllocatedHours(event.target.value)} required /></label>
+          <label>{selectedPlan?.allow_overage ? 'Minimum required hours' : 'Total allocated hours'}<input type="number" min="0.25" step="0.25" value={allocatedHours} onChange={(event) => setAllocatedHours(event.target.value)} required /></label>
           <label>Start date<input type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} required /></label>
           <button type="submit" disabled={busy || !selectedPlan}>Assign course</button>
         </form>
@@ -147,15 +170,39 @@ export default function StudentCourseHours({ application }) {
         <div className={styles.adminHourSummary}>
           <div><span>Plan</span><strong>{enrollment.course_plans?.name}</strong></div>
           <div><span>Used</span><strong>{formatHours(usedMinutes)}</strong></div>
-          <div><span>Remaining</span><strong>{formatHours(Math.max(enrollment.allocated_minutes - usedMinutes, 0))}</strong></div>
+          <div><span>{allowsOverage && additionalMinutes > 0 ? 'Beyond minimum' : allowsOverage ? 'To minimum' : 'Remaining'}</span><strong>{formatHours(allowsOverage && additionalMinutes > 0 ? additionalMinutes : Math.max(enrollment.allocated_minutes - usedMinutes, 0))}</strong></div>
         </div>
 
+        <div className={styles.policyNotice}><strong>{allowsOverage ? 'Minimum-hours policy' : 'Fixed-hours policy'}</strong><span>{allowsOverage ? `The student may continue beyond ${formatHours(enrollment.allocated_minutes)} until the course work is complete.` : `Class entries are capped at ${formatHours(enrollment.allocated_minutes)}.`}</span></div>
+
         <div className={styles.allocationEditor}>
-          <label>Allocated hours<input type="number" min="0.25" step="0.25" value={allocatedHours} onChange={(event) => setAllocatedHours(event.target.value)} /></label>
+          <label>{allowsOverage ? 'Minimum hours' : 'Allocated hours'}<input type="number" min="0.25" step="0.25" value={allocatedHours} onChange={(event) => setAllocatedHours(event.target.value)} /></label>
           <button type="button" onClick={saveAllocation} disabled={busy}>Save allocation</button>
           <button type="button" onClick={() => setEnrollmentStatus(enrollment.status === 'paused' ? 'active' : 'paused')} disabled={busy}>{enrollment.status === 'paused' ? 'Resume course' : 'Pause course'}</button>
           {enrollment.status !== 'completed' ? <button type="button" onClick={() => setEnrollmentStatus('completed')} disabled={busy}>Mark completed</button> : null}
         </div>
+
+        {milestones.length ? (
+          <div className={styles.adminMilestones}>
+            <div className={styles.editorSubheading}><div><span className={styles.eyebrow}>Student progress</span><h4>Milestone status</h4></div><span>{milestoneProgress.filter((item) => item.status === 'completed').length} / {milestones.length} complete</span></div>
+            <div className={styles.adminMilestoneList}>
+              {milestones.map((milestone, index) => {
+                const progress = milestoneProgressMap.get(milestone.id)
+                return (
+                  <div key={milestone.id}>
+                    <span className={styles.milestoneOrder}>{index + 1}</span>
+                    <div><strong>{milestone.title}</strong>{milestone.description ? <span>{milestone.description}</span> : null}</div>
+                    <select value={progress?.status || 'not_started'} onChange={(event) => updateMilestone(milestone.id, event.target.value)} disabled={busy} aria-label={`${milestone.title} status`}>
+                      <option value="not_started">Not started</option>
+                      <option value="in_progress">In progress</option>
+                      <option value="completed">Completed</option>
+                    </select>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        ) : null}
 
         <form className={styles.sessionForm} onSubmit={logSession}>
           <h4>Log completed class</h4>
@@ -176,4 +223,3 @@ export default function StudentCourseHours({ application }) {
     </section>
   )
 }
-

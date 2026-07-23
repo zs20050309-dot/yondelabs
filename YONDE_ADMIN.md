@@ -35,6 +35,8 @@ docs/sql/migrations/2026-07-16_add_admin_application_progress.sql
                                                History table, policies, and stage RPC
 docs/sql/migrations/2026-07-22_add_course_hours_tracking.sql
                                                Plans, modules, enrollments, sessions, RLS
+docs/sql/migrations/2026-07-23_add_course_milestones_and_minimum_hours.sql
+                                               Overage policy, milestones, limits, RLS
 proxy.js                                      Admin route protection
 pages/login.jsx                               Admin login redirect
 ```
@@ -59,6 +61,8 @@ pages/login.jsx                               Admin login redirect
 - Logs each completed class by module, date/time, duration, and notes.
 - Shows used and allocated hours for every assigned student in the main table.
 - Lets students see allocated, used, remaining, module, and class-history details.
+- Supports either a fixed hour limit or a minimum-hours policy that permits additional classes.
+- Defines ordered milestones per plan and tracks each student's milestone status.
 
 ## Stage Contract
 
@@ -152,25 +156,42 @@ Run this migration after the admin progress migration:
 docs/sql/migrations/2026-07-22_add_course_hours_tracking.sql
 ```
 
-The course-hours model has four tables:
+The course-hours model has six tables:
 
 ```text
 course_plans                  Reusable course definition
 course_modules                Ordered modules and planned minutes
 student_course_enrollments    Student assignment and allocated minutes
 class_sessions                Dated class usage entries
+course_milestones             Ordered progress stages for a plan
+student_milestone_progress    Per-student milestone status
 ```
 
 Time is stored as integer minutes to prevent decimal rounding problems. The portal converts minutes into hours for display.
 
+After the base course-hours migration, run:
+
+```text
+docs/sql/migrations/2026-07-23_add_course_milestones_and_minimum_hours.sql
+```
+
+Each course plan has an `allow_overage` policy:
+
+- **Off:** allocated hours are a hard limit. Database triggers reject class entries that would exceed the allocation.
+- **On:** allocated hours are the minimum requirement. Classes may continue after the minimum until the work and milestones are complete.
+
+The database also prevents lowering a fixed allocation below hours already used and prevents changing an overage plan into a hard-limit plan while a student is already above the minimum.
+
 ### Admin workflow
 
 1. Open `/admin` and select **Manage course plans**.
-2. Create a plan, then add modules and expected hours.
-3. Open a student's profile and assign the plan with an allocation and start date.
-4. After every class, select the module and record the class date/time, hours used, and notes.
-5. Correct a mistake by deleting the class entry and adding it again.
-6. Pause, resume, or complete the student's course enrollment as needed.
+2. Create a plan, choose whether its hours are fixed or a minimum, then add modules and expected hours.
+3. Add ordered milestones such as Research question set, Methodology confirmed, First draft, and Paper completed.
+4. Open a student's profile and assign the plan with an allocation and start date.
+5. Update that student's milestone statuses from Not started to In progress or Completed.
+6. After every class, select the module and record the class date/time, hours used, and notes.
+7. Correct a mistake by deleting the class entry and adding it again.
+8. Pause, resume, or complete the student's course enrollment as needed.
 
 ### Student behavior
 
@@ -182,8 +203,9 @@ The student dashboard shows no course section until an enrollment exists. Once a
 - overall usage percentage
 - planned and used hours by module
 - dated class history
+- current milestone and the full milestone timeline
 
-Students have read-only RLS access to their own enrollment, assigned plan/modules, and sessions. Only admins can create or modify these records.
+Students have read-only RLS access to their own enrollment, assigned plan/modules, sessions, milestones, and milestone progress. Only admins can create or modify these records. The `set_student_milestone_status` RPC also ensures only one milestone is marked In progress at a time.
 
 ## Deferred Admin Work
 
@@ -207,3 +229,6 @@ For every admin change:
 6. Create a course plan and confirm its module total is correct.
 7. Assign the plan to a test student and log a class.
 8. Confirm the admin table and student dashboard show the same used-hour total.
+9. Confirm a fixed-hours plan rejects a class that exceeds the allocation.
+10. Confirm a minimum-hours plan displays additional hours after its minimum is fulfilled.
+11. Update a milestone and confirm the student dashboard shows the new status.

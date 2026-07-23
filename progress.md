@@ -1900,3 +1900,34 @@ User requested customizable course plans made of modules, admin-managed class-ho
 - Result: passed successfully with `/admin`, `/dashboard`, and the existing PDF endpoint generated.
 - `git diff --check`
 - Result: passed with no whitespace errors.
+## Session: 2026-07-23 - Minimum-hours plans and student milestones
+
+### Background
+User requested plans whose hours represent a minimum rather than a hard cap, plus customizable course milestones and a student-visible progress status.
+
+### Files created
+- `docs/sql/migrations/2026-07-23_add_course_milestones_and_minimum_hours.sql` - overage policy, milestone definitions, per-student progress, RLS, and database hour-limit enforcement.
+
+### Files modified
+- `components/admin/CoursePlanManager.jsx` - adds the minimum-hours checkbox, existing-plan policy toggle, and milestone creation/editing/deletion.
+- `components/admin/StudentCourseHours.jsx` - adds policy-aware hour summaries and per-student milestone status controls.
+- `components/portal/CourseHours.jsx` - shows minimum fulfillment, additional hours, current milestone, and the complete milestone timeline.
+- `styles/courseHours.module.css` - adds responsive policy, switch, milestone editor, admin status, and student timeline styles.
+- `YONDE_ADMIN.md` - documents policy behavior, milestone workflow, migration order, and verification.
+- `progress.md` - this entry.
+
+### Behavior
+- Plans default to a fixed allocation and can explicitly allow hours beyond a required minimum.
+- Database triggers enforce the hard limit for fixed plans and validate module/plan relationships.
+- Minimum-hours plans continue accumulating additional hours after reaching 100%.
+- Admins define ordered milestones and set each student's status to Not started, In progress, or Completed.
+- Students see their current milestone, completed count, and full milestone timeline.
+
+### Required setup
+- Run `docs/sql/migrations/2026-07-23_add_course_milestones_and_minimum_hours.sql` after the 2026-07-22 course-hours migration.
+
+### Verification
+- `npm.cmd run build`
+- Result: passed successfully with the updated `/admin` and `/dashboard` experiences.
+- `git diff --check`
+- Result: passed with no whitespace errors.
