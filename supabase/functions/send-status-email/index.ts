@@ -93,12 +93,19 @@ function isValidEmail(value: string): boolean {
 
 type EmailAttachment = { filename: string; content: string }
 
-async function sendEmail(to: string, subject: string, text: string, attachments: EmailAttachment[] = []) {
+async function sendEmail(
+  to: string,
+  subject: string,
+  text: string,
+  attachments: EmailAttachment[] = [],
+  idempotencyKey = ''
+) {
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${RESEND_API_KEY}`,
       'Content-Type': 'application/json',
+      ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}),
     },
     body: JSON.stringify({
       from: FROM_EMAIL,
@@ -298,14 +305,17 @@ serve(async (req) => {
         ? sendEmail(
           to,
           SUBMITTED_TEMPLATE.subject,
-          SUBMITTED_TEMPLATE.text({ name, programLabel })
+          SUBMITTED_TEMPLATE.text({ name, programLabel }),
+          [],
+          `application-confirmation/${payload.record.id}`
         )
         : Promise.resolve(null),
       sendEmail(
         APPLICATION_PDF_RECIPIENT,
         `New YondeLabs application: ${name} - ${programLabel}`,
         `${name} submitted a ${programLabel} application. The complete application is attached as a PDF.`,
-        [attachment]
+        [attachment],
+        `application-pdf/${payload.record.id}`
       ),
     ])
     return json(200, {

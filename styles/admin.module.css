@@ -56,6 +56,12 @@
 .documentActions strong { font-size: 13px; }
 .documentActions span { margin-top: 4px; color: #778297; font-size: 11px; }
 .inlineError { margin: -8px 0 18px; color: #962d35; font-size: 12px; }
+.contractCard { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin: 0 0 20px; border: 1px solid #dfe4ed; border-radius: 10px; background: #fafbfc; padding: 15px 16px; }
+.contractCard strong { display: block; margin-top: 5px; color: #253148; font-size: 14px; }
+.contractCard p { margin-top: 5px; color: #778297; font-size: 11px; }
+.contractStatus { flex: 0 0 auto; border-radius: 99px; background: #edf1f7; color: #536176; padding: 6px 10px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+.contract_completed { background: #eaf8ef; color: #197343; }
+.contract_declined, .contract_voided { background: #fff0f1; color: #9f343b; }
 .detailSection { padding: 26px 0; border-top: 1px solid #e7eaf0; }
 .detailSection h3 { margin-top: 5px; font-size: 19px; }
 .sectionHeading { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
@@ -92,4 +98,5 @@
   .sectionHeading { flex-direction: column; }
   .actionRow { flex-wrap: wrap; }
   .documentActions { align-items: flex-start; flex-direction: column; }
+  .contractCard { align-items: flex-start; flex-direction: column; }
 }

@@ -1931,3 +1931,71 @@ User requested plans whose hours represent a minimum rather than a hard cap, plu
 - Result: passed successfully with the updated `/admin` and `/dashboard` experiences.
 - `git diff --check`
 - Result: passed with no whitespace errors.
+## Session: 2026-07-29 - DocuSign offer contract integration
+
+### Background
+User requested that clicking the admin offer action automatically send a contract through DocuSign.
+
+### Files created
+- `lib/docusign.js` - server-only JWT authentication, account discovery, recipient validation, envelope creation, and Connect HMAC verification.
+- `pages/api/admin/applications/[id]/send-offer.js` - admin-authenticated offer sender.
+- `pages/api/docusign/connect.js` - HMAC-verified DocuSign Connect status listener.
+- `docs/sql/migrations/2026-07-29_add_docusign_offer_contracts.sql` - contract records, RLS, and transactional offer-recording RPC.
+- `docs/docusign-offer-automation-guide.md` - DocuSign, Vercel, template, webhook, and test setup.
+- `.env.example` - placeholder-only server configuration reference.
+
+### Files modified
+- `pages/admin/index.jsx` - routes interview-to-offer through DocuSign and loads contract records.
+- `components/admin/ApplicationDetail.jsx` - adds contract send/status UI.
+- `styles/admin.module.css` - styles the contract status card.
+- `YONDE_ADMIN.md` - documents the DocuSign architecture and required migration.
+- `progress.md` - this entry.
+
+### Behavior
+- Interviewed applications show a **Send offer contract** action.
+- The server creates and emails an envelope from the configured DocuSign template.
+- The offer stage is recorded only after DocuSign returns an envelope ID.
+- Duplicate offer envelopes are rejected.
+- Admin profiles show Sent, Delivered, Completed, Declined, and Voided states.
+- Connect notifications must pass DocuSign HMAC verification.
+
+### Required external setup
+- Run `docs/sql/migrations/2026-07-29_add_docusign_offer_contracts.sql`.
+- Create the DocuSign template and API integration.
+- Add the server-only values from `.env.example` to Vercel.
+- Grant one-time JWT consent.
+- Configure the Connect JSON webhook and HMAC key.
+
+### Verification
+- `npm.cmd run build`
+- Result: passed; Next.js generated the admin sender and DocuSign Connect API routes.
+## Session: 2026-07-30 - Reliable application PDF email
+
+### Background
+The automatic PDF email to `ashlyndong@gmail.com` was not firing reliably because it depended entirely on a separately deployed Supabase Edge Function and database webhook.
+
+### Files created
+- `pages/api/applications/[id]/submission-notification.js` - authenticated server endpoint that generates the submitted profile PDF and sends it to Ashlyn through Resend.
+
+### Files modified
+- `lib/forms/useDraft.js` - calls the protected notification endpoint after a successful submission and retries once without making email failure invalidate the saved application.
+- `supabase/functions/send-status-email/index.ts` - adds matching Resend idempotency keys so the existing webhook fallback cannot duplicate student or internal messages during retries.
+- `.env.example` - documents the server-only Vercel Resend variables.
+- `docs/email-notifications-setup-guide.md` - documents the direct sender, fallback, deployment, and log checks.
+- `YONDE_ADMIN.md` - records the new primary notification architecture.
+
+### Required external setup
+- Add `RESEND_API_KEY` and verified `FROM_EMAIL` to Vercel, then redeploy.
+- Redeploy `send-status-email` in Supabase if the database-webhook fallback and student confirmation are used.
+
+### Security and reliability
+- The notification endpoint verifies the authenticated user owns the submitted application.
+- Automatic sends are accepted only during the first 15 minutes after submission.
+- Resend idempotency prevents duplicate delivery during direct retries or webhook fallback.
+
+### Verification
+- `npm.cmd run build`
+- Result: passed; Next.js generated `/api/applications/[id]/submission-notification`.
+- `git diff --check`
+- Result: passed with no whitespace errors.
+- Live email was not sent locally because `.env.local` does not contain `RESEND_API_KEY` or `FROM_EMAIL`; these must be configured in Vercel.

@@ -2,7 +2,7 @@
 
 **Feature:** Students get one confirmation email, and Ashlyn receives the submitted application as a PDF.
 
-**Stack:** Resend + Supabase Edge Function + Supabase Database Webhook / trigger.
+**Stack:** Resend + protected Next.js API route, with the Supabase Edge Function as a fallback and for the student confirmation.
 
 **What this version does**
 - Sends an email when an application is first received.
@@ -14,12 +14,30 @@
 
 ## What triggers the email
 
+The primary internal notification path runs directly after the application is
+successfully saved as submitted:
+
+```text
+Student submits
+  -> Supabase saves status = submitted
+  -> /api/applications/[id]/submission-notification
+  -> Resend emails the PDF to ashlyndong@gmail.com
+```
+
+This path does not require a Supabase Database Webhook. It requires
+`RESEND_API_KEY` and `FROM_EMAIL` in Vercel.
+
 The `send-status-email` Edge Function sends an email only when one of these happens:
 
 1. a row is inserted into `applications` with `status = 'submitted'`
 2. a row is updated from `draft` to `submitted`
 
 For the same event, the function sends a separate internal email with the PDF attachment to `ashlyndong@gmail.com`. The internal email is still sent if the student's form email is missing or malformed.
+
+Both paths use the same Resend idempotency key for the internal message, so
+normal retries or a functioning fallback do not send a duplicate within
+Resend's idempotency window. Use the same Resend account/API key in Vercel and
+Supabase.
 
 It will skip:
 - draft autosaves
@@ -37,6 +55,17 @@ It will skip:
 5. Create an API key with sending access.
 
 You will use that key as `RESEND_API_KEY`.
+
+Add these variables under **Vercel -> Project Settings -> Environment
+Variables**, then redeploy:
+
+| Name | Value |
+|---|---|
+| `RESEND_API_KEY` | your Resend API key |
+| `FROM_EMAIL` | `YondeLabs Admissions <noreply@yondelabs.com>` |
+
+The `yondelabs.com` sending domain must show as verified in Resend. Do not use
+an unverified `noreply@yondelabs.com` sender.
 
 ---
 
@@ -125,6 +154,13 @@ Before testing, make sure:
 Expected result:
 - the Edge Function runs
 - one submission confirmation email is sent
+- one internal email with the application PDF reaches `ashlyndong@gmail.com`
+
+For a normal website submission, also check the Vercel Function logs for:
+
+```text
+/api/applications/[id]/submission-notification
+```
 
 Not expected:
 - no email for `draft`
@@ -153,6 +189,8 @@ This is expected when:
 Check:
 - Resend domain verification
 - Resend send logs
+- Vercel has `RESEND_API_KEY` and `FROM_EMAIL`, followed by a redeployment
+- Vercel Function logs for `submission PDF email failed`
 - Supabase Edge Function logs
 - the email value inside `form_data.email`
 

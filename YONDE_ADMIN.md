@@ -63,6 +63,8 @@ pages/login.jsx                               Admin login redirect
 - Lets students see allocated, used, remaining, module, and class-history details.
 - Supports either a fixed hour limit or a minimum-hours policy that permits additional classes.
 - Defines ordered milestones per plan and tracks each student's milestone status.
+- Sends the offer contract from a DocuSign template when an admin advances an interviewed application to Offer.
+- Tracks DocuSign Sent, Delivered, Completed, Declined, and Voided events in the student profile.
 
 ## Stage Contract
 
@@ -103,6 +105,35 @@ note
 
 Stage movement must use the `advance_application_stage` RPC. Do not update `applications.status` directly from admin UI code. The function locks the application, updates its status, and inserts the history row in one transaction.
 
+The interview-to-offer transition is the exception: it must use the protected
+`/api/admin/applications/[id]/send-offer` endpoint. That endpoint sends the
+DocuSign envelope and then calls `record_docusign_offer`, which records the
+envelope and advances the stage transactionally.
+
+## DocuSign offer contracts
+
+Run this migration after the admin progress migration:
+
+```text
+docs/sql/migrations/2026-07-29_add_docusign_offer_contracts.sql
+```
+
+`application_contracts` stores one offer envelope per application, including
+the recipient, template, envelope ID, current signing status, and event dates.
+The browser never receives DocuSign API credentials.
+
+Required server-side configuration and the complete activation checklist are
+documented in:
+
+```text
+docs/docusign-offer-automation-guide.md
+```
+
+The Connect listener is `/api/docusign/connect`. It requires a valid DocuSign
+HMAC signature and uses the Supabase service role only on the server to update
+envelope status. Do not move any DocuSign or service-role secret into client
+code.
+
 ## Form Rendering
 
 `lib/forms/schema.js` is the single source of truth for application questions. Admin profile views must iterate through `schema.steps[].fields[]`; do not duplicate form questions in admin components.
@@ -113,12 +144,21 @@ Programs without a local schema fall back to rendering the raw `form_data` keys.
 
 The admin download endpoint verifies the Supabase access token and admin role before loading an application. It generates the PDF in memory and returns it with `Cache-Control: private, no-store`; PDFs are not saved publicly or persisted in the database.
 
-The `send-status-email` Supabase Edge Function also generates a PDF when an application is inserted as `submitted` or changes from `draft` to `submitted`. It sends:
+After a successful application submission, the form calls the protected
+`/api/applications/[id]/submission-notification` endpoint. It verifies the
+student owns the submitted application, generates the PDF in memory, and emails
+it to `ashlyndong@gmail.com` through Resend.
+
+The `send-status-email` Supabase Edge Function remains the student-confirmation
+sender and database-webhook fallback. It sends:
 
 1. the existing confirmation email to the student, when the form email is valid
-2. a separate internal email with the PDF attachment to `ashlyndong@gmail.com`
+2. a fallback internal email with the PDF attachment to `ashlyndong@gmail.com`
 
-The internal PDF email is still sent when the student's email is missing or malformed. Redeploy `send-status-email` in Supabase after changing the function. No new secret is required.
+Both internal paths use `application-pdf/<application-id>` as the Resend
+idempotency key. Configure the same `RESEND_API_KEY` and verified `FROM_EMAIL`
+in Vercel and Supabase. Redeploy `send-status-email` in Supabase after changing
+the function.
 
 ## Authentication and Authorization
 
