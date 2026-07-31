@@ -24,7 +24,9 @@ pages/admin/index.jsx                         Admin dashboard
 components/admin/ApplicationDetail.jsx       Profile, progress, and form answers
 components/admin/CoursePlanManager.jsx       Reusable plans and module hours
 components/admin/StudentCourseHours.jsx      Assignment and class logging
+components/admin/StudentFiles.jsx            Per-student course file management
 components/portal/CourseHours.jsx            Student read-only hours section
+components/portal/StudentFiles.jsx            Student read-only files section
 pages/api/admin/applications/[id]/pdf.js      Protected PDF download endpoint
 styles/admin.module.css                      Admin-only minimal UI
 styles/courseHours.module.css                 Shared course-hours portal UI
@@ -37,6 +39,8 @@ docs/sql/migrations/2026-07-22_add_course_hours_tracking.sql
                                                Plans, modules, enrollments, sessions, RLS
 docs/sql/migrations/2026-07-23_add_course_milestones_and_minimum_hours.sql
                                                Overage policy, milestones, limits, RLS
+docs/sql/migrations/2026-07-30_add_student_files.sql
+                                               Private file bucket, metadata, and RLS
 proxy.js                                      Admin route protection
 pages/login.jsx                               Admin login redirect
 ```
@@ -63,8 +67,8 @@ pages/login.jsx                               Admin login redirect
 - Lets students see allocated, used, remaining, module, and class-history details.
 - Supports either a fixed hour limit or a minimum-hours policy that permits additional classes.
 - Defines ordered milestones per plan and tracks each student's milestone status.
-- Sends the offer contract from a DocuSign template when an admin advances an interviewed application to Offer.
-- Tracks DocuSign Sent, Delivered, Completed, Declined, and Voided events in the student profile.
+- Uploads private files for an enrolled student and controls student visibility.
+- Shows students their own course documents through expiring signed downloads.
 
 ## Stage Contract
 
@@ -105,34 +109,9 @@ note
 
 Stage movement must use the `advance_application_stage` RPC. Do not update `applications.status` directly from admin UI code. The function locks the application, updates its status, and inserts the history row in one transaction.
 
-The interview-to-offer transition is the exception: it must use the protected
-`/api/admin/applications/[id]/send-offer` endpoint. That endpoint sends the
-DocuSign envelope and then calls `record_docusign_offer`, which records the
-envelope and advances the stage transactionally.
-
-## DocuSign offer contracts
-
-Run this migration after the admin progress migration:
-
-```text
-docs/sql/migrations/2026-07-29_add_docusign_offer_contracts.sql
-```
-
-`application_contracts` stores one offer envelope per application, including
-the recipient, template, envelope ID, current signing status, and event dates.
-The browser never receives DocuSign API credentials.
-
-Required server-side configuration and the complete activation checklist are
-documented in:
-
-```text
-docs/docusign-offer-automation-guide.md
-```
-
-The Connect listener is `/api/docusign/connect`. It requires a valid DocuSign
-HMAC signature and uses the Supabase service role only on the server to update
-envelope status. Do not move any DocuSign or service-role secret into client
-code.
+If the removed DocuSign migration was previously applied to Supabase, run
+`docs/sql/migrations/2026-07-31_remove_docusign_offer_contracts.sql` once to
+remove its unused contract table and database function.
 
 ## Form Rendering
 
@@ -247,6 +226,29 @@ The student dashboard shows no course section until an enrollment exists. Once a
 
 Students have read-only RLS access to their own enrollment, assigned plan/modules, sessions, milestones, and milestone progress. Only admins can create or modify these records. The `set_student_milestone_status` RPC also ensures only one milestone is marked In progress at a time.
 
+## Private student files
+
+Run this migration after the base course-hours migration:
+
+```text
+docs/sql/migrations/2026-07-30_add_student_files.sql
+```
+
+It creates the private `student-files` Supabase Storage bucket and the
+enrollment-linked `student_files` metadata table. The bucket permits supported
+documents and images up to 20 MB.
+
+Admins manage files inside each student profile. Students see only visible
+files associated with their own enrollments. Storage RLS and metadata RLS both
+enforce ownership; the UI uses short-lived signed download URLs and never
+creates public file URLs.
+
+Setup and verification:
+
+```text
+docs/student-files-setup-guide.md
+```
+
 ## Deferred Admin Work
 
 - Days since last action / progress time checks
@@ -272,3 +274,5 @@ For every admin change:
 9. Confirm a fixed-hours plan rejects a class that exceeds the allocation.
 10. Confirm a minimum-hours plan displays additional hours after its minimum is fulfilled.
 11. Update a milestone and confirm the student dashboard shows the new status.
+12. Upload a test file and confirm only the assigned student can download it.
+13. Hide the test file and confirm it disappears from the student portal.

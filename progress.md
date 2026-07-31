@@ -1999,3 +1999,46 @@ The automatic PDF email to `ashlyndong@gmail.com` was not firing reliably becaus
 - `git diff --check`
 - Result: passed with no whitespace errors.
 - Live email was not sent locally because `.env.local` does not contain `RESEND_API_KEY` or `FROM_EMAIL`; these must be configured in Vercel.
+## Session: 2026-07-30 - Private student course files
+
+### Background
+User requested that admins upload files for individual enrolled students and that students securely view or download those files in their portal.
+
+### Files created
+- `docs/sql/migrations/2026-07-30_add_student_files.sql` - private Storage bucket, file metadata, size/type restrictions, and admin/student RLS.
+- `lib/studentFiles.js` - shared upload limits, accepted file types, safe filenames, and size formatting.
+- `components/admin/StudentFiles.jsx` - enrollment-aware admin upload, download, visibility, and deletion manager.
+- `components/portal/StudentFiles.jsx` - read-only enrolled-student file list with private signed downloads.
+- `styles/studentFiles.module.css` - shared admin and student file interface styling.
+- `docs/student-files-setup-guide.md` - migration, admin/student workflow, allowed types, and access verification.
+
+### Files modified
+- `components/admin/ApplicationDetail.jsx` - adds file management to each student profile.
+- `pages/dashboard.jsx` - adds Files and Materials after the course progress section.
+- `YONDE_ADMIN.md` - documents the new file surfaces, migration, bucket, and security contract.
+
+### Required external setup
+- Run `docs/sql/migrations/2026-07-30_add_student_files.sql` in Supabase after the course-hours migration.
+- Keep the generated `student-files` bucket private.
+
+### Verification
+- `npm.cmd run build`
+- Result: passed; `/admin` and `/dashboard` compile with both file interfaces.
+- `git diff --check`
+- Result: passed with no whitespace errors.
+- Live upload/download testing requires the new Supabase migration to be applied.
+## Session: 2026-07-31 - DocuSign integration removed
+
+### Background
+User paused DocuSign indefinitely and requested removal of its configuration and application workflow.
+
+### Removed
+- DocuSign JWT/API helper, offer sender route, and Connect webhook route.
+- DocuSign contract migration and setup guide.
+- DocuSign environment-variable placeholders.
+- Contract status card and DocuSign-specific offer action.
+
+### Restored behavior
+- Interviewed applications advance to `offer` through the existing `advance_application_stage` RPC.
+- The admin button is again labeled **Move to Offer sent**.
+- Student files, application PDF email, course hours, milestones, and Calendly code are unchanged.

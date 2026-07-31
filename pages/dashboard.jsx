@@ -4,6 +4,7 @@ import PortalNavbar from '../components/portal/PortalNavbar'
 import { supabase } from '../lib/supabaseClient'
 import StatusTracker from '../components/portal/StatusTracker'
 import CourseHours from '../components/portal/CourseHours'
+import StudentFiles from '../components/portal/StudentFiles'
 import styles from '../styles/dashboard.module.css'
 
 const PROGRAM_LABELS = {
@@ -334,6 +335,7 @@ export default function Dashboard() {
               />
 
               <CourseHours applicationId={application.id} />
+              <StudentFiles applicationId={application.id} />
 
               {hasDrafts ? (
                 <section className={styles.draftListCard}>

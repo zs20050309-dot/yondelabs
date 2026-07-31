@@ -11,6 +11,7 @@ import {
 } from '../../lib/admin/stages'
 import styles from '../../styles/admin.module.css'
 import StudentCourseHours from './StudentCourseHours'
+import StudentFiles from './StudentFiles'
 
 function formatDate(value, includeTime = false) {
   if (!value) return '—'
@@ -32,14 +33,6 @@ function displayValue(value) {
   return String(value)
 }
 
-const CONTRACT_STATUS_LABELS = {
-  sent: 'Awaiting signature',
-  delivered: 'Viewed by recipient',
-  completed: 'Signed and completed',
-  declined: 'Declined',
-  voided: 'Voided',
-}
-
 export default function ApplicationDetail({ application, history, moving, onMove, onClose }) {
   const [downloading, setDownloading] = useState(false)
   const [downloadError, setDownloadError] = useState('')
@@ -47,9 +40,6 @@ export default function ApplicationDetail({ application, history, moving, onMove
 
   const schema = getSchema(application.program)
   const nextStatus = NEXT_STATUS[application.status]
-  const contract = Array.isArray(application.application_contracts)
-    ? application.application_contracts[0]
-    : application.application_contracts
 
   async function downloadPdf() {
     setDownloading(true)
@@ -112,26 +102,8 @@ export default function ApplicationDetail({ application, history, moving, onMove
       </div>
       {downloadError ? <div className={styles.inlineError}>{downloadError}</div> : null}
 
-      {(application.status === 'interview' || contract) ? (
-        <div className={styles.contractCard}>
-          <div>
-            <span className={styles.eyebrow}>Offer contract</span>
-            <strong>{contract ? CONTRACT_STATUS_LABELS[contract.status] || contract.status : 'Ready to send'}</strong>
-            <p>
-              {contract
-                ? `Sent ${formatDate(contract.sent_at, true)} to ${contract.recipient_email}`
-                : 'DocuSign will email the configured contract template to this student.'}
-            </p>
-          </div>
-          {contract ? (
-            <span className={`${styles.contractStatus} ${styles[`contract_${contract.status}`]}`}>
-              {contract.status}
-            </span>
-          ) : null}
-        </div>
-      ) : null}
-
       <StudentCourseHours application={application} />
+      <StudentFiles application={application} />
 
       <section className={styles.detailSection}>
         <div className={styles.sectionHeading}>
@@ -147,9 +119,7 @@ export default function ApplicationDetail({ application, history, moving, onMove
                 disabled={moving}
                 onClick={() => onMove(application, nextStatus)}
               >
-                {moving
-                  ? (nextStatus === 'offer' ? 'Sending…' : 'Updating…')
-                  : (nextStatus === 'offer' ? 'Send offer contract' : `Move to ${STATUS_LABELS[nextStatus]}`)}
+                {moving ? 'Updating…' : `Move to ${STATUS_LABELS[nextStatus]}`}
               </button>
             ) : null}
             {application.status !== 'rejected' ? (

@@ -36,7 +36,7 @@ export default function AdminDashboard() {
 
   const loadApplications = useCallback(async () => {
     const [applicationsResult, historyResult] = await Promise.all([
-      supabase.from('applications').select('*, application_contracts(*), student_course_enrollments(id, allocated_minutes, status, created_at, class_sessions(duration_minutes))').neq('status', 'draft').order('submitted_at', { ascending: false }),
+      supabase.from('applications').select('*, student_course_enrollments(id, allocated_minutes, status, created_at, class_sessions(duration_minutes))').neq('status', 'draft').order('submitted_at', { ascending: false }),
       supabase.from('application_stage_history').select('*').order('changed_at', { ascending: true }),
     ])
 
@@ -91,38 +91,22 @@ export default function AdminDashboard() {
 
   async function moveApplication(application, nextStatus) {
     const label = STATUS_LABELS[nextStatus] || nextStatus
-    const isOffer = nextStatus === 'offer'
-    const prompt = isOffer
-      ? `Send ${studentName(application)} the offer contract through DocuSign?`
-      : `Move ${studentName(application)} to “${label}”?`
-    if (!window.confirm(prompt)) return
+    if (!window.confirm(`Move ${studentName(application)} to “${label}”?`)) return
 
     setMovingId(application.id)
     setError('')
-    try {
-      if (isOffer) {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!session?.access_token) throw new Error('Please sign in again.')
-        const response = await fetch(`/api/admin/applications/${application.id}/send-offer`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${session.access_token}` },
-        })
-        const body = await response.json().catch(() => ({}))
-        if (!response.ok) throw new Error(body.error || 'The DocuSign offer could not be sent.')
-      } else {
-        const { error: moveError } = await supabase.rpc('advance_application_stage', {
-          p_application_id: application.id,
-          p_next_status: nextStatus,
-          p_note: null,
-        })
-        if (moveError) throw moveError
-      }
-      await loadApplications()
-    } catch (moveError) {
+    const { error: moveError } = await supabase.rpc('advance_application_stage', {
+      p_application_id: application.id,
+      p_next_status: nextStatus,
+      p_note: null,
+    })
+
+    if (moveError) {
       setError(moveError.message || 'The stage could not be updated.')
-    } finally {
-      setMovingId(null)
+    } else {
+      await loadApplications()
     }
+    setMovingId(null)
   }
 
   async function signOut() {
@@ -187,7 +171,7 @@ export default function AdminDashboard() {
                       <td>{enrollment ? <span className={styles.courseHoursCell}><strong>{formatHours(usedMinutes)}</strong><span> / {formatHours(enrollment.allocated_minutes)}</span></span> : <span className={styles.noCourse}>Not assigned</span>}</td>
                       <td className={styles.rowActions}>
                         <button type="button" className={styles.viewButton} onClick={() => setSelectedId(application.id)}>View profile</button>
-                        {nextStatus ? <button type="button" className={styles.moveButton} disabled={movingId === application.id} onClick={() => moveApplication(application, nextStatus)}>{movingId === application.id ? (nextStatus === 'offer' ? 'Sending…' : 'Updating…') : (nextStatus === 'offer' ? 'Send offer contract' : `Move to ${STATUS_LABELS[nextStatus]}`)}</button> : null}
+                        {nextStatus ? <button type="button" className={styles.moveButton} disabled={movingId === application.id} onClick={() => moveApplication(application, nextStatus)}>{movingId === application.id ? 'Updating…' : `Move to ${STATUS_LABELS[nextStatus]}`}</button> : null}
                       </td>
                     </tr>
                   )
