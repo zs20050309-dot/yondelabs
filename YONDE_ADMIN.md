@@ -27,12 +27,17 @@ components/admin/StudentCourseHours.jsx      Assignment and class logging
 components/admin/StudentFiles.jsx            Per-student course file management
 components/portal/CourseHours.jsx            Student read-only hours section
 components/portal/StudentFiles.jsx            Student read-only files section
+components/portal/StudentPortalShell.jsx      Shared student portal page shell
+pages/course.jsx                              Dedicated student course page
+pages/files.jsx                               Dedicated student files page
 pages/api/admin/applications/[id]/pdf.js      Protected PDF download endpoint
 styles/admin.module.css                      Admin-only minimal UI
 styles/courseHours.module.css                 Shared course-hours portal UI
+styles/studentPortal.module.css               Student portal page layout
 lib/admin/applicationPdf.js                   Schema-driven PDF generator
 lib/admin/stages.js                          Stage, program, and label definitions
 lib/courseHours.js                            Minute conversion and total helpers
+lib/portal/useStudentPortal.js                Shared student auth/application loader
 docs/sql/migrations/2026-07-16_add_admin_application_progress.sql
                                                History table, policies, and stage RPC
 docs/sql/migrations/2026-07-22_add_course_hours_tracking.sql
@@ -69,6 +74,7 @@ pages/login.jsx                               Admin login redirect
 - Defines ordered milestones per plan and tracks each student's milestone status.
 - Uploads private files for an enrolled student and controls student visibility.
 - Shows students their own course documents through expiring signed downloads.
+- Separates the student experience into Overview, My course, and Files pages.
 
 ## Stage Contract
 
@@ -214,7 +220,10 @@ The database also prevents lowering a fixed allocation below hours already used 
 
 ### Student behavior
 
-The student dashboard shows no course section until an enrollment exists. Once assigned, it displays:
+The student portal uses three authenticated pages:
+
+- `/dashboard` shows the application summary, admissions progress, and links into the learning workspace.
+- `/course` shows a friendly unassigned state until an enrollment exists. Once assigned, it displays:
 
 - total allocated hours
 - hours used from class-session entries
@@ -223,6 +232,8 @@ The student dashboard shows no course section until an enrollment exists. Once a
 - planned and used hours by module
 - dated class history
 - current milestone and the full milestone timeline
+
+- `/files` shows private course materials, mentor feedback, and templates shared with the student.
 
 Students have read-only RLS access to their own enrollment, assigned plan/modules, sessions, milestones, and milestone progress. Only admins can create or modify these records. The `set_student_milestone_status` RPC also ensures only one milestone is marked In progress at a time.
 
@@ -239,9 +250,9 @@ enrollment-linked `student_files` metadata table. The bucket permits supported
 documents and images up to 20 MB.
 
 Admins manage files inside each student profile. Students see only visible
-files associated with their own enrollments. Storage RLS and metadata RLS both
-enforce ownership; the UI uses short-lived signed download URLs and never
-creates public file URLs.
+files associated with their own enrollments on `/files`. Storage RLS and
+metadata RLS both enforce ownership; the UI uses short-lived signed download
+URLs and never creates public file URLs.
 
 Setup and verification:
 

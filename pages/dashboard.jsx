@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import PortalNavbar from '../components/portal/PortalNavbar'
 import { supabase } from '../lib/supabaseClient'
 import StatusTracker from '../components/portal/StatusTracker'
-import CourseHours from '../components/portal/CourseHours'
-import StudentFiles from '../components/portal/StudentFiles'
 import styles from '../styles/dashboard.module.css'
 
 const PROGRAM_LABELS = {
@@ -334,8 +333,37 @@ export default function Dashboard() {
                 interviewScheduledAt={application.interview_scheduled_at}
               />
 
-              <CourseHours applicationId={application.id} />
-              <StudentFiles applicationId={application.id} />
+              <section className={styles.portalSection} aria-labelledby="portal-tools-title">
+                <div className={styles.portalSectionHeading}>
+                  <div>
+                    <span>Student portal</span>
+                    <h2 id="portal-tools-title">Your program workspace</h2>
+                  </div>
+                  <p>Course progress and shared resources now have their own dedicated pages.</p>
+                </div>
+                <div className={styles.portalCards}>
+                  <Link href="/course" className={styles.portalCard}>
+                    <span className={`${styles.portalCardIcon} ${styles.courseIcon}`} aria-hidden>
+                      <i />
+                    </span>
+                    <span className={styles.portalCardCopy}>
+                      <strong>My course</strong>
+                      <small>Hours, milestones, modules, and class history</small>
+                    </span>
+                    <span className={styles.portalCardArrow} aria-hidden>→</span>
+                  </Link>
+                  <Link href="/files" className={styles.portalCard}>
+                    <span className={`${styles.portalCardIcon} ${styles.filesIcon}`} aria-hidden>
+                      <i />
+                    </span>
+                    <span className={styles.portalCardCopy}>
+                      <strong>Files</strong>
+                      <small>Course materials, templates, and mentor feedback</small>
+                    </span>
+                    <span className={styles.portalCardArrow} aria-hidden>→</span>
+                  </Link>
+                </div>
+              </section>
 
               {hasDrafts ? (
                 <section className={styles.draftListCard}>
@@ -409,7 +437,7 @@ export default function Dashboard() {
         </div>
       </main>
 
-      <footer className={styles.footer}>YondeLabs Application Portal</footer>
+      <footer className={styles.footer}>Yonde Labs Student Portal</footer>
     </div>
   )
 }

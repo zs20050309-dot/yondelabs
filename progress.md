@@ -2042,3 +2042,39 @@ User paused DocuSign indefinitely and requested removal of its configuration and
 - Interviewed applications advance to `offer` through the existing `advance_application_stage` RPC.
 - The admin button is again labeled **Move to Offer sent**.
 - Student files, application PDF email, course hours, milestones, and Calendly code are unchanged.
+
+### Optional database cleanup
+- Added `docs/sql/migrations/2026-07-31_remove_docusign_offer_contracts.sql`.
+- Run it only if the removed DocuSign migration was previously applied; it safely drops the unused contract function and table with `if exists`.
+
+### Verification
+- `git diff --check`
+- Result: passed with no whitespace errors.
+- `npm.cmd run build`
+- Result: passed; the former DocuSign sender and webhook API routes are absent from the production route list.
+
+## Session: 2026-07-31 - Student portal page redesign
+
+### Background
+User requested a more complete student portal with separate pages for assigned course progress and private files.
+
+### Added
+- `/course` for course hours, milestones, modules, and class history.
+- `/files` for private course materials and signed downloads.
+- A shared student portal shell and authenticated application loader.
+- Persistent Overview, My course, and Files navigation.
+
+### Changed
+- `/dashboard` now focuses on application progress and links to the learning workspace.
+- Course and file pages show clear loading, unassigned, empty, and error states.
+- Student-facing course, file, navigation, and responsive styling were refined.
+- Existing Supabase RLS, course-hour calculations, milestone behavior, and signed file URLs remain unchanged.
+
+### Verification
+- `git diff --check`
+- Result: passed with no whitespace errors.
+- `npm.cmd run build`
+- Result: passed; `/dashboard`, `/course`, and `/files` are present in the production route list.
+- Local route health check
+- Result: `/dashboard`, `/course`, and `/files` each returned HTTP 200.
+- The local development server is available at `http://localhost:3000`; the in-app preview surface was unavailable for this session.

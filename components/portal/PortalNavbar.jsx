@@ -1,7 +1,14 @@
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { supabase } from '../../lib/supabaseClient'
 import styles from '../../styles/portalNavbar.module.css'
+
+const NAV_ITEMS = [
+  { href: '/dashboard', label: 'Overview' },
+  { href: '/course', label: 'My course' },
+  { href: '/files', label: 'Files' },
+]
 
 export default function PortalNavbar({ user }) {
   const router = useRouter()
@@ -13,18 +20,9 @@ export default function PortalNavbar({ user }) {
     router.replace('/login')
   }
 
-  function handleLogoClick() {
-    router.push('/dashboard')
-  }
-
   return (
     <header className={styles.header}>
-      <button
-        type="button"
-        className={styles.headerLeft}
-        aria-label="Go to dashboard"
-        onClick={handleLogoClick}
-      >
+      <Link className={styles.headerLeft} aria-label="Go to student portal" href="/dashboard">
         {logoError ? (
           <span className={styles.logoText}>YondeLabs</span>
         ) : (
@@ -35,7 +33,25 @@ export default function PortalNavbar({ user }) {
             onError={() => setLogoError(true)}
           />
         )}
-      </button>
+        <span className={styles.portalLabel}>Student portal</span>
+      </Link>
+
+      <nav className={styles.navigation} aria-label="Student portal">
+        {NAV_ITEMS.map((item) => {
+          const active = router.pathname === item.href
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`${styles.navLink} ${active ? styles.navLinkActive : ''}`}
+              aria-current={active ? 'page' : undefined}
+            >
+              {item.label}
+            </Link>
+          )
+        })}
+      </nav>
+
       <div className={styles.headerRight}>
         <span className={styles.studentName}>{displayName}</span>
         <span className={styles.navDivider} aria-hidden="true" />

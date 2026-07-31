@@ -456,6 +456,163 @@
   box-shadow: 0 18px 50px rgba(3, 37, 108, 0.06);
 }
 
+.portalSection {
+  margin-top: 24px;
+  padding: clamp(26px, 3vw, 38px);
+  border: 1px solid rgba(220, 226, 236, 0.94);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 18px 50px rgba(3, 37, 108, 0.055);
+}
+
+.portalSectionHeading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 30px;
+}
+
+.portalSectionHeading > div > span {
+  color: #177ba1;
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.portalSectionHeading h2 {
+  margin: 6px 0 0;
+  color: #102451;
+  font-family: Fraunces, Georgia, serif;
+  font-size: clamp(1.45rem, 2vw, 1.9rem);
+}
+
+.portalSectionHeading p {
+  max-width: 28rem;
+  margin: 0;
+  color: #758196;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  text-align: right;
+}
+
+.portalCards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.portalCard {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 15px;
+  min-height: 102px;
+  padding: 17px;
+  border: 1px solid #e0e6ee;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #fbfcfe 0%, #f7faff 100%);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.portalCard:hover {
+  border-color: #b8d6e5;
+  box-shadow: 0 14px 28px rgba(24, 59, 111, 0.09);
+  transform: translateY(-2px);
+}
+
+.portalCardIcon {
+  position: relative;
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 13px;
+  background: #eaf3ff;
+}
+
+.portalCardIcon i,
+.portalCardIcon i::before,
+.portalCardIcon i::after {
+  position: absolute;
+  display: block;
+  content: '';
+}
+
+.courseIcon i {
+  width: 21px;
+  height: 25px;
+  border: 2px solid #254c93;
+  border-radius: 3px;
+}
+
+.courseIcon i::before,
+.courseIcon i::after {
+  left: 4px;
+  width: 10px;
+  height: 2px;
+  background: #43a8c7;
+}
+
+.courseIcon i::before { top: 6px; }
+.courseIcon i::after { top: 12px; }
+
+.filesIcon {
+  background: #e9f8f7;
+}
+
+.filesIcon i {
+  width: 25px;
+  height: 18px;
+  border: 2px solid #147a83;
+  border-radius: 3px;
+}
+
+.filesIcon i::before {
+  top: -7px;
+  left: -2px;
+  width: 11px;
+  height: 7px;
+  border: 2px solid #147a83;
+  border-bottom: 0;
+  border-radius: 3px 3px 0 0;
+}
+
+.portalCardCopy {
+  min-width: 0;
+}
+
+.portalCardCopy strong,
+.portalCardCopy small {
+  display: block;
+}
+
+.portalCardCopy strong {
+  color: #142c5a;
+  font-size: 0.98rem;
+}
+
+.portalCardCopy small {
+  margin-top: 5px;
+  color: #748095;
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.portalCardArrow {
+  color: #2196b6;
+  font-size: 1.25rem;
+  font-weight: 700;
+  transition: transform 160ms ease;
+}
+
+.portalCard:hover .portalCardArrow {
+  transform: translateX(3px);
+}
+
 .draftListHeader {
   padding-bottom: 14px;
   border-bottom: 1px solid #eef1f6;
@@ -711,6 +868,20 @@
 
   .emptyCard {
     padding: 38px 22px;
+  }
+
+  .portalSectionHeading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .portalSectionHeading p {
+    text-align: left;
+  }
+
+  .portalCards {
+    grid-template-columns: 1fr;
   }
 }
 

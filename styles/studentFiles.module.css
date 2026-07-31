@@ -33,18 +33,24 @@
 .muted { margin-top: 14px; color: #7a8598; font-size: 11px; }
 .error { margin-top: 12px; border: 1px solid #f0c6c9; border-radius: 8px; background: #fff3f4; color: #962d35; padding: 10px 12px; font-size: 11px; }
 
-.studentSection { margin-top: 26px; border: 1px solid rgba(220, 226, 236, .94); border-radius: 18px; background: #fff; box-shadow: 0 18px 50px rgba(3, 37, 108, .055); padding: clamp(24px, 3vw, 38px); }
+.studentSection { margin-top: 28px; border: 1px solid rgba(220, 226, 236, .94); border-radius: 20px; background: #fff; box-shadow: 0 20px 55px rgba(3, 37, 108, .065); padding: clamp(24px, 3.5vw, 40px); }
 .studentHeading { display: flex; align-items: flex-start; justify-content: space-between; gap: 22px; }
 .studentHeading span { color: #1a73a8; font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 .studentHeading h2 { margin-top: 7px; color: #102451; font-family: Fraunces, Georgia, serif; font-size: clamp(1.5rem, 2vw, 2rem); }
 .studentHeading p { max-width: 34rem; margin-top: 8px; color: #69758a; font-size: .88rem; line-height: 1.6; }
 .studentCount { display: grid; min-width: 42px; height: 42px; place-items: center; border-radius: 50%; background: #edf5ff; color: #173b8f; font-size: .9rem !important; letter-spacing: 0 !important; }
 .studentList { display: grid; gap: 10px; margin-top: 22px; }
-.studentFile { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 14px; border: 1px solid #e2e7ee; border-radius: 12px; padding: 14px; }
+.studentFile { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; align-items: center; gap: 16px; border: 1px solid #e2e7ee; border-radius: 13px; background: #fbfcfe; padding: 16px; transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease; }
+.studentFile:hover { border-color: #c5dce9; box-shadow: 0 10px 24px rgba(22, 58, 104, .07); transform: translateY(-1px); }
 .studentFile .fileIcon { width: 42px; height: 42px; }
-.studentFile button { border: 1px solid #1b438f; border-radius: 8px; background: #fff; color: #173b8f; cursor: pointer; padding: 8px 12px; font: inherit; font-size: .74rem; font-weight: 800; }
+.studentFile button { border: 1px solid #1b438f; border-radius: 8px; background: #173b8f; color: #fff; cursor: pointer; padding: 9px 13px; font: inherit; font-size: .74rem; font-weight: 800; }
+.studentFile button:hover { background: #102e70; }
 .studentFile button:disabled { cursor: wait; opacity: .55; }
 .studentEmpty { margin-top: 20px; border-radius: 10px; background: #f7f9fc; padding: 20px; color: #738096; font-size: .84rem; text-align: center; }
+.studentPageState { padding: clamp(52px, 8vw, 84px) 28px; text-align: center; }
+.studentStateMark { display: block; width: 58px; height: 46px; margin: 0 auto 20px; border: 1px solid #bed4e7; border-radius: 9px; background: linear-gradient(145deg, #edf5ff, #fff); box-shadow: 7px -7px 0 -2px #dbeaf6; }
+.studentPageState h2 { margin: 0; color: #102451; font-family: Fraunces, Georgia, serif; font-size: 1.65rem; }
+.studentPageState p { max-width: 34rem; margin: 10px auto 0; color: #6c788b; font-size: .88rem; line-height: 1.65; }
 
 @media (max-width: 760px) {
   .heading, .studentHeading { align-items: flex-start; flex-direction: column; }

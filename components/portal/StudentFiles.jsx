@@ -16,7 +16,7 @@ function formatDate(value) {
   })
 }
 
-export default function StudentFiles({ applicationId }) {
+export default function StudentFiles({ applicationId, showEmpty = false }) {
   const [enrollments, setEnrollments] = useState([])
   const [loading, setLoading] = useState(true)
   const [busyId, setBusyId] = useState(null)
@@ -75,7 +75,27 @@ export default function StudentFiles({ applicationId }) {
     setBusyId(null)
   }
 
-  if (loading || !enrollments.length) return null
+  if (loading) {
+    return showEmpty ? (
+      <section className={`${styles.studentSection} ${styles.studentPageState}`}>
+        <span className={styles.studentStateMark} aria-hidden />
+        <h2>Loading your files</h2>
+        <p>We are checking for materials shared with your account.</p>
+      </section>
+    ) : null
+  }
+
+  if (!enrollments.length) {
+    return showEmpty ? (
+      <section className={`${styles.studentSection} ${styles.studentPageState}`}>
+        <span className={styles.studentStateMark} aria-hidden />
+        <h2>{error ? 'Files temporarily unavailable' : 'No course files yet'}</h2>
+        <p>
+          {error || 'Once you are enrolled, documents shared by your admin or mentor will be available on this page.'}
+        </p>
+      </section>
+    ) : null
+  }
 
   return (
     <section className={styles.studentSection}>

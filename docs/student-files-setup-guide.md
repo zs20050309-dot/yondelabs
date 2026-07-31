@@ -1,8 +1,8 @@
 # Private student files setup
 
 This feature lets admins upload course files for an individual enrolled student.
-Students see only their own visible files under **Files and Materials** in the
-student dashboard.
+Students see only their own visible files under **Files and Materials** on the
+student portal's `/files` page.
 
 ## Apply the migration
 
@@ -37,9 +37,10 @@ Admins can download, hide/show, or permanently delete each uploaded file.
 
 ## Student workflow
 
-The student dashboard shows **Files and materials** only after a course
-enrollment exists. Visible files show their title, course, size, date,
-description, and Download action.
+The student portal shows **Files and materials** at `/files`. Before a course
+enrollment exists, the page explains that shared course files are not available
+yet. Visible files show their title, course, size, date, description, and
+Download action.
 
 Downloads use short-lived signed URLs. Students cannot list or download:
 
@@ -61,7 +62,7 @@ Each file must be 20 MB or smaller.
 ## Verification
 
 1. Upload a test PDF for one enrolled student.
-2. Confirm it appears in that student's dashboard.
+2. Confirm it appears on that student's `/files` page.
 3. Sign in as a different student and confirm it is not visible.
 4. Hide the file in admin and confirm it disappears for the assigned student.
 5. Show it again and confirm Download works.

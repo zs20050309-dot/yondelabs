@@ -10,13 +10,14 @@ function formatSessionDate(value) {
   })
 }
 
-export default function CourseHours({ applicationId }) {
+export default function CourseHours({ applicationId, showEmpty = false }) {
   const [enrollment, setEnrollment] = useState(null)
   const [modules, setModules] = useState([])
   const [sessions, setSessions] = useState([])
   const [milestones, setMilestones] = useState([])
   const [milestoneProgress, setMilestoneProgress] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
 
   useEffect(() => {
     let active = true
@@ -31,7 +32,12 @@ export default function CourseHours({ applicationId }) {
         .maybeSingle()
 
       if (!active) return
-      if (enrollmentResult.error || !enrollmentResult.data) {
+      if (enrollmentResult.error) {
+        setLoadError('Your course details are temporarily unavailable. Please try again later.')
+        setLoading(false)
+        return
+      }
+      if (!enrollmentResult.data) {
         setLoading(false)
         return
       }
@@ -57,7 +63,27 @@ export default function CourseHours({ applicationId }) {
   }, [applicationId])
 
   const usedMinutes = useMemo(() => sumMinutes(sessions), [sessions])
-  if (loading || !enrollment) return null
+  if (loading) {
+    return showEmpty ? (
+      <section className={`${styles.studentCard} ${styles.courseState}`}>
+        <span className={styles.courseStateMark} aria-hidden />
+        <h2>Loading your course</h2>
+        <p>Your learning plan and progress are being prepared.</p>
+      </section>
+    ) : null
+  }
+
+  if (!enrollment) {
+    return showEmpty ? (
+      <section className={`${styles.studentCard} ${styles.courseState}`}>
+        <span className={styles.courseStateMark} aria-hidden />
+        <h2>{loadError ? 'Course details unavailable' : 'Your course will appear here'}</h2>
+        <p>
+          {loadError || 'Once the Yonde Labs team assigns your course plan, you will see your hours, milestones, modules, and class history on this page.'}
+        </p>
+      </section>
+    ) : null
+  }
 
   const remainingMinutes = Math.max(enrollment.allocated_minutes - usedMinutes, 0)
   const additionalMinutes = Math.max(usedMinutes - enrollment.allocated_minutes, 0)
