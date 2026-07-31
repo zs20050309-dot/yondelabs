@@ -2078,3 +2078,38 @@ User requested a more complete student portal with separate pages for assigned c
 - Local route health check
 - Result: `/dashboard`, `/course`, and `/files` each returned HTTP 200.
 - The local development server is available at `http://localhost:3000`; the in-app preview surface was unavailable for this session.
+
+## Session: 2026-07-31 - Separate student portal credentials
+
+### Background
+User requested an enrolled-student portal with credentials separate from the application account, created by an admin without an email invitation.
+
+### Added
+- `student_portal_accounts` migration and portal-specific RLS policies.
+- Protected admin API for creating and resetting portal IDs and temporary passwords.
+- Admin credential panel inside each enrolled student's profile.
+- `/student/login` portal-ID sign-in.
+- Required first-login password replacement at `/student/set-password`.
+- Protected `/student`, `/student/course`, and `/student/files` routes.
+
+### Security behavior
+- Temporary passwords are generated server-side and shown only in the credential response.
+- Password hashes remain inside Supabase Auth; no custom password table was added.
+- Portal identities use protected `app_metadata.role = student_portal`.
+- The service-role key remains inside the authenticated admin API route.
+- Course and file RLS now follows the portal-account/application link instead of the application account.
+- No invitation email or email-based portal recovery is used; admins reset forgotten portal passwords.
+
+### Required setup
+- Run `docs/sql/migrations/2026-07-31_add_separate_student_portal_accounts.sql`.
+- Keep `SUPABASE_SERVICE_ROLE_KEY` configured only in the server environment.
+
+### Verification
+- `git diff --check`
+- Result: passed with no whitespace errors.
+- `npm.cmd run build`
+- Result: passed with all five `/student` pages and the protected portal-access API route.
+- `/student/login` returned HTTP 200.
+- An unauthenticated `/student/course` request returned HTTP 307 to `/student/login`.
+- An unauthenticated credential-creation request returned HTTP 401.
+- Full credential creation and RLS verification require applying the new Supabase migration.

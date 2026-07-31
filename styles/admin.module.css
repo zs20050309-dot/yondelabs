@@ -93,3 +93,125 @@
   .actionRow { flex-wrap: wrap; }
   .documentActions { align-items: flex-start; flex-direction: column; }
 }
+.portalAccessSection {
+  margin: 4px 0 24px;
+  border: 1px solid #dfe5ee;
+  border-radius: 11px;
+  background: #f9fafc;
+  padding: 18px;
+}
+
+.portalAccessHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.portalAccessHeading h3 {
+  margin-top: 5px;
+  color: #1b2942;
+  font-size: 18px;
+}
+
+.portalAccessHeading p,
+.portalAccessMuted {
+  margin-top: 5px;
+  color: #748095;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.portalAccessStatus {
+  border-radius: 99px;
+  background: #edf2ff;
+  color: #2541b2;
+  padding: 6px 10px;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.portalAccessNotice {
+  margin-top: 14px;
+  border-radius: 8px;
+  background: #fff7e8;
+  color: #8a5a12;
+  padding: 11px 12px;
+  font-size: 11px;
+}
+
+.portalAccessSection > .primaryButton {
+  margin-top: 15px;
+}
+
+.portalCredentialPanel {
+  display: grid;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.portalCredential {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #e0e5ed;
+  border-radius: 8px;
+  background: #fff;
+  padding: 10px 11px;
+}
+
+.portalCredential span {
+  color: #7a8598;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.portalCredential strong {
+  color: #1f2d45;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.portalCredential button {
+  border: 1px solid #d4dae4;
+  border-radius: 6px;
+  background: #fff;
+  color: #536075;
+  cursor: pointer;
+  padding: 6px 8px;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.portalPasswordWarning {
+  border-radius: 8px;
+  background: #edf7f5;
+  color: #216b62;
+  padding: 10px 12px;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.portalCredentialPanel > .secondaryButton {
+  justify-self: start;
+}
+
+@media (max-width: 620px) {
+  .portalAccessHeading {
+    flex-direction: column;
+  }
+
+  .portalCredential {
+    grid-template-columns: 1fr auto;
+  }
+
+  .portalCredential span {
+    grid-column: 1 / -1;
+  }
+}

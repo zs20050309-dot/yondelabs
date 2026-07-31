@@ -25,12 +25,18 @@ components/admin/ApplicationDetail.jsx       Profile, progress, and form answers
 components/admin/CoursePlanManager.jsx       Reusable plans and module hours
 components/admin/StudentCourseHours.jsx      Assignment and class logging
 components/admin/StudentFiles.jsx            Per-student course file management
+components/admin/StudentPortalAccess.jsx     Portal ID and password management
 components/portal/CourseHours.jsx            Student read-only hours section
 components/portal/StudentFiles.jsx            Student read-only files section
 components/portal/StudentPortalShell.jsx      Shared student portal page shell
-pages/course.jsx                              Dedicated student course page
-pages/files.jsx                               Dedicated student files page
+pages/student/index.jsx                       Student portal overview
+pages/student/course.jsx                      Dedicated student course page
+pages/student/files.jsx                       Dedicated student files page
+pages/student/login.jsx                       Separate portal-ID sign in
+pages/student/set-password.jsx                Required first-login password change
 pages/api/admin/applications/[id]/pdf.js      Protected PDF download endpoint
+pages/api/admin/applications/[id]/portal-access.js
+                                               Server-only credential creation/reset
 styles/admin.module.css                      Admin-only minimal UI
 styles/courseHours.module.css                 Shared course-hours portal UI
 styles/studentPortal.module.css               Student portal page layout
@@ -46,6 +52,8 @@ docs/sql/migrations/2026-07-23_add_course_milestones_and_minimum_hours.sql
                                                Overage policy, milestones, limits, RLS
 docs/sql/migrations/2026-07-30_add_student_files.sql
                                                Private file bucket, metadata, and RLS
+docs/sql/migrations/2026-07-31_add_separate_student_portal_accounts.sql
+                                               Separate portal identities and RLS
 proxy.js                                      Admin route protection
 pages/login.jsx                               Admin login redirect
 ```
@@ -75,6 +83,8 @@ pages/login.jsx                               Admin login redirect
 - Uploads private files for an enrolled student and controls student visibility.
 - Shows students their own course documents through expiring signed downloads.
 - Separates the student experience into Overview, My course, and Files pages.
+- Creates a separate portal ID and temporary password without sending an invitation email.
+- Forces students to replace the temporary password on their first portal sign-in.
 
 ## Stage Contract
 
@@ -156,6 +166,13 @@ The database function performs the same check using the authenticated JWT. New a
 
 The browser uses the normal Supabase anonymous client plus the logged-in session. Never expose `SUPABASE_SERVICE_ROLE_KEY` to the browser.
 
+Enrolled students use a separate Supabase Auth identity whose protected
+`app_metadata.role` is `student_portal`. Students sign in with a generated
+portal ID instead of an email address. The server translates that ID to a
+non-public internal Auth email, while the browser and admin UI display only the
+portal ID. The service-role key creates and resets these accounts only inside
+the protected admin API route.
+
 ## Required Database Setup
 
 Run this migration in the Supabase SQL Editor before using `/admin`:
@@ -172,6 +189,16 @@ The migration:
 - creates the transactional stage movement function
 
 It does not deploy automatically when the frontend is pushed.
+
+After the course, milestone, and file migrations, run:
+
+```text
+docs/sql/migrations/2026-07-31_add_separate_student_portal_accounts.sql
+```
+
+This creates `student_portal_accounts`, replaces the former application-account
+course/file read policies, and links all student learning access to the separate
+portal identity.
 
 ## Course Plans and Hours
 
@@ -220,10 +247,13 @@ The database also prevents lowering a fixed allocation below hours already used 
 
 ### Student behavior
 
-The student portal uses three authenticated pages:
+The application account and student portal account are separate. The student
+portal uses these protected routes:
 
 - `/dashboard` shows the application summary, admissions progress, and links into the learning workspace.
-- `/course` shows a friendly unassigned state until an enrollment exists. Once assigned, it displays:
+- `/student/login` accepts the administrator-issued portal ID and password.
+- `/student` is the enrolled-student overview.
+- `/student/course` shows the assigned plan and:
 
 - total allocated hours
 - hours used from class-session entries
@@ -233,9 +263,12 @@ The student portal uses three authenticated pages:
 - dated class history
 - current milestone and the full milestone timeline
 
-- `/files` shows private course materials, mentor feedback, and templates shared with the student.
+- `/student/files` shows private course materials, mentor feedback, and templates shared with the student.
 
-Students have read-only RLS access to their own enrollment, assigned plan/modules, sessions, milestones, and milestone progress. Only admins can create or modify these records. The `set_student_milestone_status` RPC also ensures only one milestone is marked In progress at a time.
+Portal accounts have read-only RLS access to the linked application,
+enrollment, assigned plan/modules, sessions, milestones, milestone progress,
+and visible files. The original application account does not receive course or
+file access. Only admins can create or modify these records.
 
 ## Private student files
 
@@ -250,7 +283,7 @@ enrollment-linked `student_files` metadata table. The bucket permits supported
 documents and images up to 20 MB.
 
 Admins manage files inside each student profile. Students see only visible
-files associated with their own enrollments on `/files`. Storage RLS and
+files associated with their own enrollments on `/student/files`. Storage RLS and
 metadata RLS both enforce ownership; the UI uses short-lived signed download
 URLs and never creates public file URLs.
 
@@ -258,6 +291,7 @@ Setup and verification:
 
 ```text
 docs/student-files-setup-guide.md
+docs/student-portal-credentials-setup.md
 ```
 
 ## Deferred Admin Work
@@ -281,9 +315,11 @@ For every admin change:
 5. Confirm moving to `interview` still triggers the existing interview workflow after its external webhook setup is complete.
 6. Create a course plan and confirm its module total is correct.
 7. Assign the plan to a test student and log a class.
-8. Confirm the admin table and student dashboard show the same used-hour total.
+8. Confirm the admin table and `/student/course` show the same used-hour total.
 9. Confirm a fixed-hours plan rejects a class that exceeds the allocation.
 10. Confirm a minimum-hours plan displays additional hours after its minimum is fulfilled.
-11. Update a milestone and confirm the student dashboard shows the new status.
+11. Update a milestone and confirm `/student/course` shows the new status.
 12. Upload a test file and confirm only the assigned student can download it.
 13. Hide the test file and confirm it disappears from the student portal.
+14. Create portal credentials and confirm the temporary password is shown once.
+15. Confirm first sign-in requires a new password before `/student` opens.

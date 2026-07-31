@@ -12,6 +12,7 @@ import {
 import styles from '../../styles/admin.module.css'
 import StudentCourseHours from './StudentCourseHours'
 import StudentFiles from './StudentFiles'
+import StudentPortalAccess from './StudentPortalAccess'
 
 function formatDate(value, includeTime = false) {
   if (!value) return '—'
@@ -103,6 +104,7 @@ export default function ApplicationDetail({ application, history, moving, onMove
       {downloadError ? <div className={styles.inlineError}>{downloadError}</div> : null}
 
       <StudentCourseHours application={application} />
+      <StudentPortalAccess application={application} />
       <StudentFiles application={application} />
 
       <section className={styles.detailSection}>

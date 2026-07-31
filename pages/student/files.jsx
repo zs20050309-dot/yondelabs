@@ -1,10 +1,10 @@
-import StudentFiles from '../components/portal/StudentFiles'
+import StudentFiles from '../../components/portal/StudentFiles'
 import StudentPortalShell, {
   PortalEmpty,
   PortalLoading,
-} from '../components/portal/StudentPortalShell'
-import useStudentPortal from '../lib/portal/useStudentPortal'
-import styles from '../styles/studentPortal.module.css'
+} from '../../components/portal/StudentPortalShell'
+import useStudentPortal from '../../lib/portal/useStudentPortal'
+import styles from '../../styles/studentPortal.module.css'
 
 export default function FilesPage() {
   const { user, application, loading, error } = useStudentPortal()
@@ -27,7 +27,7 @@ export default function FilesPage() {
       {!error && !application ? (
         <PortalEmpty
           title="No files available yet"
-          body="Files will appear here after you join a program and an admin or mentor shares course resources with you."
+          body="Files will appear here after an admin or mentor shares course resources with you."
         />
       ) : null}
     </StudentPortalShell>

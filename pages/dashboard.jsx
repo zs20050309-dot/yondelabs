@@ -342,23 +342,23 @@ export default function Dashboard() {
                   <p>Course progress and shared resources now have their own dedicated pages.</p>
                 </div>
                 <div className={styles.portalCards}>
-                  <Link href="/course" className={styles.portalCard}>
+                  <Link href="/student/login" className={styles.portalCard}>
                     <span className={`${styles.portalCardIcon} ${styles.courseIcon}`} aria-hidden>
                       <i />
                     </span>
                     <span className={styles.portalCardCopy}>
-                      <strong>My course</strong>
-                      <small>Hours, milestones, modules, and class history</small>
+                      <strong>Open student portal</strong>
+                      <small>Sign in with the separate portal ID provided after enrollment</small>
                     </span>
                     <span className={styles.portalCardArrow} aria-hidden>→</span>
                   </Link>
-                  <Link href="/files" className={styles.portalCard}>
+                  <Link href="/student/login" className={styles.portalCard}>
                     <span className={`${styles.portalCardIcon} ${styles.filesIcon}`} aria-hidden>
                       <i />
                     </span>
                     <span className={styles.portalCardCopy}>
-                      <strong>Files</strong>
-                      <small>Course materials, templates, and mentor feedback</small>
+                      <strong>Program files</strong>
+                      <small>Use your student portal credentials to access private resources</small>
                     </span>
                     <span className={styles.portalCardArrow} aria-hidden>→</span>
                   </Link>

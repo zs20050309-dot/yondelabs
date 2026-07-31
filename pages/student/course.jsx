@@ -1,10 +1,10 @@
-import CourseHours from '../components/portal/CourseHours'
+import CourseHours from '../../components/portal/CourseHours'
 import StudentPortalShell, {
   PortalEmpty,
   PortalLoading,
-} from '../components/portal/StudentPortalShell'
-import useStudentPortal from '../lib/portal/useStudentPortal'
-import styles from '../styles/studentPortal.module.css'
+} from '../../components/portal/StudentPortalShell'
+import useStudentPortal from '../../lib/portal/useStudentPortal'
+import styles from '../../styles/studentPortal.module.css'
 
 export default function CoursePage() {
   const { user, application, loading, error } = useStudentPortal()
@@ -27,7 +27,7 @@ export default function CoursePage() {
       {!error && !application ? (
         <PortalEmpty
           title="No course is assigned yet"
-          body="Your course details will appear here after your application is accepted and the Yonde Labs team assigns your program plan."
+          body="Your course details will appear after the Yonde Labs team assigns your program plan."
         />
       ) : null}
     </StudentPortalShell>

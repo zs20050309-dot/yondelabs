@@ -58,6 +58,10 @@
   gap: 4px;
 }
 
+.navigationSpacer {
+  flex: 1;
+}
+
 .navLink {
   position: relative;
   display: flex;
@@ -184,6 +188,10 @@
     gap: 20px;
     overflow-x: auto;
     border-top: 1px solid #eef1f5;
+  }
+
+  .navigationSpacer {
+    display: none;
   }
 
   .navLink {

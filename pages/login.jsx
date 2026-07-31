@@ -135,6 +135,12 @@ export default function Login() {
           Register
         </Link>
       </p>
+      <p className={styles.switchText}>
+        Already enrolled?{' '}
+        <Link href="/student/login" className={styles.switchLink}>
+          Student portal sign in
+        </Link>
+      </p>
 
       <div className={styles.securityNote}>
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none">

@@ -49,7 +49,7 @@ export default function StudentPortalShell({
 
   return (
     <div className={styles.page}>
-      <PortalNavbar user={user} />
+      <PortalNavbar user={user} studentPortal />
       <main className={styles.main}>
         <div className={styles.mainInner}>
           <section className={styles.pageHeader}>

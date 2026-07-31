@@ -2,7 +2,7 @@
 
 This feature lets admins upload course files for an individual enrolled student.
 Students see only their own visible files under **Files and Materials** on the
-student portal's `/files` page.
+student portal's `/student/files` page.
 
 ## Apply the migration
 
@@ -19,7 +19,7 @@ The migration creates:
 - a 20 MB file limit
 - a restricted document/image MIME allowlist
 - admin upload, update, download, and delete policies
-- student read policies tied to application ownership and course enrollment
+- student read policies tied to portal-account ownership and course enrollment
 
 The bucket must remain private. Do not enable **Public bucket** in Supabase.
 
@@ -37,7 +37,7 @@ Admins can download, hide/show, or permanently delete each uploaded file.
 
 ## Student workflow
 
-The student portal shows **Files and materials** at `/files`. Before a course
+The student portal shows **Files and materials** at `/student/files`. Before a course
 enrollment exists, the page explains that shared course files are not available
 yet. Visible files show their title, course, size, date, description, and
 Download action.
@@ -62,7 +62,7 @@ Each file must be 20 MB or smaller.
 ## Verification
 
 1. Upload a test PDF for one enrolled student.
-2. Confirm it appears on that student's `/files` page.
+2. Confirm it appears on that student's `/student/files` page.
 3. Sign in as a different student and confirm it is not visible.
 4. Hide the file in admin and confirm it disappears for the assigned student.
 5. Show it again and confirm Download works.
