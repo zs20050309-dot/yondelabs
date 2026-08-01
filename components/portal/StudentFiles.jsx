@@ -16,24 +16,27 @@ function formatDate(value) {
   })
 }
 
-export default function StudentFiles({ applicationId, showEmpty = false }) {
+export default function StudentFiles({ applicationId, currentStudentId, showEmpty = false }) {
   const [enrollments, setEnrollments] = useState([])
   const [loading, setLoading] = useState(true)
   const [busyId, setBusyId] = useState(null)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (!applicationId) return undefined
+    if (!applicationId && !currentStudentId) return undefined
     let active = true
 
     async function loadFiles() {
       setLoading(true)
       setError('')
-      const { data, error: loadError } = await supabase
+      let enrollmentQuery = supabase
         .from('student_course_enrollments')
         .select('id, status, created_at, course_plans(name), student_files(*)')
-        .eq('application_id', applicationId)
         .order('created_at', { ascending: false })
+      enrollmentQuery = currentStudentId
+        ? enrollmentQuery.eq('current_student_id', currentStudentId)
+        : enrollmentQuery.eq('application_id', applicationId)
+      const { data, error: loadError } = await enrollmentQuery
 
       if (!active) return
       if (loadError) {
@@ -49,7 +52,7 @@ export default function StudentFiles({ applicationId, showEmpty = false }) {
     return () => {
       active = false
     }
-  }, [applicationId])
+  }, [applicationId, currentStudentId])
 
   const files = useMemo(() => (
     enrollments

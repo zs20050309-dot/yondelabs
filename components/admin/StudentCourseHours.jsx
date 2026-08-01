@@ -13,7 +13,9 @@ function formatDate(value) {
   return new Date(value).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })
 }
 
-export default function StudentCourseHours({ application }) {
+export default function StudentCourseHours({ application, currentStudent }) {
+  const ownerColumn = currentStudent ? 'current_student_id' : 'application_id'
+  const ownerId = currentStudent?.id || application?.id
   const [plans, setPlans] = useState([])
   const [enrollment, setEnrollment] = useState(null)
   const [sessions, setSessions] = useState([])
@@ -31,7 +33,7 @@ export default function StudentCourseHours({ application }) {
   async function load() {
     const [plansResult, enrollmentResult] = await Promise.all([
       supabase.from('course_plans').select('*, course_modules(*), course_milestones(*)').eq('active', true).order('created_at', { ascending: false }),
-      supabase.from('student_course_enrollments').select('*, course_plans(*, course_modules(*), course_milestones(*))').eq('application_id', application.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+      supabase.from('student_course_enrollments').select('*, course_plans(*, course_modules(*), course_milestones(*))').eq(ownerColumn, ownerId).order('created_at', { ascending: false }).limit(1).maybeSingle(),
     ])
     if (plansResult.error || enrollmentResult.error) {
       setError('Course hours or milestones are unavailable. Run the 2026-07-22 and 2026-07-23 course migrations.')
@@ -54,7 +56,7 @@ export default function StudentCourseHours({ application }) {
     }
   }
 
-  useEffect(() => { load() }, [application.id])
+  useEffect(() => { if (ownerId) load() }, [ownerId])
 
   const selectedPlan = plans.find((plan) => plan.id === planId)
   const modules = enrollment?.course_plans?.course_modules || []
@@ -78,7 +80,9 @@ export default function StudentCourseHours({ application }) {
     setError('')
     const { data: { user } } = await supabase.auth.getUser()
     const { error: insertError } = await supabase.from('student_course_enrollments').insert({
-      application_id: application.id, course_plan_id: planId, allocated_minutes: minutes,
+      application_id: application?.id || null,
+      current_student_id: currentStudent?.id || null,
+      course_plan_id: planId, allocated_minutes: minutes,
       started_at: startDate, created_by: user?.id,
     })
     if (insertError) setError(insertError.message)

@@ -7,20 +7,21 @@ import useStudentPortal from '../../lib/portal/useStudentPortal'
 import styles from '../../styles/studentPortal.module.css'
 
 export default function StudentPortalHome() {
-  const { user, application, portalAccount, loading, error } = useStudentPortal()
+  const { user, application, currentStudent, portalAccount, loading, error } = useStudentPortal()
 
   if (loading) return <PortalLoading />
   if (!user) return null
 
   const name =
-    user.user_metadata?.preferred_name || 'Student'
+    currentStudent?.full_name || user.user_metadata?.preferred_name || 'Student'
   const program =
-    PROGRAM_LABELS[application?.program] || application?.program || 'Your program'
+    PROGRAM_LABELS[(currentStudent || application)?.program] || (currentStudent || application)?.program || 'Your program'
 
   return (
     <StudentPortalShell
       user={user}
       application={application}
+      currentStudent={currentStudent}
       eyebrow="Program workspace"
       title={`Welcome, ${name}`}
       description="Your course progress and resources are organized here, separately from your application account."

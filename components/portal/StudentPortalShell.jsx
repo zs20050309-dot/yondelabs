@@ -41,10 +41,12 @@ export default function StudentPortalShell({
   title,
   description,
   application,
+  currentStudent,
   children,
 }) {
-  const programName = application
-    ? PROGRAM_LABELS[application.program] || application.program
+  const profile = currentStudent || application
+  const programName = profile
+    ? PROGRAM_LABELS[profile.program] || profile.program
     : null
 
   return (

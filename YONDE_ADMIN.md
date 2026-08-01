@@ -26,6 +26,7 @@ components/admin/CoursePlanManager.jsx       Reusable plans and module hours
 components/admin/StudentCourseHours.jsx      Assignment and class logging
 components/admin/StudentFiles.jsx            Per-student course file management
 components/admin/StudentPortalAccess.jsx     Portal ID and password management
+components/admin/CurrentStudents.jsx          Current-student list and CSV onboarding
 components/portal/CourseHours.jsx            Student read-only hours section
 components/portal/StudentFiles.jsx            Student read-only files section
 components/portal/StudentPortalShell.jsx      Shared student portal page shell
@@ -37,11 +38,13 @@ pages/student/set-password.jsx                Required first-login password chan
 pages/api/admin/applications/[id]/pdf.js      Protected PDF download endpoint
 pages/api/admin/applications/[id]/portal-access.js
                                                Server-only credential creation/reset
+pages/api/admin/current-students/import.js     Protected current-student CSV import
 styles/admin.module.css                      Admin-only minimal UI
 styles/courseHours.module.css                 Shared course-hours portal UI
 styles/studentPortal.module.css               Student portal page layout
 lib/admin/applicationPdf.js                   Schema-driven PDF generator
 lib/admin/stages.js                          Stage, program, and label definitions
+lib/admin/currentStudents.js                  CSV parsing and program normalization
 lib/courseHours.js                            Minute conversion and total helpers
 lib/portal/useStudentPortal.js                Shared student auth/application loader
 docs/sql/migrations/2026-07-16_add_admin_application_progress.sql
@@ -54,6 +57,8 @@ docs/sql/migrations/2026-07-30_add_student_files.sql
                                                Private file bucket, metadata, and RLS
 docs/sql/migrations/2026-07-31_add_separate_student_portal_accounts.sql
                                                Separate portal identities and RLS
+docs/sql/migrations/2026-08-01_add_current_students.sql
+                                               Non-application students and mentors
 proxy.js                                      Admin route protection
 pages/login.jsx                               Admin login redirect
 ```
@@ -85,6 +90,10 @@ pages/login.jsx                               Admin login redirect
 - Separates the student experience into Overview, My course, and Files pages.
 - Creates a separate portal ID and temporary password without sending an invitation email.
 - Forces students to replace the temporary password on their first portal sign-in.
+- Keeps existing students in a separate **Current students** admin section.
+- Imports current students from CSV without creating application records.
+- Normalizes `IRP-Game` to `IRP` and imports mentors and hour allocations.
+- Exports newly generated portal credentials once as a local CSV download.
 
 ## Stage Contract
 
@@ -200,6 +209,30 @@ This creates `student_portal_accounts`, replaces the former application-account
 course/file read policies, and links all student learning access to the separate
 portal identity.
 
+For students who did not apply through this website, then run:
+
+```text
+docs/sql/migrations/2026-08-01_add_current_students.sql
+```
+
+This adds `current_students`, mentors, mentor assignments, hour-allocation
+breakdowns, and current-student links on enrollments and portal accounts. It
+extends portal RLS so application-based and directly onboarded students can use
+the same course, milestone, session, and file features.
+
+### Importing existing students
+
+1. Open `/admin` and choose **Current students**.
+2. Select **Import CSV** and choose the source spreadsheet exported as CSV.
+3. Review the normalized programs, hours, mentors, and validation warnings.
+4. Import the valid rows, then download the credentials CSV immediately.
+
+The importer intentionally ignores any source password column. Strong temporary
+passwords are generated on the server, while the downloadable credential file
+is created only in the browser. Rows without an email are supported because
+students sign in with portal IDs. Imported students never appear under
+Applications.
+
 ## Course Plans and Hours
 
 Run this migration after the admin progress migration:
@@ -298,7 +331,6 @@ docs/student-portal-credentials-setup.md
 
 - Days since last action / progress time checks
 - Completed/joined program category and final enrollment stage
-- Mentor directory and student assignments
 - Internal notes and archive reasons
 - Bulk actions and exports
 

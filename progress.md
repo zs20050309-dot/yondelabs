@@ -1,6 +1,33 @@
 # Progress Log — YondeLabs Web
 
-Last updated: 2026-07-13
+## Session: 2026-08-02 - Existing student CSV onboarding
+
+### Background
+Existing enrolled students need portal access without being represented as applicants or appearing in admissions.
+
+### Added
+- A separate `current_students` model with mentor assignments and detailed hour allocations.
+- A Current students admin tab, searchable roster, detail view, and CSV review flow.
+- A protected import endpoint that creates enrollments and Supabase portal identities.
+- One-time generated credential display and browser-only CSV download.
+- Student portal support for directly onboarded students, including mentors, hours, milestones, sessions, and files.
+
+### Data rules
+- The importer does not create application records.
+- `IRP-Game` is normalized to `IRP`.
+- Source spreadsheet passwords are ignored; strong temporary passwords are generated server-side.
+- Students without contact email can use portal-ID login.
+
+### Required setup
+- Run `docs/sql/migrations/2026-08-01_add_current_students.sql` in Supabase.
+- Keep `SUPABASE_SERVICE_ROLE_KEY` configured only in the server environment.
+- Export the workbook as CSV and upload it from Admin > Current students.
+
+### Verification
+- `npm.cmd run build` passed with the new admin API and portal changes.
+- Authenticated visual verification remains after the migration is applied; the in-app preview was unavailable.
+
+Last updated: 2026-08-02
 
 ---
 

@@ -7,7 +7,8 @@ import useStudentPortal from '../../lib/portal/useStudentPortal'
 import styles from '../../styles/studentPortal.module.css'
 
 export default function CoursePage() {
-  const { user, application, loading, error } = useStudentPortal()
+  const { user, application, currentStudent, loading, error } = useStudentPortal()
+  const profile = currentStudent || application
 
   if (loading) return <PortalLoading message="Loading your course..." />
   if (!user) return null
@@ -16,15 +17,16 @@ export default function CoursePage() {
     <StudentPortalShell
       user={user}
       application={application}
+      currentStudent={currentStudent}
       eyebrow="Learning"
       title="My course"
       description="Follow your course hours, current milestone, modules, and completed classes in one place."
     >
       {error ? <div className={styles.error}>{error}</div> : null}
-      {!error && application ? (
-        <CourseHours applicationId={application.id} showEmpty />
+      {!error && profile ? (
+        <CourseHours applicationId={application?.id} currentStudentId={currentStudent?.id} mentors={currentStudent?.student_mentor_assignments} showEmpty />
       ) : null}
-      {!error && !application ? (
+      {!error && !profile ? (
         <PortalEmpty
           title="No course is assigned yet"
           body="Your course details will appear after the Yonde Labs team assigns your program plan."

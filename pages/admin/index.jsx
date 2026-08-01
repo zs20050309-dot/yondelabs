@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
 import ApplicationDetail from '../../components/admin/ApplicationDetail'
 import CoursePlanManager from '../../components/admin/CoursePlanManager'
+import CurrentStudents from '../../components/admin/CurrentStudents'
 import { supabase } from '../../lib/supabaseClient'
 import {
   NEXT_STATUS,
@@ -33,6 +34,10 @@ export default function AdminDashboard() {
   const [movingId, setMovingId] = useState(null)
   const [error, setError] = useState('')
   const [showCoursePlans, setShowCoursePlans] = useState(false)
+  const [section, setSection] = useState('applications')
+  const [currentStudents, setCurrentStudents] = useState([])
+  const [currentStudentsLoading, setCurrentStudentsLoading] = useState(true)
+  const [currentStudentsError, setCurrentStudentsError] = useState('')
 
   const loadApplications = useCallback(async () => {
     const [applicationsResult, historyResult] = await Promise.all([
@@ -44,6 +49,33 @@ export default function AdminDashboard() {
     if (historyResult.error) throw historyResult.error
     setApplications(applicationsResult.data || [])
     setHistory(historyResult.data || [])
+  }, [])
+
+  const loadCurrentStudents = useCallback(async () => {
+    setCurrentStudentsLoading(true)
+    const { data, error: loadError } = await supabase
+      .from('current_students')
+      .select(`
+        *,
+        student_course_enrollments(
+          id, allocated_minutes, status, created_at,
+          course_plans(id, name, allow_overage),
+          class_sessions(duration_minutes),
+          student_hour_allocations(id, label, allocated_minutes, sort_order)
+        ),
+        student_mentor_assignments(id, role, sort_order, mentors(id, name)),
+        student_portal_accounts(portal_id, status, must_change_password)
+      `)
+      .order('created_at', { ascending: false })
+
+    if (loadError) {
+      setCurrentStudentsError('Apply the 2026-08-01 current students migration, then reload this page.')
+      setCurrentStudents([])
+    } else {
+      setCurrentStudentsError('')
+      setCurrentStudents(data || [])
+    }
+    setCurrentStudentsLoading(false)
   }, [])
 
   useEffect(() => {
@@ -60,6 +92,7 @@ export default function AdminDashboard() {
         }
         setUser(currentUser)
         await loadApplications()
+        await loadCurrentStudents()
       } catch (loadError) {
         setError(loadError.message?.includes('application_stage_history')
           ? 'The admin workflow migration has not been applied yet.'
@@ -69,7 +102,7 @@ export default function AdminDashboard() {
       }
     }
     initialise()
-  }, [loadApplications, router])
+  }, [loadApplications, loadCurrentStudents, router])
 
   const filtered = useMemo(() => {
     const normalized = query.trim().toLowerCase()
@@ -87,6 +120,12 @@ export default function AdminDashboard() {
     submitted: applications.filter((item) => item.status === 'submitted').length,
     inProgress: applications.filter((item) => ['interview', 'offer'].includes(item.status)).length,
     archived: applications.filter((item) => item.status === 'rejected').length,
+  }
+  const currentCounts = {
+    total: currentStudents.length,
+    active: currentStudents.filter((item) => item.status === 'active').length,
+    paused: currentStudents.filter((item) => item.status === 'paused').length,
+    completed: currentStudents.filter((item) => item.status === 'completed').length,
   }
 
   async function moveApplication(application, nextStatus) {
@@ -128,21 +167,37 @@ export default function AdminDashboard() {
       </header>
 
       <main className={styles.main}>
+        <nav className={styles.adminTabs} aria-label="Admin sections">
+          <button type="button" className={section === 'applications' ? styles.adminTabActive : styles.adminTab} onClick={() => setSection('applications')}>Applications</button>
+          <button type="button" className={section === 'students' ? styles.adminTabActive : styles.adminTab} onClick={() => setSection('students')}>Current students</button>
+        </nav>
         <div className={styles.titleRow}>
-          <div><span className={styles.eyebrow}>Admissions</span><h1>Student applications</h1><p>Review new profiles and move students through each application stage.</p></div>
+          {section === 'applications'
+            ? <div><span className={styles.eyebrow}>Admissions</span><h1>Student applications</h1><p>Review new profiles and move students through each application stage.</p></div>
+            : <div><span className={styles.eyebrow}>Programs</span><h1>Current students</h1><p>Manage enrolled students, course hours, mentors, files, and portal access.</p></div>}
           <button type="button" className={styles.primaryButton} onClick={() => setShowCoursePlans(true)}>Manage course plans</button>
         </div>
 
-        <section className={styles.stats} aria-label="Application summary">
-          <div><span>All applications</span><strong>{counts.total}</strong></div>
-          <div><span>New submissions</span><strong>{counts.submitted}</strong></div>
-          <div><span>In progress</span><strong>{counts.inProgress}</strong></div>
-          <div><span>Archived</span><strong>{counts.archived}</strong></div>
-        </section>
+        {section === 'applications' ? (
+          <section className={styles.stats} aria-label="Application summary">
+            <div><span>All applications</span><strong>{counts.total}</strong></div>
+            <div><span>New submissions</span><strong>{counts.submitted}</strong></div>
+            <div><span>In progress</span><strong>{counts.inProgress}</strong></div>
+            <div><span>Archived</span><strong>{counts.archived}</strong></div>
+          </section>
+        ) : (
+          <section className={styles.stats} aria-label="Current student summary">
+            <div><span>All current students</span><strong>{currentCounts.total}</strong></div>
+            <div><span>Active</span><strong>{currentCounts.active}</strong></div>
+            <div><span>Paused</span><strong>{currentCounts.paused}</strong></div>
+            <div><span>Completed</span><strong>{currentCounts.completed}</strong></div>
+          </section>
+        )}
 
-        {error ? <div className={styles.error}>{error}</div> : null}
+        {section === 'applications' && error ? <div className={styles.error}>{error}</div> : null}
+        {section === 'students' && currentStudentsError ? <div className={styles.error}>{currentStudentsError}</div> : null}
 
-        <section className={styles.tableCard}>
+        {section === 'applications' ? <section className={styles.tableCard}>
           <div className={styles.toolbar}>
             <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search name, email, or program" aria-label="Search applications" />
             <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} aria-label="Filter by stage">
@@ -180,7 +235,7 @@ export default function AdminDashboard() {
             </table>
             {!filtered.length ? <div className={styles.empty}>No applications match these filters.</div> : null}
           </div>
-        </section>
+        </section> : <CurrentStudents students={currentStudents} loading={currentStudentsLoading} onReload={loadCurrentStudents} />}
       </main>
 
       {selected ? <><button type="button" className={styles.backdrop} onClick={() => setSelectedId(null)} aria-label="Close profile" /><ApplicationDetail application={selected} history={selectedHistory} moving={movingId === selected.id} onMove={moveApplication} onClose={() => setSelectedId(null)} /></> : null}

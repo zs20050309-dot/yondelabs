@@ -10,7 +10,7 @@ function formatSessionDate(value) {
   })
 }
 
-export default function CourseHours({ applicationId, showEmpty = false }) {
+export default function CourseHours({ applicationId, currentStudentId, mentors = [], showEmpty = false }) {
   const [enrollment, setEnrollment] = useState(null)
   const [modules, setModules] = useState([])
   const [sessions, setSessions] = useState([])
@@ -22,14 +22,16 @@ export default function CourseHours({ applicationId, showEmpty = false }) {
   useEffect(() => {
     let active = true
     async function load() {
-      const enrollmentResult = await supabase
+      let enrollmentQuery = supabase
         .from('student_course_enrollments')
-        .select('*, course_plans(id, name, description, allow_overage)')
-        .eq('application_id', applicationId)
+        .select('*, course_plans(id, name, description, allow_overage), student_hour_allocations(id, label, allocated_minutes, sort_order)')
         .in('status', ['active', 'completed', 'paused'])
         .order('created_at', { ascending: false })
         .limit(1)
-        .maybeSingle()
+      enrollmentQuery = currentStudentId
+        ? enrollmentQuery.eq('current_student_id', currentStudentId)
+        : enrollmentQuery.eq('application_id', applicationId)
+      const enrollmentResult = await enrollmentQuery.maybeSingle()
 
       if (!active) return
       if (enrollmentResult.error) {
@@ -60,7 +62,7 @@ export default function CourseHours({ applicationId, showEmpty = false }) {
     }
     load()
     return () => { active = false }
-  }, [applicationId])
+  }, [applicationId, currentStudentId])
 
   const usedMinutes = useMemo(() => sumMinutes(sessions), [sessions])
   if (loading) {
@@ -114,6 +116,13 @@ export default function CourseHours({ applicationId, showEmpty = false }) {
         <span style={{ width: `${percentage}%` }} />
       </div>
       <div className={styles.progressCaption}><span>{allowsOverage && percentage === 100 ? 'Minimum hours fulfilled' : `${Math.round(percentage)}% ${allowsOverage ? 'of minimum' : 'used'}`}</span><span>Started {enrollment.started_at}</span></div>
+
+      {(enrollment.student_hour_allocations?.length || mentors?.length) ? (
+        <div className={styles.studentColumns}>
+          {enrollment.student_hour_allocations?.length ? <div><h3>Hour allocation</h3><div className={styles.moduleList}>{[...enrollment.student_hour_allocations].sort((a, b) => a.sort_order - b.sort_order).map((item) => <div className={styles.moduleRow} key={item.id}><div><strong>{item.label}</strong></div><span>{formatHours(item.allocated_minutes)}</span></div>)}</div></div> : null}
+          {mentors?.length ? <div><h3>My mentors</h3><div className={styles.moduleList}>{[...mentors].sort((a, b) => a.sort_order - b.sort_order).map((item) => <div className={styles.moduleRow} key={item.id}><div><strong>{item.mentors?.name}</strong><span>{item.role}</span></div></div>)}</div></div> : null}
+        </div>
+      ) : null}
 
       {milestones.length ? (
         <div className={styles.studentMilestones}>

@@ -23,7 +23,9 @@ function planName(enrollment) {
   return enrollment.course_plans?.name || 'Assigned course'
 }
 
-export default function StudentFiles({ application }) {
+export default function StudentFiles({ application, currentStudent }) {
+  const ownerColumn = currentStudent ? 'current_student_id' : 'application_id'
+  const ownerId = currentStudent?.id || application?.id
   const inputRef = useRef(null)
   const [enrollments, setEnrollments] = useState([])
   const [selectedEnrollmentId, setSelectedEnrollmentId] = useState('')
@@ -37,11 +39,11 @@ export default function StudentFiles({ application }) {
   const [error, setError] = useState('')
 
   const loadFiles = useCallback(async () => {
-    if (!application?.id) return
+    if (!ownerId) return
     const { data, error: loadError } = await supabase
       .from('student_course_enrollments')
       .select('id, status, created_at, course_plans(name), student_files(*)')
-      .eq('application_id', application.id)
+      .eq(ownerColumn, ownerId)
       .order('created_at', { ascending: false })
 
     if (loadError) throw loadError
@@ -56,7 +58,7 @@ export default function StudentFiles({ application }) {
         ? current
         : (rows.find((item) => item.status === 'active')?.id || rows[0]?.id || '')
     ))
-  }, [application?.id])
+  }, [ownerId])
 
   useEffect(() => {
     let active = true
@@ -91,7 +93,7 @@ export default function StudentFiles({ application }) {
 
     setUploading(true)
     setError('')
-    const path = `${application.user_id}/${enrollment.id}/${crypto.randomUUID()}-${safeStorageFilename(selectedFile.name)}`
+    const path = `${application?.user_id || currentStudent?.id}/${enrollment.id}/${crypto.randomUUID()}-${safeStorageFilename(selectedFile.name)}`
 
     try {
       const { error: storageError } = await supabase.storage
