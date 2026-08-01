@@ -26,7 +26,7 @@ components/admin/CoursePlanManager.jsx       Reusable plans and module hours
 components/admin/StudentCourseHours.jsx      Assignment and class logging
 components/admin/StudentFiles.jsx            Per-student course file management
 components/admin/StudentPortalAccess.jsx     Portal ID and password management
-components/admin/CurrentStudents.jsx          Current-student list and CSV onboarding
+components/admin/CurrentStudents.jsx          Current-student list and management
 components/portal/CourseHours.jsx            Student read-only hours section
 components/portal/StudentFiles.jsx            Student read-only files section
 components/portal/StudentPortalShell.jsx      Shared student portal page shell
@@ -38,7 +38,6 @@ pages/student/set-password.jsx                Required first-login password chan
 pages/api/admin/applications/[id]/pdf.js      Protected PDF download endpoint
 pages/api/admin/applications/[id]/portal-access.js
                                                Server-only credential creation/reset
-pages/api/admin/current-students/import.js     Protected current-student CSV import
 styles/admin.module.css                      Admin-only minimal UI
 styles/courseHours.module.css                 Shared course-hours portal UI
 styles/studentPortal.module.css               Student portal page layout
@@ -59,6 +58,8 @@ docs/sql/migrations/2026-07-31_add_separate_student_portal_accounts.sql
                                                Separate portal identities and RLS
 docs/sql/migrations/2026-08-01_add_current_students.sql
                                                Non-application students and mentors
+docs/sql/migrations/2026-08-02_convert_applications_to_current_students.sql
+                                               Accepted-application conversion workflow
 proxy.js                                      Admin route protection
 pages/login.jsx                               Admin login redirect
 ```
@@ -91,9 +92,7 @@ pages/login.jsx                               Admin login redirect
 - Creates a separate portal ID and temporary password without sending an invitation email.
 - Forces students to replace the temporary password on their first portal sign-in.
 - Keeps existing students in a separate **Current students** admin section.
-- Imports current students from CSV without creating application records.
-- Normalizes `IRP-Game` to `IRP` and imports mentors and hour allocations.
-- Exports newly generated portal credentials once as a local CSV download.
+- Enrolls offered applicants into Current students without deleting application history.
 
 ## Stage Contract
 
@@ -220,18 +219,21 @@ breakdowns, and current-student links on enrollments and portal accounts. It
 extends portal RLS so application-based and directly onboarded students can use
 the same course, milestone, session, and file features.
 
-### Importing existing students
+Then run the conversion workflow migration:
 
-1. Open `/admin` and choose **Current students**.
-2. Select **Import CSV** and choose the source spreadsheet exported as CSV.
-3. Review the normalized programs, hours, mentors, and validation warnings.
-4. Import the valid rows, then download the credentials CSV immediately.
+```text
+docs/sql/migrations/2026-08-02_convert_applications_to_current_students.sql
+```
 
-The importer intentionally ignores any source password column. Strong temporary
-passwords are generated on the server, while the downloadable credential file
-is created only in the browser. Rows without an email are supported because
-students sign in with portal IDs. Imported students never appear under
-Applications.
+Offered applications show **Enroll as current student**. Conversion creates the
+current-student profile, transfers any course enrollment and separate portal
+account, timestamps the conversion, removes the profile from the active
+Applications list, and preserves the original application and stage history.
+The action is idempotent and is restricted to admins and `offer` applications.
+
+If the applicant did not already have a course or portal credentials, open the
+new Current student profile, assign a course, then create the portal ID and
+temporary password there.
 
 ## Course Plans and Hours
 

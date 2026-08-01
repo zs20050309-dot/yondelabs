@@ -29,6 +29,21 @@ Existing enrolled students need portal access without being represented as appli
 
 Last updated: 2026-08-02
 
+## Session: 2026-08-02 - Current-student import closed
+
+- Removed the Import CSV button and onboarding dialogs after the initial roster import.
+- Removed the protected bulk-import API and its CSV parsing code.
+- Preserved all imported student, enrollment, mentor, portal, hour, and file data.
+
+## Session: 2026-08-02 - Application enrollment conversion
+
+- Added an admin-only conversion for applications at Offer sent.
+- Conversion creates a Current student and preserves the complete application history.
+- Existing course enrollment, class history, milestone progress, files, and portal account move with the student.
+- Converted applications leave the active Applications list and appear under Current students.
+- Current-student profiles can create or reset separate portal credentials after a course is assigned.
+- Requires `docs/sql/migrations/2026-08-02_convert_applications_to_current_students.sql`.
+
 ---
 
 ## Session: 2026-05-26 — CLAUDE.md 架构梳理 + Navbar 修复 + 部署教训

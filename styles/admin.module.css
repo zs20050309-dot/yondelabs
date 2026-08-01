@@ -79,25 +79,10 @@
 .answer span { display: block; color: #768196; font-size: 11px; line-height: 1.45; }
 .answer p { margin-top: 6px; color: #263246; font-size: 13px; line-height: 1.55; white-space: pre-wrap; }
 .error { margin: 0 0 16px; border: 1px solid #f0c6c9; border-radius: 9px; background: #fff3f4; color: #962d35; padding: 13px 15px; font-size: 13px; }
-.inlineBannerError { border-bottom: 1px solid #f0c6c9; background: #fff3f4; color: #962d35; padding: 12px 16px; font-size: 12px; }
 .studentStatus_active { background: #eaf8ef; color: #197343; }
 .studentStatus_paused { background: #fff5df; color: #8b6218; }
 .studentStatus_completed { background: #edf2ff; color: #2541b2; }
 .studentStatus_archived { background: #f1f2f4; color: #697384; }
-.importSummary { display: flex; gap: 12px; padding: 18px 0; }
-.importSummary span { border-radius: 99px; background: #eaf8ef; color: #197343; padding: 7px 11px; font-size: 11px; font-weight: 700; }
-.importSummary .importProblem { background: #fff0f1; color: #9f343b; }
-.previewList { display: grid; gap: 8px; margin-bottom: 20px; }
-.previewRow, .previewInvalid { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 18px; align-items: center; border: 1px solid #e3e7ee; border-radius: 9px; padding: 12px 14px; }
-.previewInvalid { border-color: #efc7ca; background: #fff7f7; }
-.previewRow strong, .previewRow span, .previewInvalid strong, .previewInvalid span { display: block; }
-.previewRow span, .previewInvalid span { margin-top: 3px; color: #748095; font-size: 11px; }
-.previewInvalid p { grid-column: 1 / -1; color: #9f343b; font-size: 11px; }
-.previewRow code { color: #2541b2; font-size: 11px; }
-.modalActions { position: sticky; bottom: -28px; display: flex; justify-content: flex-end; gap: 9px; margin: 24px -28px -28px; border-top: 1px solid #e3e7ee; background: #fff; padding: 16px 28px; }
-.credentialNotice { margin: 20px 0 12px; border-radius: 8px; background: #fff7e8; color: #8a5a12; padding: 11px 12px; font-size: 11px; }
-.failureList { margin-top: 22px; border-radius: 9px; background: #fff3f4; color: #8f3037; padding: 14px; font-size: 11px; }
-.failureList p { margin-top: 7px; }
 .detailList { display: grid; margin-top: 14px; }
 .detailList p { display: flex; justify-content: space-between; gap: 18px; border-bottom: 1px solid #edf0f4; padding: 11px 0; color: #677388; font-size: 12px; }
 .detailList strong { color: #263246; }

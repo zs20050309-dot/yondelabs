@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
 import styles from '../../styles/admin.module.css'
 
-export default function StudentPortalAccess({ application }) {
+export default function StudentPortalAccess({ application, currentStudent }) {
+  const ownerColumn = currentStudent ? 'current_student_id' : 'application_id'
+  const ownerId = currentStudent?.id || application?.id
+  const endpoint = currentStudent
+    ? `/api/admin/current-students/${currentStudent.id}/portal-access`
+    : `/api/admin/applications/${application.id}/portal-access`
   const [account, setAccount] = useState(null)
   const [hasEnrollment, setHasEnrollment] = useState(false)
   const [temporaryPassword, setTemporaryPassword] = useState('')
@@ -19,12 +24,12 @@ export default function StudentPortalAccess({ application }) {
         supabase
           .from('student_portal_accounts')
           .select('portal_id, status, must_change_password, created_at')
-          .eq('application_id', application.id)
+          .eq(ownerColumn, ownerId)
           .maybeSingle(),
         supabase
           .from('student_course_enrollments')
           .select('id')
-          .eq('application_id', application.id)
+          .eq(ownerColumn, ownerId)
           .limit(1)
           .maybeSingle(),
       ])
@@ -39,7 +44,7 @@ export default function StudentPortalAccess({ application }) {
     return () => {
       active = false
     }
-  }, [application.id])
+  }, [ownerId])
 
   async function manageCredentials(method) {
     setBusy(true)
@@ -52,7 +57,7 @@ export default function StudentPortalAccess({ application }) {
       if (!session?.access_token) throw new Error('Please sign in again.')
 
       const response = await fetch(
-        `/api/admin/applications/${application.id}/portal-access`,
+        endpoint,
         {
           method,
           headers: { Authorization: `Bearer ${session.access_token}` },

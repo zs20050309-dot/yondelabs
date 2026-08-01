@@ -34,7 +34,7 @@ function displayValue(value) {
   return String(value)
 }
 
-export default function ApplicationDetail({ application, history, moving, onMove, onClose }) {
+export default function ApplicationDetail({ application, history, moving, onMove, onConvert, onClose }) {
   const [downloading, setDownloading] = useState(false)
   const [downloadError, setDownloadError] = useState('')
   if (!application) return null
@@ -114,6 +114,11 @@ export default function ApplicationDetail({ application, history, moving, onMove
             <h3>Application stages</h3>
           </div>
           <div className={styles.actionRow}>
+            {application.status === 'offer' ? (
+              <button type="button" className={styles.primaryButton} disabled={moving} onClick={() => onConvert(application)}>
+                {moving ? 'Enrolling...' : 'Enroll as current student'}
+              </button>
+            ) : null}
             {nextStatus ? (
               <button
                 type="button"

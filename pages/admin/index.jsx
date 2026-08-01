@@ -41,7 +41,7 @@ export default function AdminDashboard() {
 
   const loadApplications = useCallback(async () => {
     const [applicationsResult, historyResult] = await Promise.all([
-      supabase.from('applications').select('*, student_course_enrollments(id, allocated_minutes, status, created_at, class_sessions(duration_minutes))').neq('status', 'draft').order('submitted_at', { ascending: false }),
+      supabase.from('applications').select('*, student_course_enrollments(id, allocated_minutes, status, created_at, class_sessions(duration_minutes))').neq('status', 'draft').is('converted_current_student_id', null).order('submitted_at', { ascending: false }),
       supabase.from('application_stage_history').select('*').order('changed_at', { ascending: true }),
     ])
 
@@ -148,6 +148,24 @@ export default function AdminDashboard() {
     setMovingId(null)
   }
 
+  async function convertToCurrentStudent(application) {
+    if (!window.confirm(`Enroll ${studentName(application)} as a current student? They will leave the active Applications list.`)) return
+    setMovingId(application.id)
+    setError('')
+    const { error: convertError } = await supabase.rpc('convert_application_to_current_student', {
+      p_application_id: application.id,
+    })
+
+    if (convertError) {
+      setError(convertError.message || 'The application could not be converted.')
+    } else {
+      setSelectedId(null)
+      await Promise.all([loadApplications(), loadCurrentStudents()])
+      setSection('students')
+    }
+    setMovingId(null)
+  }
+
   async function signOut() {
     await supabase.auth.signOut()
     router.replace('/login')
@@ -227,6 +245,7 @@ export default function AdminDashboard() {
                       <td className={styles.rowActions}>
                         <button type="button" className={styles.viewButton} onClick={() => setSelectedId(application.id)}>View profile</button>
                         {nextStatus ? <button type="button" className={styles.moveButton} disabled={movingId === application.id} onClick={() => moveApplication(application, nextStatus)}>{movingId === application.id ? 'Updating…' : `Move to ${STATUS_LABELS[nextStatus]}`}</button> : null}
+                        {application.status === 'offer' ? <button type="button" className={styles.moveButton} disabled={movingId === application.id} onClick={() => convertToCurrentStudent(application)}>{movingId === application.id ? 'Enrolling...' : 'Enroll student'}</button> : null}
                       </td>
                     </tr>
                   )
@@ -235,10 +254,10 @@ export default function AdminDashboard() {
             </table>
             {!filtered.length ? <div className={styles.empty}>No applications match these filters.</div> : null}
           </div>
-        </section> : <CurrentStudents students={currentStudents} loading={currentStudentsLoading} onReload={loadCurrentStudents} />}
+        </section> : <CurrentStudents students={currentStudents} loading={currentStudentsLoading} />}
       </main>
 
-      {selected ? <><button type="button" className={styles.backdrop} onClick={() => setSelectedId(null)} aria-label="Close profile" /><ApplicationDetail application={selected} history={selectedHistory} moving={movingId === selected.id} onMove={moveApplication} onClose={() => setSelectedId(null)} /></> : null}
+      {selected ? <><button type="button" className={styles.backdrop} onClick={() => setSelectedId(null)} aria-label="Close profile" /><ApplicationDetail application={selected} history={selectedHistory} moving={movingId === selected.id} onMove={moveApplication} onConvert={convertToCurrentStudent} onClose={() => setSelectedId(null)} /></> : null}
       {showCoursePlans ? <><button type="button" className={styles.backdrop} onClick={() => setShowCoursePlans(false)} aria-label="Close course plans" /><CoursePlanManager onClose={() => setShowCoursePlans(false)} /></> : null}
     </div>
   )
