@@ -2164,3 +2164,27 @@ User requested an enrolled-student portal with credentials separate from the app
 - An unauthenticated `/student/course` request returned HTTP 307 to `/student/login`.
 - An unauthenticated credential-creation request returned HTTP 401.
 - Full credential creation and RLS verification require applying the new Supabase migration.
+## Session: 2026-08-04 - Program-specific PDF offer letters
+
+### Added
+- Program-specific offer fields for Research Assistant, Independent Research,
+  Passion Project, and Portfolio Project applications.
+- A branded offer-letter PDF generator based on the four supplied Word templates.
+- A protected admin endpoint that generates the PDF in memory and sends it to
+  the reviewed student email through Resend.
+- An offer-letter form in offered application profiles with a final recipient
+  confirmation and recent sent/failed delivery history.
+- Automatic advancement from Interview to Offer sent after successful delivery.
+- `offer_letter_sends` audit records with admin-only RLS and per-attempt Resend
+  idempotency keys.
+
+### Required external setup
+- Run `docs/sql/migrations/2026-08-04_add_offer_letter_sends.sql` in Supabase.
+- Configure `RESEND_API_KEY` and a verified `FROM_EMAIL` in Vercel.
+- Move an application to **Offer sent**, open its profile, complete the offer
+  fields, and use **Create & send**.
+
+### Verification
+- `npm.cmd run build` passed; the protected offer-letter API route is present.
+- A generated IRP sample rendered successfully as a clean one-page US Letter PDF.
+- `git diff --check` passed with no whitespace errors.

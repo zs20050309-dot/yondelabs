@@ -39,10 +39,14 @@ pages/api/admin/applications/[id]/pdf.js      Protected PDF download endpoint
 pages/api/admin/applications/[id]/portal-access.js
                                                Server-only credential creation/reset
 pages/api/admin/applications/[id]/delete.js     Protected permanent deletion
+pages/api/admin/applications/[id]/offer-letter.js
+                                               Offer history and PDF email delivery
 styles/admin.module.css                      Admin-only minimal UI
 styles/courseHours.module.css                 Shared course-hours portal UI
 styles/studentPortal.module.css               Student portal page layout
 lib/admin/applicationPdf.js                   Schema-driven PDF generator
+lib/admin/offerLetterPdf.js                   Program-specific offer PDF generator
+lib/admin/offerLetterTemplates.js             Offer form fields and validation
 lib/admin/stages.js                          Stage, program, and label definitions
 lib/admin/currentStudents.js                  CSV parsing and program normalization
 lib/courseHours.js                            Minute conversion and total helpers
@@ -61,6 +65,8 @@ docs/sql/migrations/2026-08-01_add_current_students.sql
                                                Non-application students and mentors
 docs/sql/migrations/2026-08-02_convert_applications_to_current_students.sql
                                                Accepted-application conversion workflow
+docs/sql/migrations/2026-08-04_add_offer_letter_sends.sql
+                                               Offer delivery audit history and RLS
 proxy.js                                      Admin route protection
 pages/login.jsx                               Admin login redirect
 ```
@@ -96,6 +102,8 @@ pages/login.jsx                               Admin login redirect
 - Forces students to replace the temporary password on their first portal sign-in.
 - Keeps existing students in a separate **Current students** admin section.
 - Enrolls offered applicants into Current students without deleting application history.
+- Creates program-specific RA, IRP, Passion Project, and Portfolio Project offer letters.
+- Emails each offer letter to the student as a private PDF and records delivery history.
 
 ## Stage Contract
 
@@ -174,6 +182,31 @@ Both internal paths use `application-pdf/<application-id>` as the Resend
 idempotency key. Configure the same `RESEND_API_KEY` and verified `FROM_EMAIL`
 in Vercel and Supabase. Redeploy `send-status-email` in Supabase after changing
 the function.
+
+## Offer Letter PDFs
+
+At the `interview` or `offer` stage, an application profile displays a
+**Create & send** offer-letter form. The admin reviews the recipient, date, and
+program-specific details before confirming delivery. A successful send from
+the interview stage also advances the application to `offer`. The server validates the admin session and
+all fields, generates the PDF in memory from the matching RA, IRP, Passion
+Project, or Portfolio Project template, and sends it through Resend. ISEF has no
+offer template and therefore does not show the action.
+
+Each attempt is recorded in `offer_letter_sends` as pending, sent, or failed.
+The PDF file is not stored in Supabase or in a public bucket. Every delivery
+uses the send-row UUID as its Resend idempotency key, preventing one API attempt
+from creating duplicate messages while still allowing an intentional resend.
+
+Run this migration before using the offer-letter form:
+
+```text
+docs/sql/migrations/2026-08-04_add_offer_letter_sends.sql
+```
+
+Vercel must have `RESEND_API_KEY` and a verified `FROM_EMAIL`. The recipient is
+prefilled from the application but remains editable so an admin can correct an
+address before sending.
 
 ## Authentication and Authorization
 

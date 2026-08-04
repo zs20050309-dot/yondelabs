@@ -310,7 +310,7 @@ export default function AdminDashboard() {
         </section> : <CurrentStudents students={currentStudents} loading={currentStudentsLoading} />}
       </main>
 
-      {selected ? <><button type="button" className={styles.backdrop} onClick={() => setSelectedId(null)} aria-label="Close profile" /><ApplicationDetail application={selected} history={selectedHistory} moving={movingId === selected.id} deleting={deletingId === selected.id} onMove={moveApplication} onConvert={convertToCurrentStudent} onDelete={deleteApplication} onClose={() => setSelectedId(null)} /></> : null}
+      {selected ? <><button type="button" className={styles.backdrop} onClick={() => setSelectedId(null)} aria-label="Close profile" /><ApplicationDetail application={selected} history={selectedHistory} moving={movingId === selected.id} deleting={deletingId === selected.id} onMove={moveApplication} onConvert={convertToCurrentStudent} onDelete={deleteApplication} onOfferSent={loadApplications} onClose={() => setSelectedId(null)} /></> : null}
       {showCoursePlans ? <><button type="button" className={styles.backdrop} onClick={() => setShowCoursePlans(false)} aria-label="Close course plans" /><CoursePlanManager onClose={() => setShowCoursePlans(false)} /></> : null}
     </div>
   )

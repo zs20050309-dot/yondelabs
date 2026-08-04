@@ -13,6 +13,7 @@ import styles from '../../styles/admin.module.css'
 import StudentCourseHours from './StudentCourseHours'
 import StudentFiles from './StudentFiles'
 import StudentPortalAccess from './StudentPortalAccess'
+import OfferLetterSender from './OfferLetterSender'
 
 function formatDate(value, includeTime = false) {
   if (!value) return '—'
@@ -34,7 +35,7 @@ function displayValue(value) {
   return String(value)
 }
 
-export default function ApplicationDetail({ application, history, moving, deleting, onMove, onConvert, onDelete, onClose }) {
+export default function ApplicationDetail({ application, history, moving, deleting, onMove, onConvert, onDelete, onOfferSent, onClose }) {
   const [downloading, setDownloading] = useState(false)
   const [downloadError, setDownloadError] = useState('')
   if (!application) return null
@@ -102,6 +103,8 @@ export default function ApplicationDetail({ application, history, moving, deleti
         </button>
       </div>
       {downloadError ? <div className={styles.inlineError}>{downloadError}</div> : null}
+
+      <OfferLetterSender application={application} onSent={onOfferSent} />
 
       <StudentCourseHours application={application} />
       <StudentPortalAccess application={application} />

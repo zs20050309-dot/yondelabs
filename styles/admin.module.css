@@ -62,6 +62,26 @@
 .documentActions strong { font-size: 13px; }
 .documentActions span { margin-top: 4px; color: #778297; font-size: 11px; }
 .inlineError { margin: -8px 0 18px; color: #962d35; font-size: 12px; }
+.inlineErrorStandalone, .inlineSuccess { margin-top: 14px; border-radius: 8px; padding: 10px 12px; font-size: 12px; }
+.inlineErrorStandalone { border: 1px solid #f0c6c9; background: #fff3f4; color: #962d35; }
+.inlineSuccess { border: 1px solid #bfe4cd; background: #effaf3; color: #197343; }
+.offerLetterCard { margin: 4px 0 24px; border: 1px solid #dce2ef; border-radius: 11px; background: #f8faff; padding: 18px; }
+.offerLetterHeading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.offerLetterHeading h3 { margin-top: 5px; font-size: 17px; }
+.offerLetterHeading p { max-width: 470px; margin-top: 6px; color: #6d788c; font-size: 11px; line-height: 1.5; }
+.offerLetterForm { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; margin-top: 18px; border-top: 1px solid #e0e5ef; padding-top: 18px; }
+.offerLetterForm label { display: grid; gap: 6px; color: #526076; font-size: 11px; font-weight: 700; }
+.offerLetterForm input { min-width: 0; height: 38px; border: 1px solid #ced6e3; border-radius: 7px; background: #fff; padding: 0 10px; color: #172033; font: inherit; font-size: 12px; }
+.offerWideField, .offerCheckbox, .offerFormActions { grid-column: 1 / -1; }
+.offerCheckbox { display: flex !important; align-items: center; grid-template-columns: auto 1fr; }
+.offerCheckbox input { width: 16px; height: 16px; }
+.offerFormActions { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 4px; }
+.offerFormActions span { color: #778297; font-size: 10px; }
+.offerHistory { display: grid; gap: 8px; margin-top: 16px; border-top: 1px solid #e0e5ef; padding-top: 14px; }
+.offerHistory > strong { font-size: 11px; }
+.offerHistory > div { display: flex; justify-content: space-between; gap: 16px; color: #657187; font-size: 11px; }
+.offerSent { color: #197343; }
+.offerFailed { color: #962d35; }
 .detailSection { padding: 26px 0; border-top: 1px solid #e7eaf0; }
 .detailSection h3 { margin-top: 5px; font-size: 19px; }
 .sectionHeading { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
@@ -109,6 +129,9 @@
   .sectionHeading { flex-direction: column; }
   .actionRow { flex-wrap: wrap; }
   .documentActions { align-items: flex-start; flex-direction: column; }
+  .offerLetterHeading, .offerFormActions { align-items: flex-start; flex-direction: column; }
+  .offerLetterForm { grid-template-columns: 1fr; }
+  .offerWideField, .offerCheckbox, .offerFormActions { grid-column: auto; }
   .dangerZone { align-items: flex-start; flex-direction: column; }
   .dangerActions { flex-wrap: wrap; }
 }
