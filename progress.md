@@ -1,5 +1,14 @@
 # Progress Log — YondeLabs Web
 
+## Session: 2026-08-03 - Application archive and deletion
+
+- Split active and archived applications into separate Admin sections.
+- Moved Archive and Restore actions into a dedicated application-management area.
+- Added permanent deletion only for archived, non-converted applications.
+- Added two confirmations: an irreversible-action warning and exact student-name entry.
+- Protected deletion with server-side admin/status checks and service-role cleanup.
+- Deletion removes private student files, application-linked records, and an associated portal identity while preserving the applicant's normal Auth account.
+
 ## Session: 2026-08-02 - Existing student CSV onboarding
 
 ### Background

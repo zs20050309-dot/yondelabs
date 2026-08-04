@@ -32,6 +32,7 @@ export default function AdminDashboard() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [loading, setLoading] = useState(true)
   const [movingId, setMovingId] = useState(null)
+  const [deletingId, setDeletingId] = useState(null)
   const [error, setError] = useState('')
   const [showCoursePlans, setShowCoursePlans] = useState(false)
   const [section, setSection] = useState('applications')
@@ -104,22 +105,32 @@ export default function AdminDashboard() {
     initialise()
   }, [loadApplications, loadCurrentStudents, router])
 
+  const activeApplications = useMemo(
+    () => applications.filter((application) => application.status !== 'rejected'),
+    [applications]
+  )
+  const archivedApplications = useMemo(
+    () => applications.filter((application) => application.status === 'rejected'),
+    [applications]
+  )
+
   const filtered = useMemo(() => {
     const normalized = query.trim().toLowerCase()
-    return applications.filter((application) => {
-      const matchesStatus = statusFilter === 'all' || application.status === statusFilter
+    const source = section === 'archived' ? archivedApplications : activeApplications
+    return source.filter((application) => {
+      const matchesStatus = section === 'archived' || statusFilter === 'all' || application.status === statusFilter
       const haystack = `${studentName(application)} ${studentEmail(application)} ${PROGRAM_LABELS[application.program] || application.program}`.toLowerCase()
       return matchesStatus && (!normalized || haystack.includes(normalized))
     })
-  }, [applications, query, statusFilter])
+  }, [activeApplications, archivedApplications, query, section, statusFilter])
 
   const selected = applications.find((application) => application.id === selectedId) || null
   const selectedHistory = history.filter((item) => item.application_id === selectedId)
   const counts = {
-    total: applications.length,
-    submitted: applications.filter((item) => item.status === 'submitted').length,
-    inProgress: applications.filter((item) => ['interview', 'offer'].includes(item.status)).length,
-    archived: applications.filter((item) => item.status === 'rejected').length,
+    total: activeApplications.length,
+    submitted: activeApplications.filter((item) => item.status === 'submitted').length,
+    inProgress: activeApplications.filter((item) => item.status === 'interview').length,
+    offers: activeApplications.filter((item) => item.status === 'offer').length,
   }
   const currentCounts = {
     total: currentStudents.length,
@@ -144,6 +155,13 @@ export default function AdminDashboard() {
       setError(moveError.message || 'The stage could not be updated.')
     } else {
       await loadApplications()
+      if (nextStatus === 'rejected') {
+        setSelectedId(null)
+        setSection('archived')
+      } else if (application.status === 'rejected') {
+        setSelectedId(null)
+        setSection('applications')
+      }
     }
     setMovingId(null)
   }
@@ -164,6 +182,39 @@ export default function AdminDashboard() {
       setSection('students')
     }
     setMovingId(null)
+  }
+
+  async function deleteApplication(application) {
+    const name = studentName(application)
+    const confirmed = window.confirm(
+      `Permanently delete ${name}? This removes the application, stage history, course records, portal access, and uploaded files. This cannot be undone.`
+    )
+    if (!confirmed) return
+
+    const typedName = window.prompt(`Final confirmation: type the student's name exactly as shown:\n\n${name}`)
+    if (typedName !== name) {
+      if (typedName !== null) window.alert('The name did not match. Nothing was deleted.')
+      return
+    }
+
+    setDeletingId(application.id)
+    setError('')
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) throw new Error('Please sign in again.')
+      const response = await fetch(`/api/admin/applications/${application.id}/delete`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
+      const body = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(body.error || 'The application could not be deleted.')
+      setSelectedId(null)
+      await loadApplications()
+    } catch (deleteError) {
+      setError(deleteError.message || 'The application could not be deleted.')
+    } finally {
+      setDeletingId(null)
+    }
   }
 
   async function signOut() {
@@ -188,12 +239,15 @@ export default function AdminDashboard() {
         <nav className={styles.adminTabs} aria-label="Admin sections">
           <button type="button" className={section === 'applications' ? styles.adminTabActive : styles.adminTab} onClick={() => setSection('applications')}>Applications</button>
           <button type="button" className={section === 'students' ? styles.adminTabActive : styles.adminTab} onClick={() => setSection('students')}>Current students</button>
+          <button type="button" className={section === 'archived' ? styles.adminTabActive : styles.adminTab} onClick={() => setSection('archived')}>Archived <span className={styles.tabCount}>{archivedApplications.length}</span></button>
         </nav>
         <div className={styles.titleRow}>
           {section === 'applications'
             ? <div><span className={styles.eyebrow}>Admissions</span><h1>Student applications</h1><p>Review new profiles and move students through each application stage.</p></div>
-            : <div><span className={styles.eyebrow}>Programs</span><h1>Current students</h1><p>Manage enrolled students, course hours, mentors, files, and portal access.</p></div>}
-          <button type="button" className={styles.primaryButton} onClick={() => setShowCoursePlans(true)}>Manage course plans</button>
+            : section === 'students'
+              ? <div><span className={styles.eyebrow}>Programs</span><h1>Current students</h1><p>Manage enrolled students, course hours, mentors, files, and portal access.</p></div>
+              : <div><span className={styles.eyebrow}>Admissions archive</span><h1>Archived applications</h1><p>Review withdrawn or declined applications separately from active admissions.</p></div>}
+          {section !== 'archived' ? <button type="button" className={styles.primaryButton} onClick={() => setShowCoursePlans(true)}>Manage course plans</button> : null}
         </div>
 
         {section === 'applications' ? (
@@ -201,7 +255,7 @@ export default function AdminDashboard() {
             <div><span>All applications</span><strong>{counts.total}</strong></div>
             <div><span>New submissions</span><strong>{counts.submitted}</strong></div>
             <div><span>In progress</span><strong>{counts.inProgress}</strong></div>
-            <div><span>Archived</span><strong>{counts.archived}</strong></div>
+            <div><span>Offers sent</span><strong>{counts.offers}</strong></div>
           </section>
         ) : (
           <section className={styles.stats} aria-label="Current student summary">
@@ -212,19 +266,18 @@ export default function AdminDashboard() {
           </section>
         )}
 
-        {section === 'applications' && error ? <div className={styles.error}>{error}</div> : null}
+        {(section === 'applications' || section === 'archived') && error ? <div className={styles.error}>{error}</div> : null}
         {section === 'students' && currentStudentsError ? <div className={styles.error}>{currentStudentsError}</div> : null}
 
-        {section === 'applications' ? <section className={styles.tableCard}>
+        {section !== 'students' ? <section className={styles.tableCard}>
           <div className={styles.toolbar}>
             <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search name, email, or program" aria-label="Search applications" />
-            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} aria-label="Filter by stage">
+            {section === 'applications' ? <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} aria-label="Filter by stage">
               <option value="all">All stages</option>
               <option value="submitted">Submitted</option>
               <option value="interview">Interview</option>
               <option value="offer">Offer sent</option>
-              <option value="rejected">Archived</option>
-            </select>
+            </select> : null}
           </div>
 
           <div className={styles.tableWrap}>
@@ -252,12 +305,12 @@ export default function AdminDashboard() {
                 })}
               </tbody>
             </table>
-            {!filtered.length ? <div className={styles.empty}>No applications match these filters.</div> : null}
+            {!filtered.length ? <div className={styles.empty}>{section === 'archived' ? 'No archived applications.' : 'No applications match these filters.'}</div> : null}
           </div>
         </section> : <CurrentStudents students={currentStudents} loading={currentStudentsLoading} />}
       </main>
 
-      {selected ? <><button type="button" className={styles.backdrop} onClick={() => setSelectedId(null)} aria-label="Close profile" /><ApplicationDetail application={selected} history={selectedHistory} moving={movingId === selected.id} onMove={moveApplication} onConvert={convertToCurrentStudent} onClose={() => setSelectedId(null)} /></> : null}
+      {selected ? <><button type="button" className={styles.backdrop} onClick={() => setSelectedId(null)} aria-label="Close profile" /><ApplicationDetail application={selected} history={selectedHistory} moving={movingId === selected.id} deleting={deletingId === selected.id} onMove={moveApplication} onConvert={convertToCurrentStudent} onDelete={deleteApplication} onClose={() => setSelectedId(null)} /></> : null}
       {showCoursePlans ? <><button type="button" className={styles.backdrop} onClick={() => setShowCoursePlans(false)} aria-label="Close course plans" /><CoursePlanManager onClose={() => setShowCoursePlans(false)} /></> : null}
     </div>
   )

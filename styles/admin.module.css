@@ -8,6 +8,8 @@
 .adminTabs { display: flex; gap: 6px; width: fit-content; margin-bottom: 28px; border: 1px solid #dfe4ec; border-radius: 10px; background: #fff; padding: 4px; }
 .adminTab, .adminTabActive { border: 0; border-radius: 7px; background: transparent; color: #69758a; cursor: pointer; padding: 9px 14px; font: inherit; font-size: 12px; font-weight: 700; }
 .adminTabActive { background: #172033; color: #fff; }
+.tabCount { display: inline-grid; min-width: 18px; height: 18px; margin-left: 5px; place-items: center; border-radius: 99px; background: rgba(116, 128, 149, .14); padding: 0 5px; font-size: 9px; }
+.adminTabActive .tabCount { background: rgba(255, 255, 255, .16); }
 .titleRow { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; }
 .titleRow h1 { margin-top: 6px; font-size: 32px; letter-spacing: -0.03em; }
 .titleRow p { margin-top: 8px; color: #69758a; }
@@ -38,11 +40,12 @@
 .courseHoursCell span, .noCourse { color: #7a8598; font-size: 11px; }
 .rowActions { text-align: right; white-space: nowrap; }
 .viewButton { margin-right: 12px; font-size: 12px; font-weight: 700; }
-.moveButton, .primaryButton, .secondaryButton, .archiveButton { border-radius: 8px; cursor: pointer; font: inherit; font-size: 12px; font-weight: 700; padding: 9px 12px; }
+.moveButton, .primaryButton, .secondaryButton, .archiveButton, .deleteButton { border-radius: 8px; cursor: pointer; font: inherit; font-size: 12px; font-weight: 700; padding: 9px 12px; }
 .moveButton, .primaryButton { border: 1px solid #2541b2; background: #2541b2; color: #fff; }
 .secondaryButton { border: 1px solid #cad1dc; background: #fff; color: #344155; }
 .archiveButton { border: 1px solid #e0c9ca; background: #fff; color: #9f343b; }
-.moveButton:disabled, .primaryButton:disabled, .secondaryButton:disabled, .archiveButton:disabled { cursor: wait; opacity: .6; }
+.deleteButton { border: 1px solid #9f343b; background: #9f343b; color: #fff; }
+.moveButton:disabled, .primaryButton:disabled, .secondaryButton:disabled, .archiveButton:disabled, .deleteButton:disabled { cursor: wait; opacity: .6; }
 .backdrop { position: fixed; inset: 0; z-index: 20; border: 0; background: rgba(10, 18, 35, .28); }
 .detailPanel { position: fixed; z-index: 21; top: 0; right: 0; bottom: 0; width: min(720px, 94vw); overflow-y: auto; background: #fff; box-shadow: -20px 0 50px rgba(19, 29, 50, .14); padding: 28px; }
 .detailHeader { display: flex; justify-content: space-between; gap: 20px; padding-bottom: 24px; border-bottom: 1px solid #e7eaf0; }
@@ -78,6 +81,10 @@
 .answer { padding: 13px 0; border-bottom: 1px solid #edf0f4; }
 .answer span { display: block; color: #768196; font-size: 11px; line-height: 1.45; }
 .answer p { margin-top: 6px; color: #263246; font-size: 13px; line-height: 1.55; white-space: pre-wrap; }
+.dangerZone { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 28px; border: 1px solid #ecd5d7; border-radius: 11px; background: #fff9f9; padding: 18px; }
+.dangerZone h3 { margin-top: 5px; font-size: 16px; }
+.dangerZone p { max-width: 440px; margin-top: 6px; color: #7d6870; font-size: 11px; line-height: 1.55; }
+.dangerActions { display: flex; flex-shrink: 0; gap: 8px; }
 .error { margin: 0 0 16px; border: 1px solid #f0c6c9; border-radius: 9px; background: #fff3f4; color: #962d35; padding: 13px 15px; font-size: 13px; }
 .studentStatus_active { background: #eaf8ef; color: #197343; }
 .studentStatus_paused { background: #fff5df; color: #8b6218; }
@@ -102,6 +109,8 @@
   .sectionHeading { flex-direction: column; }
   .actionRow { flex-wrap: wrap; }
   .documentActions { align-items: flex-start; flex-direction: column; }
+  .dangerZone { align-items: flex-start; flex-direction: column; }
+  .dangerActions { flex-wrap: wrap; }
 }
 .portalAccessSection {
   margin: 4px 0 24px;

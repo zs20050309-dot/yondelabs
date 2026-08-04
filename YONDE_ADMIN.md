@@ -38,6 +38,7 @@ pages/student/set-password.jsx                Required first-login password chan
 pages/api/admin/applications/[id]/pdf.js      Protected PDF download endpoint
 pages/api/admin/applications/[id]/portal-access.js
                                                Server-only credential creation/reset
+pages/api/admin/applications/[id]/delete.js     Protected permanent deletion
 styles/admin.module.css                      Admin-only minimal UI
 styles/courseHours.module.css                 Shared course-hours portal UI
 styles/studentPortal.module.css               Student portal page layout
@@ -74,7 +75,9 @@ pages/login.jsx                               Admin login redirect
 - Renders submitted answers from `lib/forms/schema.js`.
 - Moves applications through `submitted -> interview -> offer`.
 - Archives applications by moving them to `rejected`.
+- Keeps archived applications in a separate Admin tab away from active admissions.
 - Restores archived applications to `submitted`.
+- Permanently deletes only archived applications after two confirmations.
 - Records every move in `application_stage_history`.
 - Shows the date and time each recorded stage was completed.
 - Downloads a formatted PDF of any submitted application.
@@ -105,6 +108,15 @@ interview   Interview invitation/scheduling phase
 offer       Offer sent
 rejected    Archived application
 ```
+
+Archiving is reversible and must use `advance_application_stage`. Permanent
+deletion is intentionally separate: it is available only inside an archived
+application profile, requires a confirmation plus exact-name entry, and calls
+the protected server deletion endpoint. That endpoint rechecks the admin role
+and archived status, removes private Storage objects, deletes cascading course,
+history, file-metadata, and portal-account rows, then removes an associated
+student-portal Auth identity. It never deletes the applicant's normal Auth
+account, which may own other applications.
 
 Do not add a new status only in the admin UI. The following must stay aligned:
 

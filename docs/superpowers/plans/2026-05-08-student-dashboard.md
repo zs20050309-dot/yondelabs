@@ -4,9 +4,7 @@
 
 **Goal:** Rework `/dashboard` into the student-facing dashboard specified on 2026-05-08 while preserving the existing Supabase data flow.
 
-**Architecture:** Keep the page logic in `pages/dashboard.jsx`, reuse `StatusTracker` for the stepper, and keep styling in the existing CSS Modules. Do not touch `lib/supabaseClient.js` or `proxy.js`.
-
-**Tech Stack:** Next.js Pages Router, JavaScript/JSX, React, Supabase client, CSS Modules.
+**A r, JavaScript/JSX, React, Supabase client, CSS Modules.
 
 ---
 

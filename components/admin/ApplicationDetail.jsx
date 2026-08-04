@@ -34,7 +34,7 @@ function displayValue(value) {
   return String(value)
 }
 
-export default function ApplicationDetail({ application, history, moving, onMove, onConvert, onClose }) {
+export default function ApplicationDetail({ application, history, moving, deleting, onMove, onConvert, onDelete, onClose }) {
   const [downloading, setDownloading] = useState(false)
   const [downloadError, setDownloadError] = useState('')
   if (!application) return null
@@ -129,25 +129,6 @@ export default function ApplicationDetail({ application, history, moving, onMove
                 {moving ? 'Updating…' : `Move to ${STATUS_LABELS[nextStatus]}`}
               </button>
             ) : null}
-            {application.status !== 'rejected' ? (
-              <button
-                type="button"
-                className={styles.archiveButton}
-                disabled={moving}
-                onClick={() => onMove(application, 'rejected')}
-              >
-                Archive
-              </button>
-            ) : (
-              <button
-                type="button"
-                className={styles.secondaryButton}
-                disabled={moving}
-                onClick={() => onMove(application, 'submitted')}
-              >
-                Restore to submitted
-              </button>
-            )}
           </div>
         </div>
 
@@ -195,6 +176,26 @@ export default function ApplicationDetail({ application, history, moving, onMove
             ))}
           </div>
         )}
+      </section>
+
+      <section className={styles.dangerZone}>
+        <div>
+          <span className={styles.eyebrow}>Application management</span>
+          <h3>{application.status === 'rejected' ? 'Archived application' : 'Archive this application'}</h3>
+          <p>{application.status === 'rejected'
+            ? 'Restore this application to active admissions, or permanently delete it and its related records.'
+            : 'Archived applications leave the active admissions list and remain available in the separate archive.'}</p>
+        </div>
+        <div className={styles.dangerActions}>
+          {application.status === 'rejected' ? (
+            <>
+              <button type="button" className={styles.secondaryButton} disabled={moving || deleting} onClick={() => onMove(application, 'submitted')}>Restore to submitted</button>
+              <button type="button" className={styles.deleteButton} disabled={moving || deleting} onClick={() => onDelete(application)}>{deleting ? 'Deleting...' : 'Permanently delete'}</button>
+            </>
+          ) : (
+            <button type="button" className={styles.archiveButton} disabled={moving} onClick={() => onMove(application, 'rejected')}>Archive application</button>
+          )}
+        </div>
       </section>
     </aside>
   )
