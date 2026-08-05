@@ -33,20 +33,31 @@
 .muted { margin-top: 14px; color: #7a8598; font-size: 11px; }
 .error { margin-top: 12px; border: 1px solid #f0c6c9; border-radius: 8px; background: #fff3f4; color: #962d35; padding: 10px 12px; font-size: 11px; }
 
-.studentSection { margin-top: 28px; border: 1px solid rgba(220, 226, 236, .94); border-radius: 20px; background: #fff; box-shadow: 0 20px 55px rgba(3, 37, 108, .065); padding: clamp(24px, 3.5vw, 40px); }
+.studentSection { margin-top: 32px; border: 1px solid rgba(217, 225, 236, .96); border-radius: 24px; background: #fff; box-shadow: 0 24px 65px rgba(3, 37, 108, .075); padding: clamp(28px, 4vw, 48px); }
 .studentHeading { display: flex; align-items: flex-start; justify-content: space-between; gap: 22px; }
-.studentHeading span { color: #1a73a8; font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
-.studentHeading h2 { margin-top: 7px; color: #102451; font-family: Fraunces, Georgia, serif; font-size: clamp(1.5rem, 2vw, 2rem); }
-.studentHeading p { max-width: 34rem; margin-top: 8px; color: #69758a; font-size: .88rem; line-height: 1.6; }
-.studentCount { display: grid; min-width: 42px; height: 42px; place-items: center; border-radius: 50%; background: #edf5ff; color: #173b8f; font-size: .9rem !important; letter-spacing: 0 !important; }
-.studentList { display: grid; gap: 10px; margin-top: 22px; }
-.studentFile { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; align-items: center; gap: 16px; border: 1px solid #e2e7ee; border-radius: 13px; background: #fbfcfe; padding: 16px; transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease; }
+.studentHeading span { color: #1a73a8; font-size: .8rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.studentHeading h2 { margin-top: 8px; color: #102451; font-family: Fraunces, Georgia, serif; font-size: clamp(2rem, 2.8vw, 2.7rem); }
+.studentHeading p { max-width: 42rem; margin-top: 11px; color: #596b83; font-size: 1rem; line-height: 1.7; }
+.studentCount { display: grid; min-width: 52px; height: 52px; place-items: center; border-radius: 50%; background: #edf5ff; color: #173b8f; font-size: 1.1rem !important; letter-spacing: 0 !important; }
+.fileToolbar { margin-top: 28px; }
+.fileToolbar > label { display: block; margin-bottom: 8px; color: #485a72; font-size: .86rem; font-weight: 800; }
+.fileToolbar > div { display: flex; align-items: center; max-width: 620px; height: 52px; border: 1px solid #cfd9e6; border-radius: 13px; background: #f9fbfd; padding: 0 13px; transition: border-color 150ms ease, box-shadow 150ms ease; }
+.fileToolbar > div:focus-within { border-color: #3c72b7; box-shadow: 0 0 0 4px rgba(6, 190, 225, .14); }
+.fileToolbar span { color: #65758b; font-size: 1.45rem; }
+.fileToolbar input { min-width: 0; flex: 1; border: 0; outline: 0; background: transparent; padding: 0 12px; color: #172b4d; font: inherit; font-size: 1rem; }
+.fileToolbar button { border: 0; background: transparent; color: #315799; cursor: pointer; padding: 8px; font: inherit; font-size: .82rem; font-weight: 800; }
+.studentList { display: grid; gap: 12px; margin-top: 24px; }
+.studentFile { display: grid; grid-template-columns: 60px minmax(0, 1fr) auto; align-items: center; gap: 20px; border: 1px solid #dfe6ef; border-radius: 16px; background: #fbfcfe; padding: 20px; transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease; }
 .studentFile:hover { border-color: #c5dce9; box-shadow: 0 10px 24px rgba(22, 58, 104, .07); transform: translateY(-1px); }
-.studentFile .fileIcon { width: 42px; height: 42px; }
-.studentFile button { border: 1px solid #1b438f; border-radius: 8px; background: #173b8f; color: #fff; cursor: pointer; padding: 9px 13px; font: inherit; font-size: .74rem; font-weight: 800; }
+.studentFile .fileIcon { width: 56px; height: 56px; border-radius: 14px; font-size: .68rem; }
+.studentFile .fileCopy strong { font-size: 1rem; }
+.studentFile .fileCopy span { margin-top: 6px; font-size: .78rem; }
+.studentFile .fileCopy p { margin-top: 8px; font-size: .88rem; line-height: 1.55; }
+.studentFile button { border: 1px solid #1b438f; border-radius: 10px; background: #173b8f; color: #fff; cursor: pointer; padding: 11px 16px; font: inherit; font-size: .84rem; font-weight: 800; }
 .studentFile button:hover { background: #102e70; }
+.studentFile button:focus-visible, .fileToolbar button:focus-visible { outline: 3px solid rgba(6, 190, 225, .32); outline-offset: 3px; }
 .studentFile button:disabled { cursor: wait; opacity: .55; }
-.studentEmpty { margin-top: 20px; border-radius: 10px; background: #f7f9fc; padding: 20px; color: #738096; font-size: .84rem; text-align: center; }
+.studentEmpty { margin-top: 24px; border-radius: 13px; background: #f7f9fc; padding: 26px; color: #64748a; font-size: .98rem; text-align: center; }
 .studentPageState { padding: clamp(52px, 8vw, 84px) 28px; text-align: center; }
 .studentStateMark { display: block; width: 58px; height: 46px; margin: 0 auto 20px; border: 1px solid #bed4e7; border-radius: 9px; background: linear-gradient(145deg, #edf5ff, #fff); box-shadow: 7px -7px 0 -2px #dbeaf6; }
 .studentPageState h2 { margin: 0; color: #102451; font-family: Fraunces, Georgia, serif; font-size: 1.65rem; }
@@ -63,4 +74,6 @@
   .adminActions { flex-wrap: wrap; }
   .studentFile { grid-template-columns: 42px minmax(0, 1fr); }
   .studentFile button { grid-column: 2; justify-self: start; }
+  .fileToolbar > div { max-width: none; }
+  .studentFile .fileCopy strong { font-size: .96rem; }
 }

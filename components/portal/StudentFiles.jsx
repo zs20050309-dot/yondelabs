@@ -21,6 +21,7 @@ export default function StudentFiles({ applicationId, currentStudentId, showEmpt
   const [loading, setLoading] = useState(true)
   const [busyId, setBusyId] = useState(null)
   const [error, setError] = useState('')
+  const [query, setQuery] = useState('')
 
   useEffect(() => {
     if (!applicationId && !currentStudentId) return undefined
@@ -62,6 +63,16 @@ export default function StudentFiles({ applicationId, currentStudentId, showEmpt
       })))
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
   ), [enrollments])
+
+  const filteredFiles = useMemo(() => {
+    const normalized = query.trim().toLowerCase()
+    if (!normalized) return files
+    return files.filter((file) => (
+      `${file.title} ${file.original_filename} ${file.description || ''} ${file.courseName}`
+        .toLowerCase()
+        .includes(normalized)
+    ))
+  }, [files, query])
 
   async function downloadFile(file) {
     setBusyId(file.id)
@@ -114,8 +125,25 @@ export default function StudentFiles({ applicationId, currentStudentId, showEmpt
       </div>
 
       {files.length ? (
+        <div className={styles.fileToolbar}>
+          <label htmlFor="student-file-search">Search your files</label>
+          <div>
+            <span aria-hidden>⌕</span>
+            <input
+              id="student-file-search"
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search by title, course, or file name"
+            />
+            {query ? <button type="button" onClick={() => setQuery('')}>Clear</button> : null}
+          </div>
+        </div>
+      ) : null}
+
+      {filteredFiles.length ? (
         <div className={styles.studentList}>
-          {files.map((file) => (
+          {filteredFiles.map((file) => (
             <article className={styles.studentFile} key={file.id}>
               <div className={styles.fileIcon} aria-hidden>
                 {file.original_filename.split('.').pop()?.slice(0, 4) || 'FILE'}
@@ -132,14 +160,14 @@ export default function StudentFiles({ applicationId, currentStudentId, showEmpt
                 disabled={busyId === file.id}
                 onClick={() => downloadFile(file)}
               >
-                {busyId === file.id ? 'Preparing…' : 'Download'}
+                {busyId === file.id ? 'Preparing…' : 'Download file'}
               </button>
             </article>
           ))}
         </div>
       ) : (
         <div className={styles.studentEmpty}>
-          Your course is active. Files shared by your admin or mentor will appear here.
+          {files.length ? `No files match “${query}”.` : 'Your course is active. Files shared by your admin or mentor will appear here.'}
         </div>
       )}
 

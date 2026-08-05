@@ -98,6 +98,8 @@ pages/login.jsx                               Admin login redirect
 - Uploads private files for an enrolled student and controls student visibility.
 - Shows students their own course documents through expiring signed downloads.
 - Separates the student experience into Overview, My course, and Files pages.
+- Uses larger student-facing typography, visual workspace actions, a circular
+  hours summary, collapsible course sections, and searchable course files.
 - Creates a separate portal ID and temporary password without sending an invitation email.
 - Forces students to replace the temporary password on their first portal sign-in.
 - Keeps existing students in a separate **Current students** admin section.

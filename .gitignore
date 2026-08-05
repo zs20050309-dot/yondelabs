@@ -13,6 +13,7 @@ out
 # debug
 npm-debug.log*
 tmp/
+dev-*.log
 
 # OS
 .DS_Store

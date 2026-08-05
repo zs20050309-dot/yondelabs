@@ -2188,3 +2188,20 @@ User requested an enrolled-student portal with credentials separate from the app
 - `npm.cmd run build` passed; the protected offer-letter API route is present.
 - A generated IRP sample rendered successfully as a clean one-page US Letter PDF.
 - `git diff --check` passed with no whitespace errors.
+## Session: 2026-08-05 - Student portal UI refresh
+
+### Changed
+- Increased student-facing navigation, heading, body, status, course, and file
+  typography across Overview, My course, and Files.
+- Redesigned the overview summary and workspace links as larger visual action
+  cards with clearer destinations and focus states.
+- Added a circular course-hours indicator and accessible collapsible sections
+  for milestones, modules, and class history.
+- Added instant file search by title, original filename, course, or description.
+- Improved mobile stacking, touch-target sizing, keyboard focus treatment, and
+  reduced-motion behavior.
+
+### Verification
+- `npm.cmd run build` passed with `/student`, `/student/course`, and
+  `/student/files` in the production route list.
+- `git diff --check` passed with no whitespace errors.
