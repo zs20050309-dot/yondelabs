@@ -41,6 +41,8 @@ pages/api/admin/applications/[id]/portal-access.js
 pages/api/admin/applications/[id]/delete.js     Protected permanent deletion
 pages/api/admin/applications/[id]/offer-letter.js
                                                Offer history and PDF email delivery
+pages/api/admin/applications/[id]/offer-letter-preview.js
+                                               Protected PDF preview and download
 styles/admin.module.css                      Admin-only minimal UI
 styles/courseHours.module.css                 Shared course-hours portal UI
 styles/studentPortal.module.css               Student portal page layout
@@ -89,6 +91,8 @@ pages/login.jsx                               Admin login redirect
 - Downloads a formatted PDF of any submitted application.
 - Automatically emails each submitted application PDF to `ashlyndong@gmail.com`.
 - Creates reusable course plans with custom modules and planned hours.
+- Permanently deletes unused course plans after two confirmations; assigned
+  plans remain protected and can only be archived.
 - Assigns a plan and custom total-hour allocation to a student.
 - Logs each completed class by module, date/time, duration, and notes.
 - Shows used and allocated hours for every assigned student in the main table.
@@ -106,6 +110,7 @@ pages/login.jsx                               Admin login redirect
 - Enrolls offered applicants into Current students without deleting application history.
 - Creates program-specific RA, IRP, Passion Project, and Portfolio Project offer letters.
 - Emails each offer letter to the student as a private PDF and records delivery history.
+- Previews or downloads the exact offer-letter PDF before email delivery.
 
 ## Stage Contract
 
@@ -199,6 +204,9 @@ Each attempt is recorded in `offer_letter_sends` as pending, sent, or failed.
 The PDF file is not stored in Supabase or in a public bucket. Every delivery
 uses the send-row UUID as its Resend idempotency key, preventing one API attempt
 from creating duplicate messages while still allowing an intentional resend.
+The Preview PDF and Download PDF actions call a separate admin-only endpoint,
+validate the same form data, and invoke the same generator as the email action.
+Previewing does not create a delivery-history row or change the application stage.
 
 Run this migration before using the offer-letter form:
 

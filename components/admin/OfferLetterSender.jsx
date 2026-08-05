@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
 import {
   OFFER_TEMPLATE_LABELS,
@@ -20,11 +20,32 @@ export default function OfferLetterSender({ application, onSent }) {
   const [form, setForm] = useState(initialData)
   const [open, setOpen] = useState(false)
   const [sending, setSending] = useState(false)
+  const [preparing, setPreparing] = useState('')
+  const [previewUrl, setPreviewUrl] = useState('')
   const [history, setHistory] = useState([])
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const formRef = useRef(null)
 
   useEffect(() => { setForm(initialData) }, [initialData])
+
+  useEffect(() => () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl)
+  }, [previewUrl])
+
+  useEffect(() => {
+    if (!previewUrl) return undefined
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    function closeOnEscape(event) {
+      if (event.key === 'Escape') setPreviewUrl('')
+    }
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [previewUrl])
 
   useEffect(() => {
     let active = true
@@ -47,6 +68,44 @@ export default function OfferLetterSender({ application, onSent }) {
 
   function update(key, value) {
     setForm((current) => ({ ...current, [key]: value }))
+  }
+
+  async function preparePdf(mode) {
+    if (!formRef.current?.reportValidity()) return
+    setError('')
+    setSuccess('')
+    setPreparing(mode)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) throw new Error('Please sign in again.')
+      const response = await fetch(`/api/admin/applications/${application.id}/offer-letter-preview?download=${mode === 'download' ? '1' : '0'}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}))
+        throw new Error(body.error || 'The offer-letter PDF could not be generated.')
+      }
+      const blobUrl = URL.createObjectURL(await response.blob())
+      if (mode === 'preview') {
+        setPreviewUrl(blobUrl)
+      } else {
+        const disposition = response.headers.get('content-disposition') || ''
+        const filename = disposition.match(/filename="([^"]+)"/)?.[1] || 'offer-letter.pdf'
+        const link = document.createElement('a')
+        link.href = blobUrl
+        link.download = filename
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
+        URL.revokeObjectURL(blobUrl)
+      }
+    } catch (previewError) {
+      setError(previewError.message || 'The offer-letter PDF could not be generated.')
+    } finally {
+      setPreparing('')
+    }
   }
 
   async function sendOffer(event) {
@@ -95,7 +154,7 @@ export default function OfferLetterSender({ application, onSent }) {
       {error ? <div className={styles.inlineErrorStandalone}>{error}</div> : null}
 
       {open ? (
-        <form className={styles.offerLetterForm} onSubmit={sendOffer}>
+        <form ref={formRef} className={styles.offerLetterForm} onSubmit={sendOffer}>
           <label>
             <span>Recipient email</span>
             <input type="email" required value={form.recipientEmail || ''} onChange={(event) => update('recipientEmail', event.target.value)} />
@@ -129,9 +188,34 @@ export default function OfferLetterSender({ application, onSent }) {
           })}
           <div className={styles.offerFormActions}>
             <span>The attachment is generated privately and is not stored publicly.</span>
-            <button type="submit" className={styles.primaryButton} disabled={sending}>{sending ? 'Generating & sending…' : 'Send PDF offer letter'}</button>
+            <div>
+              <button type="button" className={styles.secondaryButton} disabled={sending || Boolean(preparing)} onClick={() => preparePdf('preview')}>
+                {preparing === 'preview' ? 'Preparing preview…' : 'Preview PDF'}
+              </button>
+              <button type="button" className={styles.secondaryButton} disabled={sending || Boolean(preparing)} onClick={() => preparePdf('download')}>
+                {preparing === 'download' ? 'Preparing download…' : 'Download PDF'}
+              </button>
+              <button type="submit" className={styles.primaryButton} disabled={sending || Boolean(preparing)}>{sending ? 'Generating & sending…' : 'Send PDF offer letter'}</button>
+            </div>
           </div>
         </form>
+      ) : null}
+
+      {previewUrl ? (
+        <div className={styles.offerPreviewBackdrop} role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setPreviewUrl('') }}>
+          <section className={styles.offerPreviewModal} role="dialog" aria-modal="true" aria-labelledby="offer-preview-title">
+            <div>
+              <div><span className={styles.eyebrow}>PDF preview</span><h3 id="offer-preview-title">Review offer letter</h3></div>
+              <button type="button" className={styles.iconButton} onClick={() => setPreviewUrl('')} aria-label="Close offer-letter preview" autoFocus>×</button>
+            </div>
+            <iframe src={previewUrl} title="Offer letter PDF preview" />
+            <div className={styles.offerPreviewActions}>
+              <span>Review all details before sending.</span>
+              <button type="button" className={styles.secondaryButton} onClick={() => preparePdf('download')}>Download PDF</button>
+              <button type="button" className={styles.primaryButton} onClick={() => setPreviewUrl('')}>Done reviewing</button>
+            </div>
+          </section>
+        </div>
       ) : null}
 
       {history.length ? (

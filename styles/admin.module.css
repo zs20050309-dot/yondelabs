@@ -77,6 +77,14 @@
 .offerCheckbox input { width: 16px; height: 16px; }
 .offerFormActions { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 4px; }
 .offerFormActions span { color: #778297; font-size: 10px; }
+.offerFormActions > div { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.offerPreviewBackdrop { position: fixed; z-index: 40; inset: 0; display: grid; place-items: center; background: rgba(10, 18, 35, .62); padding: 24px; }
+.offerPreviewModal { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; width: min(900px, 96vw); height: min(920px, 94vh); overflow: hidden; border-radius: 14px; background: #fff; box-shadow: 0 28px 80px rgba(4, 12, 29, .35); }
+.offerPreviewModal > div:first-child { display: flex; align-items: center; justify-content: space-between; gap: 18px; border-bottom: 1px solid #e1e6ee; padding: 17px 20px; }
+.offerPreviewModal h3 { margin-top: 4px; font-size: 18px; }
+.offerPreviewModal iframe { width: 100%; height: 100%; border: 0; background: #eef1f5; }
+.offerPreviewActions { display: flex; align-items: center; justify-content: flex-end; gap: 9px; border-top: 1px solid #e1e6ee; padding: 13px 18px; }
+.offerPreviewActions span { margin-right: auto; color: #6f7a8d; font-size: 11px; }
 .offerHistory { display: grid; gap: 8px; margin-top: 16px; border-top: 1px solid #e0e5ef; padding-top: 14px; }
 .offerHistory > strong { font-size: 11px; }
 .offerHistory > div { display: flex; justify-content: space-between; gap: 16px; color: #657187; font-size: 11px; }
@@ -130,8 +138,13 @@
   .actionRow { flex-wrap: wrap; }
   .documentActions { align-items: flex-start; flex-direction: column; }
   .offerLetterHeading, .offerFormActions { align-items: flex-start; flex-direction: column; }
+  .offerFormActions > div { justify-content: flex-start; }
   .offerLetterForm { grid-template-columns: 1fr; }
   .offerWideField, .offerCheckbox, .offerFormActions { grid-column: auto; }
+  .offerPreviewBackdrop { padding: 8px; }
+  .offerPreviewModal { width: 100%; height: 96vh; }
+  .offerPreviewActions { align-items: stretch; flex-direction: column; }
+  .offerPreviewActions span { margin-right: 0; }
   .dangerZone { align-items: flex-start; flex-direction: column; }
   .dangerActions { flex-wrap: wrap; }
 }

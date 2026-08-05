@@ -2205,3 +2205,27 @@ User requested an enrolled-student portal with credentials separate from the app
 - `npm.cmd run build` passed with `/student`, `/student/course`, and
   `/student/files` in the production route list.
 - `git diff --check` passed with no whitespace errors.
+## Session: 2026-08-05 - Course plan deletion and offer preview
+
+### Added
+- A permanent **Delete plan** action for course plans that have never been
+  assigned to a student.
+- A plan-name confirmation after the initial destructive-action warning.
+- Protection for assigned plans, which must be archived to preserve student
+  enrollment, session, and milestone history.
+- A protected offer-letter PDF endpoint used for both inline preview and download.
+- Preview PDF and Download PDF actions beside the existing send action.
+- An in-admin PDF viewer with Escape, backdrop, and explicit close controls.
+
+### Behavior
+- Preview and download validate the current form and use the same PDF generator
+  as email delivery, but create no send record and do not advance the stage.
+- No new database migration is required.
+
+### Verification
+- All four offer programs generated as one-page US Letter PDFs.
+- The longest Portfolio Project sample was rendered and visually checked with
+  no clipping, overlap, or unreadable content.
+- `npm.cmd run build` passed with the protected preview route in the production
+  route list.
+- `git diff --check` passed with no whitespace errors.

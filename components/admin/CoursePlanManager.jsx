@@ -25,7 +25,7 @@ export default function CoursePlanManager({ onClose }) {
   async function loadPlans(preferredId) {
     const { data, error: loadError } = await supabase
       .from('course_plans')
-      .select('*, course_modules(*), course_milestones(*)')
+      .select('*, course_modules(*), course_milestones(*), student_course_enrollments(id)')
       .order('created_at', { ascending: false })
     if (loadError) {
       setError('Course plans or milestones are unavailable. Run the 2026-07-22 and 2026-07-23 course migrations.')
@@ -37,7 +37,9 @@ export default function CoursePlanManager({ onClose }) {
       course_milestones: [...(plan.course_milestones || [])].sort((a, b) => a.sort_order - b.sort_order),
     }))
     setPlans(normalized)
-    setSelectedId(preferredId || selectedId || normalized[0]?.id || null)
+    setSelectedId(preferredId === null
+      ? normalized[0]?.id || null
+      : preferredId || selectedId || normalized[0]?.id || null)
   }
 
   useEffect(() => { loadPlans() }, [])
@@ -121,6 +123,31 @@ export default function CoursePlanManager({ onClose }) {
     const { error: updateError } = await supabase.from('course_plans').update({ active: !selected.active, updated_at: new Date().toISOString() }).eq('id', selected.id)
     if (updateError) setError(updateError.message)
     else await loadPlans(selected.id)
+    setBusy(false)
+  }
+
+  async function deletePlan() {
+    if (!selected) return
+    const enrollmentCount = selected.student_course_enrollments?.length || 0
+    if (enrollmentCount) {
+      setError(`This plan is assigned to ${enrollmentCount} student${enrollmentCount === 1 ? '' : 's'} and cannot be deleted. Archive it instead.`)
+      return
+    }
+    if (!window.confirm(`Delete “${selected.name}”? Its ${selected.course_modules.length} modules and ${selected.course_milestones.length} milestones will also be permanently deleted.`)) return
+    const typedName = window.prompt(`Final confirmation: type the course plan name exactly as shown:\n\n${selected.name}`)
+    if (typedName !== selected.name) {
+      if (typedName !== null) window.alert('The plan name did not match. Nothing was deleted.')
+      return
+    }
+    setBusy(true)
+    setError('')
+    const { error: deleteError, count } = await supabase
+      .from('course_plans')
+      .delete({ count: 'exact' })
+      .eq('id', selected.id)
+    if (deleteError) setError(deleteError.message)
+    else if (count !== 1) setError('The course plan was not deleted. Reload and try again.')
+    else await loadPlans(null)
     setBusy(false)
   }
 
@@ -220,7 +247,19 @@ export default function CoursePlanManager({ onClose }) {
               <div><h3>{selected.name}</h3><p>{selected.description || 'No description added.'}</p></div>
               <div><strong>{formatHours(planMinutes)}</strong><span>planned</span></div>
             </div>
-            <button type="button" className={styles.textButton} onClick={togglePlan} disabled={busy}>{selected.active ? 'Archive plan' : 'Reactivate plan'}</button>
+            <div className={styles.planActions}>
+              <button type="button" className={styles.textButton} onClick={togglePlan} disabled={busy}>{selected.active ? 'Archive plan' : 'Reactivate plan'}</button>
+              <button
+                type="button"
+                className={styles.deletePlanButton}
+                onClick={deletePlan}
+                disabled={busy || Boolean(selected.student_course_enrollments?.length)}
+                title={selected.student_course_enrollments?.length ? 'Assigned plans must be archived instead of deleted.' : 'Permanently delete this unused plan'}
+              >
+                Delete plan
+              </button>
+              {selected.student_course_enrollments?.length ? <span>{selected.student_course_enrollments.length} assigned student{selected.student_course_enrollments.length === 1 ? '' : 's'}</span> : null}
+            </div>
 
             <div className={styles.policyControl}>
               <div><strong>{selected.allow_overage ? 'Minimum-hours plan' : 'Fixed-hours plan'}</strong><span>{selected.allow_overage ? 'Students may continue after fulfilling the minimum hours.' : 'Class entries cannot exceed the allocated hours.'}</span></div>
