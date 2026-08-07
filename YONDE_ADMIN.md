@@ -174,6 +174,11 @@ Programs without a local schema fall back to rendering the raw `form_data` keys.
 
 The admin download endpoint verifies the Supabase access token and admin role before loading an application. It generates the PDF in memory and returns it with `Cache-Control: private, no-store`; PDFs are not saved publicly or persisted in the database.
 
+Application PDFs embed the bundled `YondeSansSC-Regular.ttf` Unicode font for
+student-entered content, so Chinese names and answers are preserved in both
+admin downloads and emailed copies. The font is derived from Noto Sans SC and
+is distributed with its SIL Open Font License in `public/fonts`.
+
 After a successful application submission, the form calls the protected
 `/api/applications/[id]/submission-notification` endpoint. It verifies the
 student owns the submitted application, generates the PDF in memory, and emails

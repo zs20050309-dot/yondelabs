@@ -2188,6 +2188,7 @@ User requested an enrolled-student portal with credentials separate from the app
 - `npm.cmd run build` passed; the protected offer-letter API route is present.
 - A generated IRP sample rendered successfully as a clean one-page US Letter PDF.
 - `git diff --check` passed with no whitespace errors.
+
 ## Session: 2026-08-05 - Student portal UI refresh
 
 ### Changed
@@ -2229,3 +2230,27 @@ User requested an enrolled-student portal with credentials separate from the app
 - `npm.cmd run build` passed with the protected preview route in the production
   route list.
 - `git diff --check` passed with no whitespace errors.
+
+## Session: 2026-08-07 - Chinese application PDF support
+
+### Fixed
+- Removed the ASCII-only sanitization that converted Chinese application text
+  into question marks.
+- Embedded a static Simplified Chinese TrueType font for student-entered names,
+  answers, schools, locations, and notes while retaining the existing PDF UI.
+- Added Unicode-safe wrapping for long text without spaces and preserved mixed
+  Chinese/English content.
+
+### Assets
+- Added `public/fonts/YondeSansSC-Regular.ttf`, derived from the official Noto
+  Sans SC regular-weight variable font.
+- Added the accompanying SIL Open Font License at
+  `public/fonts/NotoSansCJK-LICENSE.txt`.
+- Added `@pdf-lib/fontkit` for custom font embedding.
+
+### Verification
+- Generated and visually inspected a three-page Portfolio Project application
+  containing Chinese names, school, location, program direction, and notes.
+- Confirmed the final PDF contains the intended Chinese glyphs instead of `?`.
+- Confirmed English-only PDFs keep the original lightweight standard-font path.
+- `npm.cmd run build` and `git diff --check` passed.
