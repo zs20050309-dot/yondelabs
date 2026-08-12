@@ -125,7 +125,7 @@ export default function CourseHours({ applicationId, currentStudentId, mentors =
 
       {(enrollment.student_hour_allocations?.length || mentors?.length) ? (
         <div className={styles.studentColumns}>
-          {enrollment.student_hour_allocations?.length ? <div><h3>Hour allocation</h3><div className={styles.moduleList}>{[...enrollment.student_hour_allocations].sort((a, b) => a.sort_order - b.sort_order).map((item) => <div className={styles.moduleRow} key={item.id}><div><strong>{item.label}</strong></div><span>{formatHours(item.allocated_minutes)}</span></div>)}</div></div> : null}
+          {enrollment.student_hour_allocations?.length ? <div><h3>Hour allocation</h3><div className={styles.moduleList}>{[...enrollment.student_hour_allocations].sort((a, b) => a.sort_order - b.sort_order).map((item) => { const used = sumMinutes(sessions.filter((session) => session.mentor_role && session.mentor_role.toLowerCase() === item.label.toLowerCase())); return <div className={styles.moduleRow} key={item.id}><div><strong>{item.label}</strong></div><span>{formatHours(used)} / {formatHours(item.allocated_minutes)}</span></div> })}</div></div> : null}
           {mentors?.length ? <div><h3>My mentors</h3><div className={styles.moduleList}>{[...mentors].sort((a, b) => a.sort_order - b.sort_order).map((item) => <div className={styles.moduleRow} key={item.id}><div><strong>{item.mentors?.name}</strong><span>{item.role}</span></div></div>)}</div></div> : null}
         </div>
       ) : null}
@@ -173,7 +173,7 @@ export default function CourseHours({ applicationId, currentStudentId, mentors =
             <div className={styles.sessionList}>
               {sessions.map((session) => (
                 <div className={styles.sessionRow} key={session.id}>
-                  <div><strong>{session.course_modules?.title || 'General session'}</strong><span>{formatSessionDate(session.session_at)}</span></div>
+                  <div><strong>{session.course_modules?.title || 'General session'}</strong><span>{session.mentor_role ? `${session.mentor_role} · ` : ''}{formatSessionDate(session.session_at)}</span></div>
                   <strong>{formatHoursLong(session.duration_minutes)}</strong>
                 </div>
               ))}
