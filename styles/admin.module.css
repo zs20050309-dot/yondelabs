@@ -270,3 +270,41 @@
     grid-column: 1 / -1;
   }
 }
+
+.mentorAssignmentList { display: grid; gap: 12px; margin-top: 14px; }
+.mentorAssignmentRow { border: 1px solid #e0e5ed; border-radius: 10px; background: #fff; padding: 14px 16px; }
+.mentorAssignmentHeading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.mentorAssignmentHeading strong, .mentorAssignmentHeading span { display: block; }
+.mentorAssignmentHeading strong { color: #172033; font-size: 14px; }
+.mentorAssignmentHeading span { margin-top: 3px; color: #7a8598; font-size: 11px; }
+.mentorPaymentForm, .addMentorForm, .manualLineForm { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; margin-top: 12px; }
+.mentorPaymentForm label, .addMentorForm label, .manualLineForm label { display: grid; gap: 5px; min-width: 140px; color: #526076; font-size: 11px; font-weight: 700; }
+.mentorPaymentForm input, .mentorPaymentForm select,
+.addMentorForm input, .addMentorForm select,
+.manualLineForm input, .manualLineForm select {
+  height: 36px; border: 1px solid #ced6e3; border-radius: 7px; background: #fff; padding: 0 10px; color: #172033; font: inherit; font-size: 12px;
+}
+.addMentorForm { margin-top: 20px; border-top: 1px solid #e0e5ef; padding-top: 18px; }
+.addMentorInline { display: flex; gap: 8px; margin-left: auto; }
+.addMentorInline input { height: 40px; border: 1px solid #dce1e8; border-radius: 8px; padding: 0 12px; font: inherit; }
+
+.paymentList { display: grid; gap: 10px; margin-top: 14px; }
+.paymentRow { border: 1px solid #e0e5ed; border-radius: 10px; background: #fff; padding: 14px 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
+.paymentInfo strong, .paymentInfo span { display: block; }
+.paymentInfo strong { color: #172033; font-size: 13px; }
+.paymentInfo span { margin-top: 3px; color: #7a8598; font-size: 11px; }
+.paymentAmount { text-align: right; }
+.paymentAmount strong { display: block; color: #172033; font-size: 15px; }
+.paymentAmount .status { margin-top: 5px; }
+.markPaidForm { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; width: 100%; margin-top: 12px; border-top: 1px solid #edf0f4; padding-top: 12px; }
+.markPaidForm label { display: grid; gap: 5px; min-width: 140px; color: #526076; font-size: 11px; font-weight: 700; }
+.markPaidForm input { height: 36px; border: 1px solid #ced6e3; border-radius: 7px; background: #fff; padding: 0 10px; font: inherit; font-size: 12px; }
+.markPaidForm > div { display: flex; gap: 8px; margin-left: auto; }
+.manualLineForm { border-top: 1px solid #e0e5ef; margin-top: 16px; padding-top: 16px; }
+
+@media (max-width: 620px) {
+  .addMentorInline { margin-left: 0; width: 100%; }
+  .addMentorInline input { flex: 1; }
+  .markPaidForm > div { margin-left: 0; }
+  .paymentAmount { text-align: left; }
+}

@@ -4,6 +4,7 @@ import { formatHours, sumMinutes } from '../../lib/courseHours'
 import StudentCourseHours from './StudentCourseHours'
 import StudentFiles from './StudentFiles'
 import StudentPortalAccess from './StudentPortalAccess'
+import MentorAssignments from './MentorAssignments'
 import styles from '../../styles/admin.module.css'
 
 function currentEnrollment(student) {
@@ -82,7 +83,7 @@ function CurrentStudentDetail({ student, onClose }) {
       <div className={styles.detailHeader}><div><span className={styles.eyebrow}>Current student</span><h2>{student.full_name}</h2><p>{student.contact_email || 'No contact email provided'}</p></div><button type="button" className={styles.iconButton} onClick={onClose} aria-label="Close">×</button></div>
       <div className={styles.detailMeta}><div><span>Program</span><strong>{CURRENT_STUDENT_PROGRAMS[student.program]}</strong></div><div><span>Status</span><strong>{student.status}</strong></div><div><span>Portal ID</span><strong>{student.student_portal_accounts?.[0]?.portal_id || 'Not created'}</strong></div></div>
       <section className={styles.detailSection}><span className={styles.eyebrow}>Course</span><h3>{enrollment?.course_plans?.name || 'No plan assigned'}</h3>{enrollment ? <div className={styles.detailList}><p><span>Hours used</span><strong>{formatHours(used)}</strong></p><p><span>{enrollment.course_plans?.allow_overage ? 'Minimum hours' : 'Allocated hours'}</span><strong>{formatHours(enrollment.allocated_minutes)}</strong></p>{(enrollment.student_hour_allocations || []).map((item) => <p key={item.id}><span>{item.label}</span><strong>{formatHours(item.allocated_minutes)}</strong></p>)}</div> : null}</section>
-      <section className={styles.detailSection}><span className={styles.eyebrow}>Mentors</span><h3>Assigned team</h3><div className={styles.detailList}>{(student.student_mentor_assignments || []).map((item) => <p key={item.id}><span>{item.role}</span><strong>{item.mentors?.name}</strong></p>)}{!student.student_mentor_assignments?.length ? <p>No mentors assigned.</p> : null}</div></section>
+      <MentorAssignments currentStudent={student} />
       <StudentCourseHours currentStudent={student} />
       <StudentPortalAccess currentStudent={student} />
       <StudentFiles currentStudent={student} />

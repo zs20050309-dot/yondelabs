@@ -24,7 +24,7 @@ export default function StudentCourseHours({ application, currentStudent }) {
   const [allocatedHours, setAllocatedHours] = useState('')
   const [startDate, setStartDate] = useState(new Date().toISOString().slice(0, 10))
   const [moduleId, setModuleId] = useState('')
-  const [mentorRole, setMentorRole] = useState('')
+  const [assignmentId, setAssignmentId] = useState('')
   const [sessionAt, setSessionAt] = useState(localDateTimeValue())
   const [durationHours, setDurationHours] = useState('1')
   const [notes, setNotes] = useState('')
@@ -109,10 +109,12 @@ export default function StudentCourseHours({ application, currentStudent }) {
     setBusy(true)
     setError('')
     const { data: { user } } = await supabase.auth.getUser()
+    const selectedAssignment = mentorAssignments.find((item) => item.id === assignmentId)
     const { error: insertError } = await supabase.from('class_sessions').insert({
       enrollment_id: enrollment.id,
       module_id: moduleId || null,
-      mentor_role: mentorRole || null,
+      assignment_id: assignmentId || null,
+      mentor_role: selectedAssignment?.role || null,
       session_at: new Date(sessionAt).toISOString(),
       duration_minutes: minutes,
       notes: notes.trim() || null,
@@ -121,7 +123,7 @@ export default function StudentCourseHours({ application, currentStudent }) {
     if (insertError) setError(insertError.message)
     else {
       setDurationHours('1')
-      setMentorRole('')
+      setAssignmentId('')
       setNotes('')
       setSessionAt(localDateTimeValue())
       await load()
@@ -215,7 +217,7 @@ export default function StudentCourseHours({ application, currentStudent }) {
         <form className={styles.sessionForm} onSubmit={logSession}>
           <h4>Log completed class</h4>
           <label>Module<select value={moduleId} onChange={(event) => setModuleId(event.target.value)}><option value="">General / no module</option>{modules.map((module) => <option key={module.id} value={module.id}>{module.title}</option>)}</select></label>
-          <label>Mentor role<select value={mentorRole} onChange={(event) => setMentorRole(event.target.value)}><option value="">General / unassigned</option>{mentorAssignments.map((item) => <option key={item.id} value={item.role}>{item.role}</option>)}</select></label>
+          <label>Mentor<select value={assignmentId} onChange={(event) => setAssignmentId(event.target.value)}><option value="">General / unassigned</option>{mentorAssignments.map((item) => <option key={item.id} value={item.id}>{item.mentors?.name} · {item.role}</option>)}</select></label>
           <label>Date and time<input type="datetime-local" value={sessionAt} onChange={(event) => setSessionAt(event.target.value)} required /></label>
           <label>Hours used<input type="number" min="0.25" step="0.25" value={durationHours} onChange={(event) => setDurationHours(event.target.value)} required /></label>
           <label className={styles.notesField}>Class notes<textarea rows="2" value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="What was covered?" /></label>

@@ -1,6 +1,15 @@
-# CLAUDE.md — YondeLabs Web
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 This extends the global ~/.claude/CLAUDE.md. If there is a conflict, this file takes precedence.
+
+## Commands
+
+- `npm run dev` — start the Next.js dev server
+- `npm run build` — production build (this is the closest thing to a correctness check — there is **no lint script and no test suite/framework** in this repo; `npm run build` passing is the standard verification step used in `progress.md`)
+- `npm run start` — run the production build locally
+- `node scripts/render-sample-application-pdf.mjs` — standalone script to render a sample application PDF outside the Next.js app, useful when working on `lib/admin/applicationPdf.js` / offer-letter PDF generation without going through the admin UI
 
 ## Progress Tracking
 
@@ -32,7 +41,9 @@ This repo has **two completely separate sets of files**. One is live on yondelab
 | Hero, LabShowcase, Programs, etc. | `components/home/*.jsx` |
 | Login / Register / Dashboard | `pages/login.jsx`, `pages/register.jsx`, `pages/dashboard.jsx` |
 | Application wizard | `pages/apply/[program].jsx` + `components/apply/` |
-| Portal styles | `styles/portal.module.css`, `styles/dashboard.module.css`, etc. |
+| Admin portal (applications, offer letters, current students, course hours) | `pages/admin/index.jsx` + `components/admin/*.jsx` + `pages/api/admin/**` |
+| Student portal (separate from applicant dashboard) | `pages/student/*.jsx` + `lib/portal/useStudentPortal.js` |
+| Portal styles | `styles/portal.module.css`, `styles/dashboard.module.css`, `styles/admin.module.css`, `styles/studentPortal.module.css`, etc. |
 | Static assets (images, logos) | `public/images/` |
 
 ### DEAD LEGACY (NOT served, NOT built, ignore completely):
@@ -86,10 +97,18 @@ pages/
   register.jsx
   forgot-password.jsx
   reset-password.jsx
-  dashboard.jsx         ← Student dashboard
+  dashboard.jsx         ← Student (applicant) dashboard
   apply.jsx             ← Program selection
   apply/[program].jsx   ← Application wizard
   auth/callback.jsx
+  admin/index.jsx       ← Admin portal (applications, offer letters, current students, course hours)
+  student/              ← Separate student portal (enrolled students, not applicants)
+    index.jsx, course.jsx, files.jsx, login.jsx, set-password.jsx
+  api/admin/
+    applications/[id]/{pdf,offer-letter,offer-letter-preview,delete,portal-access}.js
+    current-students/[id]/portal-access.js
+    ← Server-side only; use SUPABASE_SERVICE_ROLE_KEY
+  api/applications/[id]/submission-notification.js
 
 components/
   home/                 ← All homepage sections (live on yondelabs.com)
@@ -117,7 +136,13 @@ components/
     ReviewStep.jsx
     FieldRenderer.jsx
     fields/*.jsx
-  admin/                ← NOT YET IMPLEMENTED
+  admin/                ← Admin portal UI (implemented)
+    ApplicationDetail.jsx           ← Renders one application; iterates lib/forms/schema.js
+    OfferLetterSender.jsx           ← Drives lib/admin/offerLetterPdf.js / offerLetterTemplates.js
+    CurrentStudents.jsx             ← Roster of enrolled (non-applicant) students
+    StudentPortalAccess.jsx         ← Create/reset student-portal credentials
+    StudentFiles.jsx                ← Per-student files (transcripts, etc.)
+    StudentCourseHours.jsx / CoursePlanManager.jsx ← Course hour allocation/tracking
 
 styles/
   globals.css           ← CSS variables — read but don't modify
@@ -129,17 +154,29 @@ styles/
   apply.module.css
   wizard.module.css
   callback.module.css
+  admin.module.css
+  studentPortal.module.css
+  applicationSummary.module.css
+  courseHours.module.css
+  studentFiles.module.css
 
 lib/
-  supabaseClient.js     ← Single shared Supabase client
+  supabaseClient.js     ← Single shared Supabase client (browser, anon key)
   forms/
     schema.js           ← Form schema source of truth (RA / IRP / PP)
     useDraft.js         ← Draft auto-save hook
     countries.js
     validators.js
+  admin/
+    stages.js                       ← Status/stage transition logic, incl. conversion to current student
+    applicationPdf.js, offerLetterPdf.js, offerLetterTemplates.js ← PDF generation (pdf-lib)
+    currentStudents.js
+  portal/
+    useStudentPortal.js  ← Data hook for the separate /student portal
+  courseHours.js, studentFiles.js, studentPortalCredentials.js
 
 public/images/          ← Static assets for Next.js (logos, photos, lab images)
-proxy.js                ← Route protection middleware
+proxy.js                ← Route protection middleware — three separate auth domains: general/auth routes, admin role, and a distinct `student_portal` role gating /student/*
 supabase/functions/     ← Edge Functions (email notifications)
 docs/                   ← Guides, SQL migrations, AI context
 ```
@@ -150,9 +187,11 @@ docs/                   ← Guides, SQL migrations, AI context
 - Supabase schema: `applications` table with RLS policies
 - Admin role set via `user_metadata.role === 'admin'`
 - Password minimum 8 characters
-- Status flow: `draft` → `submitted` → `interview` → `offer` (or `rejected`)
-- Form schema: `lib/forms/schema.js` is the single source of truth — admin renderer should iterate over `schema.steps[].fields[]`
+- Status flow: `draft` → `submitted` → `interview` → `offer` (or `rejected`); an application at `offer` can additionally be **converted** into a `current_students` record (see `lib/admin/stages.js`), carrying over enrollment/milestones/files/portal account
+- Form schema: `lib/forms/schema.js` is the single source of truth — the admin renderer iterates over `schema.steps[].fields[]`
 - Language: site is English-only. `LocalizedText.jsx` / `Lang` component exists but `styles.en` class is hardcoded on the homepage wrapper so only English renders.
+- Applicants and enrolled students are **separate identity domains**: applicant auth (`/login`, `/dashboard`) vs. student-portal auth (`/student/login`, role `student_portal`, gated separately in `proxy.js`). Don't conflate them.
+- Privileged admin actions (PDF/offer-letter generation, deletion, portal-credential creation) go through `pages/api/admin/**` server routes using `SUPABASE_SERVICE_ROLE_KEY` — never call service-role logic from client code.
 
 ## Currently Completed (see progress.md for details)
 
@@ -166,14 +205,19 @@ docs/                   ← Guides, SQL migrations, AI context
   - Already-submitted screen with email-admin guidance
 - [x] Homepage migrated to Next.js (all sections in `components/home/`)
 - [x] Navbar: non-sticky (position: relative), English-only, no language switcher
+- [x] Admin panel (`pages/admin/index.jsx` + `components/admin/*.jsx` + `pages/api/admin/**`) — application review/PDF export, offer-letter sending, current-students roster, portal-credential management, course-hour tracking
+- [x] Separate student portal (`pages/student/*.jsx`) for enrolled (non-applicant) students, with its own `student_portal` auth role
+- [x] Application archive/restore + guarded permanent deletion (admin-only, cascades private files/portal identity, preserves base Auth account)
+- [x] Application → current-student conversion flow
+- [x] Mentor payments: `mentor_payment_settings`/`mentor_payment_records`, auto-generated from milestone completions and logged class sessions, admin-managed mentor assignments (`components/admin/MentorAssignments.jsx`), and a top-level "Mentor payments" ledger tab (`components/admin/MentorPayments.jsx`) — code complete, needs the migration run (see Pending)
 - [x] Code review optimizations (2026-05-06 session)
 
 ## Currently Pending
 
+- [ ] **Run Supabase migration** for mentor payments — `docs/sql/migrations/2026-08-13_add_mentor_payments.sql` (after the 2026-08-12 migration). Mentor payment settings/records and the "Mentor payments" admin tab won't work until this is applied; each mentor assignment also needs a payment type + rate set before milestone/session logging generates payable lines.
 - [ ] **Run Supabase migration** for `draft` status — `docs/sql/migrations/2026-05-24_add_draft_status.sql`, guide at `docs/supabase-migration-guide.md`. New form submissions will fail at the DB CHECK constraint until this is run.
 - [ ] **Run Supabase migration** for `portfolio-project` program support — `docs/sql/migrations/2026-07-13_add_portfolio_project_program.sql`. New Portfolio Project submissions will fail at the DB CHECK constraint until this is run.
 - [ ] **Run Supabase migration** for interview scheduling metadata — `docs/sql/migrations/2026-07-14_add_interview_scheduling_fields.sql`. Calendly interview automation relies on these columns.
-- [ ] Admin panel (`pages/admin/index.jsx`, `components/admin/ApplicationTable.jsx`, `components/admin/ApplicationDetail.jsx`, `pages/api/admin/update-status.js`) — should reuse `lib/forms/schema.js` to render application details
 - [ ] Email automations external setup — submission confirmation + interview scheduling code are written, but Resend / Supabase / Calendly secrets and webhooks still need to be configured in the dashboards
 - [ ] Conditional form logic / auto-classification rules (deferred — needs rule spec)
 - [ ] File uploads (transcripts, portfolios) — Supabase Storage hookups not built

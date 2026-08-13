@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import ApplicationDetail from '../../components/admin/ApplicationDetail'
 import CoursePlanManager from '../../components/admin/CoursePlanManager'
 import CurrentStudents from '../../components/admin/CurrentStudents'
+import MentorPayments from '../../components/admin/MentorPayments'
 import { supabase } from '../../lib/supabaseClient'
 import {
   NEXT_STATUS,
@@ -239,6 +240,7 @@ export default function AdminDashboard() {
         <nav className={styles.adminTabs} aria-label="Admin sections">
           <button type="button" className={section === 'applications' ? styles.adminTabActive : styles.adminTab} onClick={() => setSection('applications')}>Applications</button>
           <button type="button" className={section === 'students' ? styles.adminTabActive : styles.adminTab} onClick={() => setSection('students')}>Current students</button>
+          <button type="button" className={section === 'payments' ? styles.adminTabActive : styles.adminTab} onClick={() => setSection('payments')}>Mentor payments</button>
           <button type="button" className={section === 'archived' ? styles.adminTabActive : styles.adminTab} onClick={() => setSection('archived')}>Archived <span className={styles.tabCount}>{archivedApplications.length}</span></button>
         </nav>
         <div className={styles.titleRow}>
@@ -246,8 +248,10 @@ export default function AdminDashboard() {
             ? <div><span className={styles.eyebrow}>Admissions</span><h1>Student applications</h1><p>Review new profiles and move students through each application stage.</p></div>
             : section === 'students'
               ? <div><span className={styles.eyebrow}>Programs</span><h1>Current students</h1><p>Manage enrolled students, course hours, mentors, files, and portal access.</p></div>
-              : <div><span className={styles.eyebrow}>Admissions archive</span><h1>Archived applications</h1><p>Review withdrawn or declined applications separately from active admissions.</p></div>}
-          {section !== 'archived' ? <button type="button" className={styles.primaryButton} onClick={() => setShowCoursePlans(true)}>Manage course plans</button> : null}
+              : section === 'payments'
+                ? <div><span className={styles.eyebrow}>Accounting</span><h1>Mentor payments</h1><p>Track what's owed to mentors from logged classes and completed milestones, and mark what's been paid.</p></div>
+                : <div><span className={styles.eyebrow}>Admissions archive</span><h1>Archived applications</h1><p>Review withdrawn or declined applications separately from active admissions.</p></div>}
+          {section !== 'archived' && section !== 'payments' ? <button type="button" className={styles.primaryButton} onClick={() => setShowCoursePlans(true)}>Manage course plans</button> : null}
         </div>
 
         {section === 'applications' ? (
@@ -257,19 +261,23 @@ export default function AdminDashboard() {
             <div><span>In progress</span><strong>{counts.inProgress}</strong></div>
             <div><span>Offers sent</span><strong>{counts.offers}</strong></div>
           </section>
-        ) : (
+        ) : section === 'students' ? (
           <section className={styles.stats} aria-label="Current student summary">
             <div><span>All current students</span><strong>{currentCounts.total}</strong></div>
             <div><span>Active</span><strong>{currentCounts.active}</strong></div>
             <div><span>Paused</span><strong>{currentCounts.paused}</strong></div>
             <div><span>Completed</span><strong>{currentCounts.completed}</strong></div>
           </section>
-        )}
+        ) : section === 'archived' ? (
+          <section className={styles.stats} aria-label="Archived application summary">
+            <div><span>Archived applications</span><strong>{archivedApplications.length}</strong></div>
+          </section>
+        ) : null}
 
         {(section === 'applications' || section === 'archived') && error ? <div className={styles.error}>{error}</div> : null}
         {section === 'students' && currentStudentsError ? <div className={styles.error}>{currentStudentsError}</div> : null}
 
-        {section !== 'students' ? <section className={styles.tableCard}>
+        {section === 'payments' ? <MentorPayments /> : section !== 'students' ? <section className={styles.tableCard}>
           <div className={styles.toolbar}>
             <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search name, email, or program" aria-label="Search applications" />
             {section === 'applications' ? <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} aria-label="Filter by stage">
