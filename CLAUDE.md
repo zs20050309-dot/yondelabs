@@ -209,7 +209,7 @@ docs/                   ← Guides, SQL migrations, AI context
 - [x] Separate student portal (`pages/student/*.jsx`) for enrolled (non-applicant) students, with its own `student_portal` auth role
 - [x] Application archive/restore + guarded permanent deletion (admin-only, cascades private files/portal identity, preserves base Auth account)
 - [x] Application → current-student conversion flow
-- [x] Mentor payments: `mentor_payment_settings`/`mentor_milestone_rates`/`mentor_payment_records`, auto-generated from milestone completions and logged class sessions, admin-managed mentor assignments (`components/admin/MentorAssignments.jsx`), and a top-level "Mentor payments" ledger tab (`components/admin/MentorPayments.jsx`) — code complete, needs the migration run (see Pending). Milestone payouts are priced per (mentor assignment, milestone) — co-mentors on the same student are never split evenly, each has an independent schedule.
+- [x] Mentor payments: `mentor_payment_settings`/`mentor_milestone_rates`/`mentor_payment_records`, auto-generated from milestone completions and logged class sessions, admin-managed mentor assignments (`components/admin/MentorAssignments.jsx`), and a top-level "Mentor payments" ledger tab (`components/admin/MentorPayments.jsx`) — code complete, needs the migration run (see Pending). Each milestone has exactly one responsible mentor (`student_milestone_progress.assignment_id`, set from the Course hours milestone list) priced per (mentor assignment, milestone) — never split between co-mentors.
 - [x] Code review optimizations (2026-05-06 session)
 
 ## Currently Pending

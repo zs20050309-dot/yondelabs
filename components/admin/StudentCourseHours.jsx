@@ -153,6 +153,19 @@ export default function StudentCourseHours({ application, currentStudent }) {
     setBusy(false)
   }
 
+  async function updateMilestoneMentor(milestoneId, milestoneAssignmentId) {
+    setBusy(true)
+    setError('')
+    const { error: updateError } = await supabase.rpc('set_student_milestone_mentor', {
+      p_enrollment_id: enrollment.id,
+      p_milestone_id: milestoneId,
+      p_assignment_id: milestoneAssignmentId || null,
+    })
+    if (updateError) setError(updateError.message)
+    else await load()
+    setBusy(false)
+  }
+
   async function setEnrollmentStatus(status) {
     setBusy(true)
     const { error: updateError } = await supabase.from('student_course_enrollments').update({
@@ -202,6 +215,10 @@ export default function StudentCourseHours({ application, currentStudent }) {
                   <div key={milestone.id}>
                     <span className={styles.milestoneOrder}>{index + 1}</span>
                     <div><strong>{milestone.title}</strong>{milestone.description ? <span>{milestone.description}</span> : null}</div>
+                    <select value={progress?.assignment_id || ''} onChange={(event) => updateMilestoneMentor(milestone.id, event.target.value)} disabled={busy} aria-label={`${milestone.title} responsible mentor`}>
+                      <option value="">No mentor assigned</option>
+                      {mentorAssignments.map((item) => <option key={item.id} value={item.id}>{item.mentors?.name} · {item.role}</option>)}
+                    </select>
                     <select value={progress?.status || 'not_started'} onChange={(event) => updateMilestone(milestone.id, event.target.value)} disabled={busy} aria-label={`${milestone.title} status`}>
                       <option value="not_started">Not started</option>
                       <option value="in_progress">In progress</option>
