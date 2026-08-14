@@ -1,16 +1,13 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
 import { amountToCents, centsToAmount, PAYMENT_TYPE_LABELS } from '../../lib/admin/mentorPayments'
 import styles from '../../styles/admin.module.css'
 
-function AssignmentRow({ assignment, onRemoved, onSettingsSaved }) {
+function AssignmentRow({ assignment, milestones, rates, onRemoved, onSettingsSaved, onRatesSaved }) {
   const [paymentType, setPaymentType] = useState(assignment.settings?.payment_type || 'milestone')
-  const [rate, setRate] = useState(
-    centsToAmount(
-      assignment.settings?.payment_type === 'hourly'
-        ? assignment.settings?.hourly_rate_cents
-        : assignment.settings?.milestone_rate_cents
-    )
+  const [hourlyRate, setHourlyRate] = useState(centsToAmount(assignment.settings?.hourly_rate_cents))
+  const [milestoneRates, setMilestoneRates] = useState(() =>
+    Object.fromEntries(milestones.map((milestone) => [milestone.id, centsToAmount(rates[milestone.id])]))
   )
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -27,29 +24,55 @@ function AssignmentRow({ assignment, onRemoved, onSettingsSaved }) {
 
   async function saveSettings(event) {
     event.preventDefault()
-    const cents = amountToCents(rate)
-    if (cents === null) {
-      setError('Enter a valid rate.')
+    if (paymentType === 'hourly' && amountToCents(hourlyRate) === null) {
+      setError('Enter a valid hourly rate.')
       return
     }
     setBusy(true)
     setError('')
-    const { data, error: upsertError } = await supabase
+
+    const { data: settings, error: upsertError } = await supabase
       .from('mentor_payment_settings')
       .upsert(
         {
           assignment_id: assignment.id,
           payment_type: paymentType,
-          milestone_rate_cents: paymentType === 'milestone' ? cents : null,
-          hourly_rate_cents: paymentType === 'hourly' ? cents : null,
+          hourly_rate_cents: paymentType === 'hourly' ? amountToCents(hourlyRate) : null,
           updated_at: new Date().toISOString(),
         },
         { onConflict: 'assignment_id' }
       )
       .select()
       .single()
-    if (upsertError) setError(upsertError.message)
-    else onSettingsSaved(assignment.id, data)
+    if (upsertError) {
+      setError(upsertError.message)
+      setBusy(false)
+      return
+    }
+    onSettingsSaved(assignment.id, settings)
+
+    if (paymentType === 'milestone') {
+      const rows = milestones
+        .filter((milestone) => String(milestoneRates[milestone.id] ?? '').trim() !== '')
+        .map((milestone) => ({
+          assignment_id: assignment.id,
+          milestone_id: milestone.id,
+          amount_cents: amountToCents(milestoneRates[milestone.id]),
+          updated_at: new Date().toISOString(),
+        }))
+      if (rows.some((row) => row.amount_cents === null)) {
+        setError('Enter a valid amount for each priced milestone.')
+        setBusy(false)
+        return
+      }
+      if (rows.length) {
+        const { error: ratesError } = await supabase
+          .from('mentor_milestone_rates')
+          .upsert(rows, { onConflict: 'assignment_id,milestone_id' })
+        if (ratesError) setError(ratesError.message)
+        else onRatesSaved(assignment.id, Object.fromEntries(rows.map((row) => [row.milestone_id, row.amount_cents])))
+      }
+    }
     setBusy(false)
   }
 
@@ -71,12 +94,35 @@ function AssignmentRow({ assignment, onRemoved, onSettingsSaved }) {
             ))}
           </select>
         </label>
-        <label>
-          <span>{paymentType === 'hourly' ? 'Rate per hour' : 'Rate per milestone'}</span>
-          <input type="number" min="0" step="0.01" placeholder="0.00" value={rate} onChange={(event) => setRate(event.target.value)} />
-        </label>
+        {paymentType === 'hourly' ? (
+          <label>
+            <span>Rate per hour</span>
+            <input type="number" min="0" step="0.01" placeholder="0.00" value={hourlyRate} onChange={(event) => setHourlyRate(event.target.value)} />
+          </label>
+        ) : null}
         <button type="submit" className={styles.secondaryButton} disabled={busy}>{busy ? 'Saving…' : 'Save payment settings'}</button>
       </form>
+
+      {paymentType === 'milestone' ? (
+        milestones.length ? (
+          <div className={styles.milestoneRateGrid}>
+            <span className={styles.milestoneRateHint}>This mentor's own payout per milestone. Leave blank for milestones they aren't paid for.</span>
+            {milestones.map((milestone) => (
+              <label key={milestone.id} className={styles.milestoneRateField}>
+                <span>{milestone.title}</span>
+                <input
+                  type="number" min="0" step="0.01" placeholder="Not paid"
+                  value={milestoneRates[milestone.id] ?? ''}
+                  onChange={(event) => setMilestoneRates((current) => ({ ...current, [milestone.id]: event.target.value }))}
+                />
+              </label>
+            ))}
+          </div>
+        ) : (
+          <p className={styles.portalAccessMuted}>Assign a course plan with milestones before pricing this schedule.</p>
+        )
+      ) : null}
+
       {error ? <div className={styles.inlineError}>{error}</div> : null}
     </div>
   )
@@ -84,6 +130,8 @@ function AssignmentRow({ assignment, onRemoved, onSettingsSaved }) {
 
 export default function MentorAssignments({ currentStudent }) {
   const [assignments, setAssignments] = useState([])
+  const [milestones, setMilestones] = useState([])
+  const [rates, setRates] = useState({})
   const [mentors, setMentors] = useState([])
   const [loading, setLoading] = useState(true)
   const [mentorChoice, setMentorChoice] = useState('')
@@ -94,21 +142,50 @@ export default function MentorAssignments({ currentStudent }) {
 
   const load = useCallback(async () => {
     setLoading(true)
-    const [assignmentsResult, mentorsResult] = await Promise.all([
+    const [assignmentsResult, mentorsResult, enrollmentResult] = await Promise.all([
       supabase
         .from('student_mentor_assignments')
-        .select('id, role, sort_order, mentors(id, name), mentor_payment_settings(payment_type, milestone_rate_cents, hourly_rate_cents)')
+        .select('id, role, sort_order, mentors(id, name), mentor_payment_settings(payment_type, hourly_rate_cents)')
         .eq('current_student_id', currentStudent.id)
         .order('sort_order', { ascending: true }),
       supabase.from('mentors').select('id, name').eq('active', true).order('name', { ascending: true }),
+      supabase
+        .from('student_course_enrollments')
+        .select('id, course_plans(course_milestones(id, title, sort_order))')
+        .eq('current_student_id', currentStudent.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
     ])
+
     if (assignmentsResult.error) {
       setError('Mentor payments are unavailable. Run the 2026-08-13 mentor payments migration.')
-    } else {
-      setError('')
-      setAssignments((assignmentsResult.data || []).map((item) => ({ ...item, settings: item.mentor_payment_settings?.[0] || item.mentor_payment_settings || null })))
+      setLoading(false)
+      return
     }
+    setError('')
+    const loadedAssignments = (assignmentsResult.data || []).map((item) => ({
+      ...item,
+      settings: item.mentor_payment_settings?.[0] || item.mentor_payment_settings || null,
+    }))
+    setAssignments(loadedAssignments)
     setMentors(mentorsResult.data || [])
+    const sortedMilestones = [...(enrollmentResult.data?.course_plans?.course_milestones || [])].sort((a, b) => a.sort_order - b.sort_order)
+    setMilestones(sortedMilestones)
+
+    if (loadedAssignments.length) {
+      const { data: rateRows } = await supabase
+        .from('mentor_milestone_rates')
+        .select('assignment_id, milestone_id, amount_cents')
+        .in('assignment_id', loadedAssignments.map((item) => item.id))
+      const grouped = {}
+      for (const row of rateRows || []) {
+        grouped[row.assignment_id] = { ...(grouped[row.assignment_id] || {}), [row.milestone_id]: row.amount_cents }
+      }
+      setRates(grouped)
+    } else {
+      setRates({})
+    }
     setLoading(false)
   }, [currentStudent.id])
 
@@ -160,17 +237,31 @@ export default function MentorAssignments({ currentStudent }) {
     setAssignments((current) => current.map((item) => (item.id === id ? { ...item, settings } : item)))
   }
 
+  function handleRatesSaved(id, savedRates) {
+    setRates((current) => ({ ...current, [id]: { ...(current[id] || {}), ...savedRates } }))
+  }
+
+  const rowsByAssignment = useMemo(() => assignments, [assignments])
+
   if (loading) return <section className={styles.detailSection}><p>Loading mentors…</p></section>
 
   return (
     <section className={styles.detailSection}>
       <span className={styles.eyebrow}>Mentors</span>
-      <h3>Assigned team &amp; payment settings</h3>
+      <h3>Assigned team &amp; payment schedule</h3>
       {error ? <div className={styles.inlineErrorStandalone}>{error}</div> : null}
 
       <div className={styles.mentorAssignmentList}>
-        {assignments.map((assignment) => (
-          <AssignmentRow key={assignment.id} assignment={assignment} onRemoved={handleRemoved} onSettingsSaved={handleSettingsSaved} />
+        {rowsByAssignment.map((assignment) => (
+          <AssignmentRow
+            key={assignment.id}
+            assignment={assignment}
+            milestones={milestones}
+            rates={rates[assignment.id] || {}}
+            onRemoved={handleRemoved}
+            onSettingsSaved={handleSettingsSaved}
+            onRatesSaved={handleRatesSaved}
+          />
         ))}
         {!assignments.length ? <p className={styles.portalAccessMuted}>No mentors assigned yet.</p> : null}
       </div>

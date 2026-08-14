@@ -284,10 +284,21 @@
 .manualLineForm input, .manualLineForm select {
   height: 36px; border: 1px solid #ced6e3; border-radius: 7px; background: #fff; padding: 0 10px; color: #172033; font: inherit; font-size: 12px;
 }
+.milestoneRateGrid { display: grid; gap: 10px; margin-top: 12px; border-top: 1px solid #edf0f4; padding-top: 12px; }
+.milestoneRateHint { color: #7a8598; font-size: 11px; line-height: 1.5; }
+.milestoneRateField { display: grid; grid-template-columns: minmax(0, 1fr) 120px; align-items: center; gap: 12px; }
+.milestoneRateField span { color: #344155; font-size: 12px; }
+.milestoneRateField input { height: 34px; border: 1px solid #ced6e3; border-radius: 7px; background: #fff; padding: 0 10px; color: #172033; font: inherit; font-size: 12px; }
 .addMentorForm { margin-top: 20px; border-top: 1px solid #e0e5ef; padding-top: 18px; }
 .addMentorInline { display: flex; gap: 8px; margin-left: auto; }
 .addMentorInline input { height: 40px; border: 1px solid #dce1e8; border-radius: 8px; padding: 0 12px; font: inherit; }
 
+.assignmentSummary { border-bottom: 1px solid #edf0f4; padding: 11px 0; }
+.assignmentSummary p { display: flex; justify-content: space-between; gap: 18px; color: #677388; font-size: 12px; }
+.assignmentSummary p strong { color: #263246; }
+.milestoneRateSummary { list-style: none; margin: 8px 0 0; display: grid; gap: 4px; }
+.milestoneRateSummary li { display: flex; justify-content: space-between; gap: 12px; color: #7a8598; font-size: 11px; }
+.milestoneRateSummary li span { color: #344155; font-weight: 700; }
 .paymentList { display: grid; gap: 10px; margin-top: 14px; }
 .paymentRow { border: 1px solid #e0e5ed; border-radius: 10px; background: #fff; padding: 14px 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
 .paymentInfo strong, .paymentInfo span { display: block; }
@@ -307,4 +318,5 @@
   .addMentorInline input { flex: 1; }
   .markPaidForm > div { margin-left: 0; }
   .paymentAmount { text-align: left; }
+  .milestoneRateField { grid-template-columns: 1fr; }
 }

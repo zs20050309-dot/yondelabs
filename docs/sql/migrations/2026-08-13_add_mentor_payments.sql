@@ -15,12 +15,28 @@ create table if not exists public.mentor_payment_settings (
   assignment_id uuid not null unique
     references public.student_mentor_assignments(id) on delete cascade,
   payment_type text not null check (payment_type in ('milestone', 'hourly')),
-  milestone_rate_cents integer check (milestone_rate_cents >= 0),
   hourly_rate_cents integer check (hourly_rate_cents >= 0),
   currency text not null default 'USD',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+-- Milestone payouts are not a single flat rate: each mentor assignment has
+-- its own custom amount per milestone (two co-mentors on the same course are
+-- priced independently, never split). No row for a given
+-- (assignment, milestone) means that milestone is not payable for that mentor.
+create table if not exists public.mentor_milestone_rates (
+  id uuid primary key default gen_random_uuid(),
+  assignment_id uuid not null references public.student_mentor_assignments(id) on delete cascade,
+  milestone_id uuid not null references public.course_milestones(id) on delete cascade,
+  amount_cents integer not null check (amount_cents >= 0),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (assignment_id, milestone_id)
+);
+
+create index if not exists idx_mentor_milestone_rates_assignment
+  on public.mentor_milestone_rates (assignment_id);
 
 create table if not exists public.mentor_payment_records (
   id uuid primary key default gen_random_uuid(),
@@ -55,11 +71,18 @@ create index if not exists idx_mentor_payment_records_student
   on public.mentor_payment_records (current_student_id);
 
 alter table public.mentor_payment_settings enable row level security;
+alter table public.mentor_milestone_rates enable row level security;
 alter table public.mentor_payment_records enable row level security;
 
 drop policy if exists "admins_manage_mentor_payment_settings" on public.mentor_payment_settings;
 create policy "admins_manage_mentor_payment_settings"
   on public.mentor_payment_settings for all
+  using (public.is_yonde_admin())
+  with check (public.is_yonde_admin());
+
+drop policy if exists "admins_manage_mentor_milestone_rates" on public.mentor_milestone_rates;
+create policy "admins_manage_mentor_milestone_rates"
+  on public.mentor_milestone_rates for all
   using (public.is_yonde_admin())
   with check (public.is_yonde_admin());
 
@@ -70,7 +93,9 @@ create policy "admins_manage_mentor_payment_records"
   with check (public.is_yonde_admin());
 
 -- Milestone completion -> payable line for every mentor assignment on that
--- student configured as payment_type = 'milestone'.
+-- student that is (a) configured as payment_type = 'milestone' and (b) has a
+-- custom rate set for this specific milestone. No rate row = no payout for
+-- that mentor on that milestone; co-mentors are never split evenly.
 create or replace function public.sync_milestone_payment_records()
 returns trigger
 language plpgsql
@@ -95,11 +120,11 @@ begin
         milestone_progress_id, amount_cents, status
       )
       select sma.mentor_id, v_current_student_id, sma.id, 'milestone',
-             new.id, coalesce(mps.milestone_rate_cents, 0), 'pending'
+             new.id, mmr.amount_cents, 'pending'
       from public.student_mentor_assignments sma
-      join public.mentor_payment_settings mps on mps.assignment_id = sma.id
+      join public.mentor_payment_settings mps on mps.assignment_id = sma.id and mps.payment_type = 'milestone'
+      join public.mentor_milestone_rates mmr on mmr.assignment_id = sma.id and mmr.milestone_id = new.milestone_id
       where sma.current_student_id = v_current_student_id
-        and mps.payment_type = 'milestone'
       on conflict (milestone_progress_id, assignment_id) where milestone_progress_id is not null
       do nothing;
     elsif tg_op = 'UPDATE' and old.status = 'completed' then
@@ -116,6 +141,64 @@ drop trigger if exists sync_milestone_payment_records_trigger on public.student_
 create trigger sync_milestone_payment_records_trigger
 after insert or update of status on public.student_milestone_progress
 for each row execute function public.sync_milestone_payment_records();
+
+-- A rate can be entered before or after a milestone is marked complete. If an
+-- admin sets/edits a mentor's rate for a milestone that's already completed
+-- for that student, generate the payable line now (or refresh its amount if
+-- still pending -- paid records are never touched automatically).
+create or replace function public.sync_mentor_milestone_rate()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_current_student_id uuid;
+  v_mentor_id uuid;
+  v_is_milestone_type boolean;
+  v_progress record;
+begin
+  select sma.current_student_id, sma.mentor_id into v_current_student_id, v_mentor_id
+  from public.student_mentor_assignments sma
+  where sma.id = new.assignment_id;
+
+  select exists (
+    select 1 from public.mentor_payment_settings mps
+    where mps.assignment_id = new.assignment_id and mps.payment_type = 'milestone'
+  ) into v_is_milestone_type;
+
+  if v_current_student_id is null or not v_is_milestone_type then
+    return new;
+  end if;
+
+  for v_progress in
+    select smp.id
+    from public.student_milestone_progress smp
+    join public.student_course_enrollments e on e.id = smp.enrollment_id
+    where e.current_student_id = v_current_student_id
+      and smp.milestone_id = new.milestone_id
+      and smp.status = 'completed'
+  loop
+    insert into public.mentor_payment_records (
+      mentor_id, current_student_id, assignment_id, source_type,
+      milestone_progress_id, amount_cents, status
+    ) values (
+      v_mentor_id, v_current_student_id, new.assignment_id, 'milestone',
+      v_progress.id, new.amount_cents, 'pending'
+    )
+    on conflict (milestone_progress_id, assignment_id) where milestone_progress_id is not null
+    do update set amount_cents = excluded.amount_cents, updated_at = now()
+    where public.mentor_payment_records.status = 'pending';
+  end loop;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists sync_mentor_milestone_rate_trigger on public.mentor_milestone_rates;
+create trigger sync_mentor_milestone_rate_trigger
+after insert or update of amount_cents on public.mentor_milestone_rates
+for each row execute function public.sync_mentor_milestone_rate();
 
 -- Logged class session -> payable line only when the assigned mentor is
 -- configured as payment_type = 'hourly'. Recomputes on edit, removes on
@@ -187,8 +270,8 @@ after insert or delete or update of duration_minutes, assignment_id on public.cl
 for each row execute function public.sync_session_payment_record();
 
 -- Admin-only write path for marking a payment record paid/pending, mirroring
--- set_student_milestone_status. Also allows editing the amount at pay time,
--- since rates are defaults rather than a full per-milestone rate matrix.
+-- set_student_milestone_status. Also allows editing the amount at pay time
+-- (e.g. a one-off adjustment on top of the configured rate).
 create or replace function public.set_mentor_payment_status(
   p_record_id uuid,
   p_status text,
@@ -234,11 +317,11 @@ grant execute on function public.set_mentor_payment_status(uuid, text, integer, 
 
 notify pgrst, 'reload schema';
 
--- Verification: expect both new tables plus the assignment_id column.
+-- Verification: expect all three new tables plus the assignment_id column.
 select table_name
 from information_schema.tables
 where table_schema = 'public'
-  and table_name in ('mentor_payment_settings', 'mentor_payment_records')
+  and table_name in ('mentor_payment_settings', 'mentor_milestone_rates', 'mentor_payment_records')
 order by table_name;
 
 select column_name

@@ -149,7 +149,7 @@ function MentorDetail({ mentor, onClose, onRecordsChanged }) {
     const [assignmentsResult, recordsResult] = await Promise.all([
       supabase
         .from('student_mentor_assignments')
-        .select('id, role, current_student_id, current_students(full_name), mentor_payment_settings(payment_type, milestone_rate_cents, hourly_rate_cents)')
+        .select('id, role, current_student_id, current_students(full_name), mentor_payment_settings(payment_type, hourly_rate_cents), mentor_milestone_rates(amount_cents, course_milestones(title))')
         .eq('mentor_id', mentor.id),
       supabase
         .from('mentor_payment_records')
@@ -210,15 +210,27 @@ function MentorDetail({ mentor, onClose, onRecordsChanged }) {
               <div className={styles.detailList}>
                 {assignments.map((item) => {
                   const settings = item.mentor_payment_settings?.[0] || item.mentor_payment_settings
+                  const milestoneRates = item.mentor_milestone_rates || []
                   return (
-                    <p key={item.id}>
-                      <span>{item.current_students?.full_name} · {item.role}</span>
-                      <strong>
-                        {settings
-                          ? `${settings.payment_type === 'hourly' ? 'Hourly' : 'Per milestone'} · ${formatCents(settings.payment_type === 'hourly' ? settings.hourly_rate_cents : settings.milestone_rate_cents)}`
-                          : 'No rate set'}
-                      </strong>
-                    </p>
+                    <div key={item.id} className={styles.assignmentSummary}>
+                      <p>
+                        <span>{item.current_students?.full_name} · {item.role}</span>
+                        <strong>
+                          {!settings
+                            ? 'No payment type set'
+                            : settings.payment_type === 'hourly'
+                              ? `Hourly · ${formatCents(settings.hourly_rate_cents)}`
+                              : `Per milestone · ${milestoneRates.length ? `${milestoneRates.length} priced` : 'none priced yet'}`}
+                        </strong>
+                      </p>
+                      {settings?.payment_type === 'milestone' && milestoneRates.length ? (
+                        <ul className={styles.milestoneRateSummary}>
+                          {milestoneRates.map((rate, index) => (
+                            <li key={index}>{rate.course_milestones?.title} <span>{formatCents(rate.amount_cents)}</span></li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </div>
                   )
                 })}
                 {!assignments.length ? <p>No students assigned to this mentor yet. Assign them from the student's profile.</p> : null}
