@@ -32,6 +32,10 @@ create table if not exists public.mentor_payment_settings (
   updated_at timestamptz not null default now()
 );
 
+-- Drop the flat per-assignment milestone rate an earlier run of this
+-- migration may have created, now superseded by mentor_milestone_rates below.
+alter table public.mentor_payment_settings drop column if exists milestone_rate_cents;
+
 -- Milestone payouts are not a single flat rate: each mentor assignment has
 -- its own custom amount per milestone (two co-mentors on the same course are
 -- priced independently, never split). No row for a given
@@ -66,6 +70,24 @@ create table if not exists public.mentor_payment_records (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+-- If an earlier run of this migration already allowed multiple mentors to be
+-- paid for the same milestone completion, collapse those duplicates before
+-- tightening the constraint below: keep a paid record over a pending one
+-- (never discard real payment history), otherwise keep the earliest.
+with ranked as (
+  select id, milestone_progress_id,
+    row_number() over (
+      partition by milestone_progress_id
+      order by (status = 'paid') desc, created_at asc
+    ) as rn
+  from public.mentor_payment_records
+  where milestone_progress_id is not null
+)
+delete from public.mentor_payment_records
+where id in (select id from ranked where rn > 1);
+
+drop index if exists idx_one_payment_per_milestone_mentor;
 
 -- One payment record per milestone completion (not per mentor) -- a milestone
 -- has exactly one responsible mentor, so this also prevents double-paying if

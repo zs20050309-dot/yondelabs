@@ -27,6 +27,14 @@ Internal admin/accounting had no way to see whether mentors had been paid. Class
 - `npm run build` passed (dependencies were not installed in this session's environment; ran `npm install` first). Ran with placeholder `NEXT_PUBLIC_SUPABASE_*` env vars since `.env.local` isn't present locally — all routes including `/admin` compiled and prerendered successfully.
 - Not yet verified against a live Supabase instance (migration not applied there) — needs an authenticated walkthrough (assign two mentors to one student, mark each responsible for different milestones with different rates, complete both, confirm each mentor gets only their own milestone's payment; reassign a milestone's mentor and confirm the payment moves rather than duplicating) before relying on this in production.
 
+### Follow-up: mentor payments migration fix + clearer UI
+- Fixed `2026-08-13_add_mentor_payments.sql`: an earlier partial run (before the exclusive-mentor-per-milestone rework) had already created duplicate `mentor_payment_records` rows for the same milestone under the old looser constraint, which broke the new stricter unique index. Added a dedupe step (keeps a `paid` record over `pending`, never discards real payment history) and made the `milestone_rate_cents` column drop defensive, so the migration is safe to re-run from a partially-applied state.
+- Reworked the "Mentor payments" tab UI for clarity, per explicit request that payments needing action be visually separated:
+  - Mentor detail ledger now splits into a prominent **"To be paid"** section (amber-accented, pending records + totals + the manual-adjustment form) and a collapsed **"Payment history"** `<details>` section for paid records — pending work is what's visible by default.
+  - Added a summary bar at the top of the tab showing total pending (highlighted) and total paid across all mentors.
+  - Added a "Needs payment only" filter checkbox and default-sorted the mentor table by pending amount (mentors owed money surface first); rows with pending amounts get a status-chip pending indicator instead of a plain number.
+- `npm run build` passed with these changes.
+
 ---
 
 ## Session: 2026-08-03 - Application archive and deletion

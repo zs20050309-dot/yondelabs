@@ -313,10 +313,35 @@
 .markPaidForm > div { display: flex; gap: 8px; margin-left: auto; }
 .manualLineForm { border-top: 1px solid #e0e5ef; margin-top: 16px; padding-top: 16px; }
 
+.paymentsSummaryBar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 30px 0 18px; }
+.paymentsSummaryCard { border: 1px solid #e5e8ee; border-radius: 12px; background: #fff; padding: 18px 20px; }
+.paymentsSummaryCard span { display: block; color: #748095; font-size: 12px; }
+.paymentsSummaryCard strong { display: block; margin-top: 8px; font-size: 27px; }
+.paymentsSummaryCard:first-child { border-color: #f0d9b8; background: #fffaf0; }
+.paymentsSummaryCard:first-child strong { color: #8a5a12; }
+.paymentsSummaryHint { margin-top: 5px !important; font-size: 11px !important; }
+.needsPaymentToggle { display: flex; align-items: center; gap: 7px; margin-left: 14px; color: #526076; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.needsPaymentToggle input { width: 15px; height: 15px; }
+.needsPaymentRow td:first-child strong::after { content: '•'; margin-left: 7px; color: #c9862f; }
+
+.toProcessSection { border: 1px solid #f0d9b8; border-radius: 12px; background: #fffaf0; padding: 20px; }
+.toProcessTotal { color: #8a5a12; font-size: 20px; }
+.allClearNotice { border-radius: 8px; background: #eefaf1; color: #1c6b45; padding: 12px 14px; font-size: 12px; }
+.historyDisclosure { border: 1px solid #e7eaf0; border-radius: 12px; padding: 18px 20px; }
+.historyDisclosure > summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; list-style: none; }
+.historyDisclosure > summary::-webkit-details-marker { display: none; }
+.historyDisclosure > summary h3 { margin-top: 4px; }
+.historyDisclosure > summary strong { color: #536176; font-size: 16px; }
+.historyDisclosure .paymentList { margin-top: 16px; }
+.historyDisclosure .paymentRow { background: #fbfbfc; }
+
 @media (max-width: 620px) {
   .addMentorInline { margin-left: 0; width: 100%; }
   .addMentorInline input { flex: 1; }
   .markPaidForm > div { margin-left: 0; }
   .paymentAmount { text-align: left; }
   .milestoneRateField { grid-template-columns: 1fr; }
+  .paymentsSummaryBar { grid-template-columns: 1fr; }
+  .needsPaymentToggle { margin: 10px 0 0; }
+  .toProcessSection, .historyDisclosure { padding: 15px; }
 }

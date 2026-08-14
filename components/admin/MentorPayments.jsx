@@ -237,15 +237,42 @@ function MentorDetail({ mentor, onClose, onRecordsChanged }) {
               </div>
             </section>
 
-            <section className={styles.detailSection}>
-              <span className={styles.eyebrow}>Ledger</span>
-              <h3>Payment records</h3>
-              <div className={styles.paymentList}>
-                {records.map((record) => <PaymentRow key={record.id} record={record} onUpdated={handleRecordUpdated} />)}
-                {!records.length ? <p>No payment activity yet.</p> : null}
-              </div>
-              <ManualLineItemForm mentor={mentor} assignments={assignments} onAdded={handleRecordAdded} />
-            </section>
+            {(() => {
+              const pendingRecords = records.filter((item) => item.status === 'pending')
+              const paidRecords = records.filter((item) => item.status === 'paid')
+              return (
+                <>
+                  <section className={`${styles.detailSection} ${styles.toProcessSection}`}>
+                    <div className={styles.sectionHeading}>
+                      <div>
+                        <span className={styles.eyebrow}>Needs action</span>
+                        <h3>To be paid{pendingRecords.length ? ` (${pendingRecords.length})` : ''}</h3>
+                      </div>
+                      {pendingRecords.length ? <strong className={styles.toProcessTotal}>{formatCents(pendingTotal)}</strong> : null}
+                    </div>
+                    <div className={styles.paymentList}>
+                      {pendingRecords.map((record) => <PaymentRow key={record.id} record={record} onUpdated={handleRecordUpdated} />)}
+                      {!pendingRecords.length ? <p className={styles.allClearNotice}>Nothing owed right now — every logged milestone and session is paid up.</p> : null}
+                    </div>
+                    <ManualLineItemForm mentor={mentor} assignments={assignments} onAdded={handleRecordAdded} />
+                  </section>
+
+                  <details className={`${styles.detailSection} ${styles.historyDisclosure}`}>
+                    <summary>
+                      <div>
+                        <span className={styles.eyebrow}>Record</span>
+                        <h3>Payment history{paidRecords.length ? ` (${paidRecords.length})` : ''}</h3>
+                      </div>
+                      <strong>{formatCents(paidTotal)}</strong>
+                    </summary>
+                    <div className={styles.paymentList}>
+                      {paidRecords.map((record) => <PaymentRow key={record.id} record={record} onUpdated={handleRecordUpdated} />)}
+                      {!paidRecords.length ? <p>Nothing paid yet.</p> : null}
+                    </div>
+                  </details>
+                </>
+              )
+            })()}
           </>
         )}
       </aside>
@@ -305,12 +332,26 @@ export default function MentorPayments() {
     setBusy(false)
   }
 
+  const [needsPaymentOnly, setNeedsPaymentOnly] = useState(false)
+
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase()
-    return mentors.filter((mentor) => !needle || mentor.name.toLowerCase().includes(needle))
-  }, [mentors, query])
+    return mentors
+      .filter((mentor) => !needle || mentor.name.toLowerCase().includes(needle))
+      .filter((mentor) => !needsPaymentOnly || (summaries[mentor.id]?.pendingCount || 0) > 0)
+      .sort((a, b) => (summaries[b.id]?.pending || 0) - (summaries[a.id]?.pending || 0) || a.name.localeCompare(b.name))
+  }, [mentors, query, needsPaymentOnly, summaries])
 
   const selectedMentor = mentors.find((mentor) => mentor.id === selectedMentorId) || null
+
+  const totals = useMemo(() => {
+    const values = Object.values(summaries)
+    return {
+      pending: values.reduce((sum, item) => sum + item.pending, 0),
+      pendingMentors: values.filter((item) => item.pendingCount > 0).length,
+      paid: values.reduce((sum, item) => sum + item.paid, 0),
+    }
+  }, [summaries])
 
   if (loading) return <section className={styles.tableCard}><div className={styles.empty}>Loading mentors…</div></section>
 
@@ -318,9 +359,26 @@ export default function MentorPayments() {
     <>
       {error ? <div className={styles.error}>{error}</div> : null}
 
+      <section className={styles.paymentsSummaryBar} aria-label="Mentor payments summary">
+        <div className={styles.paymentsSummaryCard}>
+          <span>Needs to be paid</span>
+          <strong>{formatCents(totals.pending)}</strong>
+          <span className={styles.paymentsSummaryHint}>{totals.pendingMentors ? `across ${totals.pendingMentors} mentor${totals.pendingMentors === 1 ? '' : 's'}` : 'all caught up'}</span>
+        </div>
+        <div className={styles.paymentsSummaryCard}>
+          <span>Paid out</span>
+          <strong>{formatCents(totals.paid)}</strong>
+          <span className={styles.paymentsSummaryHint}>total recorded</span>
+        </div>
+      </section>
+
       <section className={styles.tableCard}>
         <div className={styles.toolbar}>
           <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search mentors" aria-label="Search mentors" />
+          <label className={styles.needsPaymentToggle}>
+            <input type="checkbox" checked={needsPaymentOnly} onChange={(event) => setNeedsPaymentOnly(event.target.checked)} />
+            <span>Needs payment only</span>
+          </label>
           <form className={styles.addMentorInline} onSubmit={addMentor}>
             <input type="text" value={newMentorName} onChange={(event) => setNewMentorName(event.target.value)} placeholder="New mentor name" aria-label="New mentor name" />
             <button type="submit" className={styles.secondaryButton} disabled={busy}>Add mentor</button>
@@ -333,9 +391,15 @@ export default function MentorPayments() {
               {filtered.map((mentor) => {
                 const summary = summaries[mentor.id] || { pending: 0, paid: 0, pendingCount: 0 }
                 return (
-                  <tr key={mentor.id}>
+                  <tr key={mentor.id} className={summary.pendingCount ? styles.needsPaymentRow : undefined}>
                     <td><button type="button" className={styles.studentLink} onClick={() => setSelectedMentorId(mentor.id)}><strong>{mentor.name}</strong>{!mentor.active ? <span>Inactive</span> : null}</button></td>
-                    <td>{formatCents(summary.pending)}{summary.pendingCount ? <span className={styles.noCourse}> · {summary.pendingCount} unpaid</span> : null}</td>
+                    <td>
+                      {summary.pendingCount ? (
+                        <span className={`${styles.status} ${styles.status_submitted}`}>{formatCents(summary.pending)} · {summary.pendingCount} unpaid</span>
+                      ) : (
+                        <span className={styles.noCourse}>Nothing due</span>
+                      )}
+                    </td>
                     <td>{formatCents(summary.paid)}</td>
                     <td className={styles.rowActions}><button type="button" className={styles.viewButton} onClick={() => setSelectedMentorId(mentor.id)}>View ledger</button></td>
                   </tr>
@@ -343,7 +407,7 @@ export default function MentorPayments() {
               })}
             </tbody>
           </table>
-          {!filtered.length ? <div className={styles.empty}>No mentors match this search.</div> : null}
+          {!filtered.length ? <div className={styles.empty}>{needsPaymentOnly ? 'No mentors currently need payment.' : 'No mentors match this search.'}</div> : null}
         </div>
       </section>
 
