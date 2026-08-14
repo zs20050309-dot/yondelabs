@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
+import { useToast } from './ToastProvider'
 import styles from '../../styles/admin.module.css'
 
 export default function StudentPortalAccess({ application, currentStudent }) {
+  const showToast = useToast()
   const ownerColumn = currentStudent ? 'current_student_id' : 'application_id'
   const ownerId = currentStudent?.id || application?.id
   const endpoint = currentStudent
@@ -68,8 +70,10 @@ export default function StudentPortalAccess({ application, currentStudent }) {
 
       setAccount(body.account)
       setTemporaryPassword(body.temporaryPassword)
+      showToast(method === 'PUT' ? 'Temporary password reset.' : 'Portal credentials created.')
     } catch (requestError) {
       setError(requestError.message || 'Unable to create credentials')
+      showToast(requestError.message || 'Unable to create credentials', 'error')
     } finally {
       setBusy(false)
     }

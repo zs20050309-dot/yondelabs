@@ -1,37 +1,42 @@
-.adminSection { padding: 26px 0; border-top: 1px solid #e7eaf0; }
+/* Admin-facing classes below read the --token custom properties declared on
+   .shell in admin.module.css (cascades through the DOM regardless of which
+   CSS Module declared them). The .studentSection block further down is the
+   student-portal look and is intentionally left alone. */
+.adminSection { padding: 26px 0; border-top: 1px solid var(--border, #e7eaf0); }
 .heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; }
-.heading > div > span { color: #2541b2; font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
-.heading h2, .heading h3 { margin-top: 5px; color: #253148; font-size: 19px; }
-.heading select { max-width: 230px; border: 1px solid #d4dae4; border-radius: 7px; background: #fff; padding: 8px 9px; color: #3e4a60; font: inherit; font-size: 10px; }
-.uploadForm { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; border: 1px solid #e0e5ed; border-radius: 10px; background: #fafbfc; padding: 15px; }
+.heading > div > span { color: var(--accent, #2541b2); font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.heading h2, .heading h3 { margin-top: 5px; color: var(--text-primary, #253148); font-size: 19px; }
+.heading select { max-width: 230px; border: 1px solid var(--border-strong, #d4dae4); border-radius: 7px; background: var(--surface, #fff); padding: 8px 9px; color: var(--text-primary, #3e4a60); font: inherit; font-size: 11px; }
+.uploadForm { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; border: 1px solid var(--border, #e0e5ed); border-radius: 10px; background: var(--surface-alt, #fafbfc); padding: 15px; }
 .uploadForm label > span, .uploadForm label > small { display: block; }
-.uploadForm label > span { margin-bottom: 6px; color: #667286; font-size: 10px; font-weight: 700; }
-.uploadForm label > small { margin-top: 5px; color: #8a94a5; font-size: 9px; line-height: 1.4; }
-.uploadForm input[type="file"], .uploadForm input[type="text"], .uploadForm input:not([type]), .uploadForm textarea { width: 100%; border: 1px solid #d6dde7; border-radius: 7px; background: #fff; padding: 9px 10px; color: #243148; font: inherit; font-size: 11px; }
+.uploadForm label > span { margin-bottom: 6px; color: var(--text-secondary, #667286); font-size: 11px; font-weight: 700; }
+.uploadForm label > small { margin-top: 5px; color: var(--text-muted, #8a94a5); font-size: 10px; line-height: 1.4; }
+.uploadForm input[type="file"], .uploadForm input[type="text"], .uploadForm input:not([type]), .uploadForm textarea { width: 100%; border: 1px solid var(--border-strong, #d6dde7); border-radius: 7px; background: var(--surface, #fff); padding: 9px 10px; color: var(--text-primary, #243148); font: inherit; font-size: 12px; }
 .uploadForm input[type="file"] { padding: 7px; }
 .descriptionField { grid-column: 1 / -1; }
 .uploadForm textarea { resize: vertical; }
 .visibilityField { display: flex; align-items: center; gap: 7px; }
 .visibilityField span { margin: 0 !important; }
-.uploadForm > button { justify-self: end; border: 1px solid #2541b2; border-radius: 7px; background: #2541b2; color: #fff; cursor: pointer; padding: 9px 13px; font: inherit; font-size: 11px; font-weight: 700; }
+.uploadForm > button { justify-self: end; border: 1px solid var(--accent, #2541b2); border-radius: 7px; background: var(--accent, #2541b2); color: #fff; cursor: pointer; padding: 9px 13px; font: inherit; font-size: 12px; font-weight: 700; transition: background 120ms ease; }
+.uploadForm > button:hover { background: var(--accent-hover, #1d3590); }
 .uploadForm > button:disabled, .adminActions button:disabled { cursor: wait; opacity: .55; }
 .adminList { display: grid; gap: 8px; margin-top: 15px; }
-.adminFile { display: grid; grid-template-columns: 38px minmax(0, 1fr) auto auto; align-items: center; gap: 11px; border: 1px solid #e2e7ee; border-radius: 9px; padding: 11px 12px; }
-.fileIcon { display: grid; width: 36px; height: 36px; place-items: center; border-radius: 8px; background: #edf2ff; color: #2541b2; font-size: 8px; font-weight: 900; text-transform: uppercase; }
+.adminFile { display: grid; grid-template-columns: 38px minmax(0, 1fr) auto auto; align-items: center; gap: 11px; border: 1px solid var(--border, #e2e7ee); border-radius: 9px; padding: 11px 12px; }
+.fileIcon { display: grid; width: 36px; height: 36px; place-items: center; border-radius: 8px; background: var(--accent-soft-bg, #edf2ff); color: var(--accent-soft-text, #2541b2); font-size: 9px; font-weight: 900; text-transform: uppercase; }
 .fileCopy { min-width: 0; }
 .fileCopy strong, .fileCopy span { display: block; overflow-wrap: anywhere; }
-.fileCopy strong { color: #253148; font-size: 12px; }
-.fileCopy span { margin-top: 3px; color: #7b8698; font-size: 9px; }
-.fileCopy p { margin-top: 5px; color: #5d6980; font-size: 10px; line-height: 1.45; }
-.visibleBadge, .hiddenBadge { border-radius: 99px; padding: 5px 8px; font-size: 8px; font-weight: 800; text-transform: uppercase; }
-.visibleBadge { background: #eaf8ef; color: #197343; }
-.hiddenBadge { background: #f1f2f4; color: #697384; }
+.fileCopy strong { color: var(--text-primary, #253148); font-size: 13px; }
+.fileCopy span { margin-top: 3px; color: var(--text-muted, #7b8698); font-size: 10px; }
+.fileCopy p { margin-top: 5px; color: var(--text-secondary, #5d6980); font-size: 11px; line-height: 1.45; }
+.visibleBadge, .hiddenBadge { border-radius: 99px; padding: 5px 8px; font-size: 9px; font-weight: 800; text-transform: uppercase; }
+.visibleBadge { background: var(--success-bg, #eaf8ef); color: var(--success-text, #197343); }
+.hiddenBadge { background: var(--neutral-bg, #f1f2f4); color: var(--neutral-text, #697384); }
 .adminActions { display: flex; gap: 5px; }
-.adminActions button { border: 1px solid #d4dae4; border-radius: 6px; background: #fff; color: #536075; cursor: pointer; padding: 6px 7px; font: inherit; font-size: 9px; font-weight: 700; }
-.adminActions .deleteButton { border-color: transparent; color: #a33b43; }
-.emptyAdmin { border: 1px dashed #d9dfe8; border-radius: 9px; margin-top: 14px; padding: 18px; color: #7a8598; font-size: 11px; text-align: center; }
-.muted { margin-top: 14px; color: #7a8598; font-size: 11px; }
-.error { margin-top: 12px; border: 1px solid #f0c6c9; border-radius: 8px; background: #fff3f4; color: #962d35; padding: 10px 12px; font-size: 11px; }
+.adminActions button { border: 1px solid var(--border-strong, #d4dae4); border-radius: 6px; background: var(--surface, #fff); color: var(--text-secondary, #536075); cursor: pointer; padding: 6px 7px; font: inherit; font-size: 10px; font-weight: 700; }
+.adminActions .deleteButton { border-color: transparent; color: var(--danger-text, #a33b43); }
+.emptyAdmin { border: 1px dashed var(--border-strong, #d9dfe8); border-radius: 9px; margin-top: 14px; padding: 18px; color: var(--text-muted, #7a8598); font-size: 12px; text-align: center; }
+.muted { margin-top: 14px; color: var(--text-muted, #7a8598); font-size: 12px; }
+.error { margin-top: 12px; border: 1px solid var(--danger-text, #f0c6c9); border-radius: 8px; background: var(--danger-bg, #fff3f4); color: var(--danger-text, #962d35); padding: 10px 12px; font-size: 12px; }
 
 .studentSection { margin-top: 32px; border: 1px solid rgba(217, 225, 236, .96); border-radius: 24px; background: #fff; box-shadow: 0 24px 65px rgba(3, 37, 108, .075); padding: clamp(28px, 4vw, 48px); }
 .studentHeading { display: flex; align-items: flex-start; justify-content: space-between; gap: 22px; }

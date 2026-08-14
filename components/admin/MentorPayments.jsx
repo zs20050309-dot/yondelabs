@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
+import { useToast } from './ToastProvider'
 import {
   PAYMENT_SOURCE_LABELS,
   PAYMENT_STATUS_LABELS,
@@ -16,6 +17,7 @@ function formatDate(value) {
 }
 
 function PaymentRow({ record, onUpdated }) {
+  const showToast = useToast()
   const [editing, setEditing] = useState(false)
   const [amount, setAmount] = useState(centsToAmount(record.amount_cents))
   const [notes, setNotes] = useState(record.notes || '')
@@ -36,10 +38,13 @@ function PaymentRow({ record, onUpdated }) {
       p_amount_cents: cents,
       p_notes: notes.trim() || null,
     })
-    if (rpcError) setError(rpcError.message)
-    else {
+    if (rpcError) {
+      setError(rpcError.message)
+      showToast(rpcError.message || 'Payment update failed.', 'error')
+    } else {
       onUpdated(data)
       setEditing(false)
+      showToast(status === 'paid' ? 'Marked as paid.' : 'Reverted to pending.')
     }
     setBusy(false)
   }
@@ -53,7 +58,7 @@ function PaymentRow({ record, onUpdated }) {
       </div>
       <div className={styles.paymentAmount}>
         <strong>{formatCents(record.amount_cents, record.currency)}</strong>
-        <span className={`${styles.status} ${record.status === 'paid' ? styles.status_offer : styles.status_submitted}`}>
+        <span className={`${styles.status} ${record.status === 'paid' ? styles.statusPaymentPaid : styles.statusPaymentPending}`}>
           {PAYMENT_STATUS_LABELS[record.status]}
         </span>
       </div>
@@ -395,7 +400,7 @@ export default function MentorPayments() {
                     <td><button type="button" className={styles.studentLink} onClick={() => setSelectedMentorId(mentor.id)}><strong>{mentor.name}</strong>{!mentor.active ? <span>Inactive</span> : null}</button></td>
                     <td>
                       {summary.pendingCount ? (
-                        <span className={`${styles.status} ${styles.status_submitted}`}>{formatCents(summary.pending)} · {summary.pendingCount} unpaid</span>
+                        <span className={`${styles.status} ${styles.statusPaymentPending}`}>{formatCents(summary.pending)} · {summary.pendingCount} unpaid</span>
                       ) : (
                         <span className={styles.noCourse}>Nothing due</span>
                       )}

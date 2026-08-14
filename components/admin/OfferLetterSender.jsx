@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
+import { useConfirm } from './ConfirmProvider'
 import {
   OFFER_TEMPLATE_LABELS,
   defaultOfferLetterData,
@@ -15,6 +16,7 @@ function formatDate(value) {
 }
 
 export default function OfferLetterSender({ application, onSent }) {
+  const confirm = useConfirm()
   const initialData = useMemo(() => defaultOfferLetterData(application), [application])
   const fields = offerTemplateFields(application.program)
   const [form, setForm] = useState(initialData)
@@ -112,7 +114,8 @@ export default function OfferLetterSender({ application, onSent }) {
     event.preventDefault()
     setError('')
     setSuccess('')
-    if (!window.confirm(`Email the ${OFFER_TEMPLATE_LABELS[application.program]} to ${form.recipientEmail}? A PDF will be attached.`)) return
+    const ok = await confirm({ title: 'Send offer letter', message: `Email the ${OFFER_TEMPLATE_LABELS[application.program]} to ${form.recipientEmail}? A PDF will be attached.` })
+    if (!ok) return
     setSending(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()

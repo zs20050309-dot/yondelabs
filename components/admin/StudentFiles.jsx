@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
+import { useConfirm } from './ConfirmProvider'
 import {
   STUDENT_FILE_ACCEPT,
   STUDENT_FILES_BUCKET,
@@ -24,6 +25,7 @@ function planName(enrollment) {
 }
 
 export default function StudentFiles({ application, currentStudent }) {
+  const confirm = useConfirm()
   const ownerColumn = currentStudent ? 'current_student_id' : 'application_id'
   const ownerId = currentStudent?.id || application?.id
   const inputRef = useRef(null)
@@ -163,7 +165,8 @@ export default function StudentFiles({ application, currentStudent }) {
   }
 
   async function deleteFile(file) {
-    if (!window.confirm(`Delete “${file.title}”? The student will lose access immediately.`)) return
+    const ok = await confirm({ title: 'Delete file', message: `Delete "${file.title}"? The student will lose access immediately.`, danger: true, confirmLabel: 'Delete' })
+    if (!ok) return
     setBusyId(file.id)
     setError('')
     const { error: storageError } = await supabase.storage

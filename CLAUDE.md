@@ -137,9 +137,15 @@ components/
     FieldRenderer.jsx
     fields/*.jsx
   admin/                ← Admin portal UI (implemented)
+    AdminShell.jsx                  ← Sidebar + topbar layout shell; owns theme toggle placement
+    ConfirmProvider.jsx             ← useConfirm() — in-app modal replacing window.confirm/prompt everywhere in admin
+    ToastProvider.jsx               ← useToast() — success/error toasts for admin actions
+    ThemeToggle.jsx / icons.jsx / Spinner.jsx ← Shared admin UI primitives (no icon library — hand-rolled inline SVG)
     ApplicationDetail.jsx           ← Renders one application; iterates lib/forms/schema.js
     OfferLetterSender.jsx           ← Drives lib/admin/offerLetterPdf.js / offerLetterTemplates.js
     CurrentStudents.jsx             ← Roster of enrolled (non-applicant) students
+    MentorAssignments.jsx           ← Assign mentors to a student + per-milestone payment schedule
+    MentorPayments.jsx              ← Mentor payments ledger tab
     StudentPortalAccess.jsx         ← Create/reset student-portal credentials
     StudentFiles.jsx                ← Per-student files (transcripts, etc.)
     StudentCourseHours.jsx / CoursePlanManager.jsx ← Course hour allocation/tracking
@@ -190,6 +196,7 @@ docs/                   ← Guides, SQL migrations, AI context
 - Status flow: `draft` → `submitted` → `interview` → `offer` (or `rejected`); an application at `offer` can additionally be **converted** into a `current_students` record (see `lib/admin/stages.js`), carrying over enrollment/milestones/files/portal account
 - Form schema: `lib/forms/schema.js` is the single source of truth — the admin renderer iterates over `schema.steps[].fields[]`
 - Language: site is English-only. `LocalizedText.jsx` / `Lang` component exists but `styles.en` class is hardcoded on the homepage wrapper so only English renders.
+- Admin portal theming: CSS custom properties (colors/radii/shadows) are declared on `.shell` in `styles/admin.module.css` (light) and `.shell[data-theme='dark']` (dark) — never on `:root`/`<html>`, so they can't leak into the public site or other portals. `courseHours.module.css`/`studentFiles.module.css` reference the same token names (`var(--token, #fallback)`) in their admin-prefixed classes only; their student-portal-facing classes (`.studentSection`, `.studentFile`, etc.) intentionally use a different, untouched visual system. Never use `window.confirm`/`window.prompt`/`window.alert` in admin components — use `useConfirm()` from `ConfirmProvider.jsx`.
 - Applicants and enrolled students are **separate identity domains**: applicant auth (`/login`, `/dashboard`) vs. student-portal auth (`/student/login`, role `student_portal`, gated separately in `proxy.js`). Don't conflate them.
 - Privileged admin actions (PDF/offer-letter generation, deletion, portal-credential creation) go through `pages/api/admin/**` server routes using `SUPABASE_SERVICE_ROLE_KEY` — never call service-role logic from client code.
 

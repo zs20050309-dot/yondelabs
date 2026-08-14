@@ -1,10 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
+import AdminShell from '../../components/admin/AdminShell'
 import ApplicationDetail from '../../components/admin/ApplicationDetail'
+import { ConfirmProvider, useConfirm } from '../../components/admin/ConfirmProvider'
 import CoursePlanManager from '../../components/admin/CoursePlanManager'
 import CurrentStudents from '../../components/admin/CurrentStudents'
 import MentorPayments from '../../components/admin/MentorPayments'
+import Spinner from '../../components/admin/Spinner'
+import { ToastProvider, useToast } from '../../components/admin/ToastProvider'
 import { supabase } from '../../lib/supabaseClient'
+import { useAdminTheme } from '../../lib/admin/useAdminTheme'
 import {
   NEXT_STATUS,
   PROGRAM_LABELS,
@@ -24,7 +29,22 @@ function formatDate(value) {
 }
 
 export default function AdminDashboard() {
+  const { theme, toggleTheme } = useAdminTheme()
+  return (
+    <div className={styles.shell} data-theme={theme}>
+      <ToastProvider>
+        <ConfirmProvider>
+          <AdminDashboardInner theme={theme} toggleTheme={toggleTheme} />
+        </ConfirmProvider>
+      </ToastProvider>
+    </div>
+  )
+}
+
+function AdminDashboardInner({ theme, toggleTheme }) {
   const router = useRouter()
+  const confirm = useConfirm()
+  const showToast = useToast()
   const [user, setUser] = useState(null)
   const [applications, setApplications] = useState([])
   const [history, setHistory] = useState([])
@@ -142,7 +162,8 @@ export default function AdminDashboard() {
 
   async function moveApplication(application, nextStatus) {
     const label = STATUS_LABELS[nextStatus] || nextStatus
-    if (!window.confirm(`Move ${studentName(application)} to “${label}”?`)) return
+    const ok = await confirm({ title: 'Move application stage', message: `Move ${studentName(application)} to "${label}"?` })
+    if (!ok) return
 
     setMovingId(application.id)
     setError('')
@@ -156,6 +177,7 @@ export default function AdminDashboard() {
       setError(moveError.message || 'The stage could not be updated.')
     } else {
       await loadApplications()
+      showToast(`Moved ${studentName(application)} to ${label}.`)
       if (nextStatus === 'rejected') {
         setSelectedId(null)
         setSection('archived')
@@ -168,7 +190,8 @@ export default function AdminDashboard() {
   }
 
   async function convertToCurrentStudent(application) {
-    if (!window.confirm(`Enroll ${studentName(application)} as a current student? They will leave the active Applications list.`)) return
+    const ok = await confirm({ title: 'Enroll as current student', message: `Enroll ${studentName(application)} as a current student? They will leave the active Applications list.` })
+    if (!ok) return
     setMovingId(application.id)
     setError('')
     const { error: convertError } = await supabase.rpc('convert_application_to_current_student', {
@@ -180,6 +203,7 @@ export default function AdminDashboard() {
     } else {
       setSelectedId(null)
       await Promise.all([loadApplications(), loadCurrentStudents()])
+      showToast(`${studentName(application)} enrolled as a current student.`)
       setSection('students')
     }
     setMovingId(null)
@@ -187,16 +211,14 @@ export default function AdminDashboard() {
 
   async function deleteApplication(application) {
     const name = studentName(application)
-    const confirmed = window.confirm(
-      `Permanently delete ${name}? This removes the application, stage history, course records, portal access, and uploaded files. This cannot be undone.`
-    )
-    if (!confirmed) return
-
-    const typedName = window.prompt(`Final confirmation: type the student's name exactly as shown:\n\n${name}`)
-    if (typedName !== name) {
-      if (typedName !== null) window.alert('The name did not match. Nothing was deleted.')
-      return
-    }
+    const ok = await confirm({
+      title: 'Permanently delete this application',
+      message: `This removes the application, stage history, course records, portal access, and uploaded files for ${name}. This cannot be undone.`,
+      requireText: name,
+      danger: true,
+      confirmLabel: 'Delete permanently',
+    })
+    if (!ok) return
 
     setDeletingId(application.id)
     setError('')
@@ -211,6 +233,7 @@ export default function AdminDashboard() {
       if (!response.ok) throw new Error(body.error || 'The application could not be deleted.')
       setSelectedId(null)
       await loadApplications()
+      showToast(`${name}'s application was permanently deleted.`)
     } catch (deleteError) {
       setError(deleteError.message || 'The application could not be deleted.')
     } finally {
@@ -223,103 +246,94 @@ export default function AdminDashboard() {
     router.replace('/login')
   }
 
-  if (loading) return <div className={styles.loading}>Loading Yonde Admin…</div>
+  if (loading) return <div className={styles.loading}><Spinner label="Loading Yonde Admin…" /></div>
   if (!user) return null
 
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <div className={styles.brand}>
-          <img src="/images/logos/yondelabs-logo.svg" alt="YondeLabs" />
-          <span>Admin</span>
+    <AdminShell
+      theme={theme}
+      onToggleTheme={toggleTheme}
+      section={section}
+      onSectionChange={setSection}
+      archivedCount={archivedApplications.length}
+      onSignOut={signOut}
+    >
+      <div className={styles.titleRow}>
+        {section === 'applications'
+          ? <div><span className={styles.eyebrow}>Admissions</span><h1>Student applications</h1><p>Review new profiles and move students through each application stage.</p></div>
+          : section === 'students'
+            ? <div><span className={styles.eyebrow}>Programs</span><h1>Current students</h1><p>Manage enrolled students, course hours, mentors, files, and portal access.</p></div>
+            : section === 'payments'
+              ? <div><span className={styles.eyebrow}>Accounting</span><h1>Mentor payments</h1><p>Track what's owed to mentors from logged classes and completed milestones, and mark what's been paid.</p></div>
+              : <div><span className={styles.eyebrow}>Admissions archive</span><h1>Archived applications</h1><p>Review withdrawn or declined applications separately from active admissions.</p></div>}
+        {section !== 'archived' && section !== 'payments' ? <button type="button" className={styles.primaryButton} onClick={() => setShowCoursePlans(true)}>Manage course plans</button> : null}
+      </div>
+
+      {section === 'applications' ? (
+        <section className={styles.stats} aria-label="Application summary">
+          <div><span>All applications</span><strong>{counts.total}</strong></div>
+          <div><span>New submissions</span><strong>{counts.submitted}</strong></div>
+          <div><span>In progress</span><strong>{counts.inProgress}</strong></div>
+          <div><span>Offers sent</span><strong>{counts.offers}</strong></div>
+        </section>
+      ) : section === 'students' ? (
+        <section className={styles.stats} aria-label="Current student summary">
+          <div><span>All current students</span><strong>{currentCounts.total}</strong></div>
+          <div><span>Active</span><strong>{currentCounts.active}</strong></div>
+          <div><span>Paused</span><strong>{currentCounts.paused}</strong></div>
+          <div><span>Completed</span><strong>{currentCounts.completed}</strong></div>
+        </section>
+      ) : section === 'archived' ? (
+        <section className={styles.stats} aria-label="Archived application summary">
+          <div><span>Archived applications</span><strong>{archivedApplications.length}</strong></div>
+        </section>
+      ) : null}
+
+      {(section === 'applications' || section === 'archived') && error ? <div className={styles.error}>{error}</div> : null}
+      {section === 'students' && currentStudentsError ? <div className={styles.error}>{currentStudentsError}</div> : null}
+
+      {section === 'payments' ? <MentorPayments /> : section !== 'students' ? <section className={styles.tableCard}>
+        <div className={styles.toolbar}>
+          <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search name, email, or program" aria-label="Search applications" />
+          {section === 'applications' ? <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} aria-label="Filter by stage">
+            <option value="all">All stages</option>
+            <option value="submitted">Submitted</option>
+            <option value="interview">Interview</option>
+            <option value="offer">Offer sent</option>
+          </select> : null}
         </div>
-        <button type="button" className={styles.signOut} onClick={signOut}>Log out</button>
-      </header>
 
-      <main className={styles.main}>
-        <nav className={styles.adminTabs} aria-label="Admin sections">
-          <button type="button" className={section === 'applications' ? styles.adminTabActive : styles.adminTab} onClick={() => setSection('applications')}>Applications</button>
-          <button type="button" className={section === 'students' ? styles.adminTabActive : styles.adminTab} onClick={() => setSection('students')}>Current students</button>
-          <button type="button" className={section === 'payments' ? styles.adminTabActive : styles.adminTab} onClick={() => setSection('payments')}>Mentor payments</button>
-          <button type="button" className={section === 'archived' ? styles.adminTabActive : styles.adminTab} onClick={() => setSection('archived')}>Archived <span className={styles.tabCount}>{archivedApplications.length}</span></button>
-        </nav>
-        <div className={styles.titleRow}>
-          {section === 'applications'
-            ? <div><span className={styles.eyebrow}>Admissions</span><h1>Student applications</h1><p>Review new profiles and move students through each application stage.</p></div>
-            : section === 'students'
-              ? <div><span className={styles.eyebrow}>Programs</span><h1>Current students</h1><p>Manage enrolled students, course hours, mentors, files, and portal access.</p></div>
-              : section === 'payments'
-                ? <div><span className={styles.eyebrow}>Accounting</span><h1>Mentor payments</h1><p>Track what's owed to mentors from logged classes and completed milestones, and mark what's been paid.</p></div>
-                : <div><span className={styles.eyebrow}>Admissions archive</span><h1>Archived applications</h1><p>Review withdrawn or declined applications separately from active admissions.</p></div>}
-          {section !== 'archived' && section !== 'payments' ? <button type="button" className={styles.primaryButton} onClick={() => setShowCoursePlans(true)}>Manage course plans</button> : null}
+        <div className={styles.tableWrap}>
+          <table>
+            <thead><tr><th>Student</th><th>Program</th><th>Submitted</th><th>Stage</th><th>Course hours</th><th><span className={styles.srOnly}>Actions</span></th></tr></thead>
+            <tbody>
+              {filtered.map((application) => {
+                const nextStatus = NEXT_STATUS[application.status]
+                const enrollment = [...(application.student_course_enrollments || [])].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]
+                const usedMinutes = sumMinutes(enrollment?.class_sessions)
+                return (
+                  <tr key={application.id}>
+                    <td><button type="button" className={styles.studentLink} onClick={() => setSelectedId(application.id)}><strong>{studentName(application)}</strong><span>{studentEmail(application)}</span></button></td>
+                    <td>{PROGRAM_LABELS[application.program] || application.program}</td>
+                    <td>{formatDate(application.submitted_at)}</td>
+                    <td><span className={`${styles.status} ${styles[`status_${application.status}`]}`}>{STATUS_LABELS[application.status] || application.status}</span></td>
+                    <td>{enrollment ? <span className={styles.courseHoursCell}><strong>{formatHours(usedMinutes)}</strong><span> / {formatHours(enrollment.allocated_minutes)}</span></span> : <span className={styles.noCourse}>Not assigned</span>}</td>
+                    <td className={styles.rowActions}>
+                      <button type="button" className={styles.viewButton} onClick={() => setSelectedId(application.id)}>View profile</button>
+                      {nextStatus ? <button type="button" className={styles.moveButton} disabled={movingId === application.id} onClick={() => moveApplication(application, nextStatus)}>{movingId === application.id ? 'Updating…' : `Move to ${STATUS_LABELS[nextStatus]}`}</button> : null}
+                      {application.status === 'offer' ? <button type="button" className={styles.moveButton} disabled={movingId === application.id} onClick={() => convertToCurrentStudent(application)}>{movingId === application.id ? 'Enrolling...' : 'Enroll student'}</button> : null}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+          {!filtered.length ? <div className={styles.empty}>{section === 'archived' ? 'No archived applications.' : 'No applications match these filters.'}</div> : null}
         </div>
-
-        {section === 'applications' ? (
-          <section className={styles.stats} aria-label="Application summary">
-            <div><span>All applications</span><strong>{counts.total}</strong></div>
-            <div><span>New submissions</span><strong>{counts.submitted}</strong></div>
-            <div><span>In progress</span><strong>{counts.inProgress}</strong></div>
-            <div><span>Offers sent</span><strong>{counts.offers}</strong></div>
-          </section>
-        ) : section === 'students' ? (
-          <section className={styles.stats} aria-label="Current student summary">
-            <div><span>All current students</span><strong>{currentCounts.total}</strong></div>
-            <div><span>Active</span><strong>{currentCounts.active}</strong></div>
-            <div><span>Paused</span><strong>{currentCounts.paused}</strong></div>
-            <div><span>Completed</span><strong>{currentCounts.completed}</strong></div>
-          </section>
-        ) : section === 'archived' ? (
-          <section className={styles.stats} aria-label="Archived application summary">
-            <div><span>Archived applications</span><strong>{archivedApplications.length}</strong></div>
-          </section>
-        ) : null}
-
-        {(section === 'applications' || section === 'archived') && error ? <div className={styles.error}>{error}</div> : null}
-        {section === 'students' && currentStudentsError ? <div className={styles.error}>{currentStudentsError}</div> : null}
-
-        {section === 'payments' ? <MentorPayments /> : section !== 'students' ? <section className={styles.tableCard}>
-          <div className={styles.toolbar}>
-            <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search name, email, or program" aria-label="Search applications" />
-            {section === 'applications' ? <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} aria-label="Filter by stage">
-              <option value="all">All stages</option>
-              <option value="submitted">Submitted</option>
-              <option value="interview">Interview</option>
-              <option value="offer">Offer sent</option>
-            </select> : null}
-          </div>
-
-          <div className={styles.tableWrap}>
-            <table>
-              <thead><tr><th>Student</th><th>Program</th><th>Submitted</th><th>Stage</th><th>Course hours</th><th><span className={styles.srOnly}>Actions</span></th></tr></thead>
-              <tbody>
-                {filtered.map((application) => {
-                  const nextStatus = NEXT_STATUS[application.status]
-                  const enrollment = [...(application.student_course_enrollments || [])].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]
-                  const usedMinutes = sumMinutes(enrollment?.class_sessions)
-                  return (
-                    <tr key={application.id}>
-                      <td><button type="button" className={styles.studentLink} onClick={() => setSelectedId(application.id)}><strong>{studentName(application)}</strong><span>{studentEmail(application)}</span></button></td>
-                      <td>{PROGRAM_LABELS[application.program] || application.program}</td>
-                      <td>{formatDate(application.submitted_at)}</td>
-                      <td><span className={`${styles.status} ${styles[`status_${application.status}`]}`}>{STATUS_LABELS[application.status] || application.status}</span></td>
-                      <td>{enrollment ? <span className={styles.courseHoursCell}><strong>{formatHours(usedMinutes)}</strong><span> / {formatHours(enrollment.allocated_minutes)}</span></span> : <span className={styles.noCourse}>Not assigned</span>}</td>
-                      <td className={styles.rowActions}>
-                        <button type="button" className={styles.viewButton} onClick={() => setSelectedId(application.id)}>View profile</button>
-                        {nextStatus ? <button type="button" className={styles.moveButton} disabled={movingId === application.id} onClick={() => moveApplication(application, nextStatus)}>{movingId === application.id ? 'Updating…' : `Move to ${STATUS_LABELS[nextStatus]}`}</button> : null}
-                        {application.status === 'offer' ? <button type="button" className={styles.moveButton} disabled={movingId === application.id} onClick={() => convertToCurrentStudent(application)}>{movingId === application.id ? 'Enrolling...' : 'Enroll student'}</button> : null}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-            {!filtered.length ? <div className={styles.empty}>{section === 'archived' ? 'No archived applications.' : 'No applications match these filters.'}</div> : null}
-          </div>
-        </section> : <CurrentStudents students={currentStudents} loading={currentStudentsLoading} />}
-      </main>
+      </section> : <CurrentStudents students={currentStudents} loading={currentStudentsLoading} />}
 
       {selected ? <><button type="button" className={styles.backdrop} onClick={() => setSelectedId(null)} aria-label="Close profile" /><ApplicationDetail application={selected} history={selectedHistory} moving={movingId === selected.id} deleting={deletingId === selected.id} onMove={moveApplication} onConvert={convertToCurrentStudent} onDelete={deleteApplication} onOfferSent={loadApplications} onClose={() => setSelectedId(null)} /></> : null}
       {showCoursePlans ? <><button type="button" className={styles.backdrop} onClick={() => setShowCoursePlans(false)} aria-label="Close course plans" /><CoursePlanManager onClose={() => setShowCoursePlans(false)} /></> : null}
-    </div>
+    </AdminShell>
   )
 }

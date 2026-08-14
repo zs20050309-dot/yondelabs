@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
+import { useConfirm } from './ConfirmProvider'
 import { formatHours, formatHoursLong, hoursToMinutes, sumMinutes } from '../../lib/courseHours'
 import styles from '../../styles/courseHours.module.css'
 
@@ -14,6 +15,7 @@ function formatDate(value) {
 }
 
 export default function StudentCourseHours({ application, currentStudent }) {
+  const confirm = useConfirm()
   const ownerColumn = currentStudent ? 'current_student_id' : 'application_id'
   const ownerId = currentStudent?.id || application?.id
   const [plans, setPlans] = useState([])
@@ -132,7 +134,8 @@ export default function StudentCourseHours({ application, currentStudent }) {
   }
 
   async function deleteSession(id) {
-    if (!window.confirm('Delete this class entry? The used-hours total will be recalculated.')) return
+    const ok = await confirm({ title: 'Delete class entry', message: 'Delete this class entry? The used-hours total will be recalculated.', danger: true, confirmLabel: 'Delete' })
+    if (!ok) return
     setBusy(true)
     const { error: deleteError } = await supabase.from('class_sessions').delete().eq('id', id)
     if (deleteError) setError(deleteError.message)

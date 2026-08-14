@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
+import { useConfirm } from './ConfirmProvider'
 import { formatHours, hoursToMinutes, sumMinutes } from '../../lib/courseHours'
 import styles from '../../styles/courseHours.module.css'
 
 export default function CoursePlanManager({ onClose }) {
+  const confirm = useConfirm()
   const [plans, setPlans] = useState([])
   const [selectedId, setSelectedId] = useState(null)
   const [planName, setPlanName] = useState('')
@@ -109,7 +111,8 @@ export default function CoursePlanManager({ onClose }) {
   }
 
   async function deleteModule(moduleId) {
-    if (!window.confirm('Delete this module from the plan? Existing session logs will be kept as general sessions.')) return
+    const ok = await confirm({ title: 'Delete module', message: 'Delete this module from the plan? Existing session logs will be kept as general sessions.', danger: true, confirmLabel: 'Delete' })
+    if (!ok) return
     setBusy(true)
     const { error: deleteError } = await supabase.from('course_modules').delete().eq('id', moduleId)
     if (deleteError) setError(deleteError.message)
@@ -133,12 +136,14 @@ export default function CoursePlanManager({ onClose }) {
       setError(`This plan is assigned to ${enrollmentCount} student${enrollmentCount === 1 ? '' : 's'} and cannot be deleted. Archive it instead.`)
       return
     }
-    if (!window.confirm(`Delete “${selected.name}”? Its ${selected.course_modules.length} modules and ${selected.course_milestones.length} milestones will also be permanently deleted.`)) return
-    const typedName = window.prompt(`Final confirmation: type the course plan name exactly as shown:\n\n${selected.name}`)
-    if (typedName !== selected.name) {
-      if (typedName !== null) window.alert('The plan name did not match. Nothing was deleted.')
-      return
-    }
+    const ok = await confirm({
+      title: 'Permanently delete this course plan',
+      message: `Its ${selected.course_modules.length} modules and ${selected.course_milestones.length} milestones will also be permanently deleted.`,
+      requireText: selected.name,
+      danger: true,
+      confirmLabel: 'Delete permanently',
+    })
+    if (!ok) return
     setBusy(true)
     setError('')
     const { error: deleteError, count } = await supabase
@@ -207,7 +212,8 @@ export default function CoursePlanManager({ onClose }) {
   }
 
   async function deleteMilestone(milestoneId) {
-    if (!window.confirm('Delete this milestone and its student progress records?')) return
+    const ok = await confirm({ title: 'Delete milestone', message: 'Delete this milestone and its student progress records?', danger: true, confirmLabel: 'Delete' })
+    if (!ok) return
     setBusy(true)
     const { error: deleteError } = await supabase.from('course_milestones').delete().eq('id', milestoneId)
     if (deleteError) setError(deleteError.message)

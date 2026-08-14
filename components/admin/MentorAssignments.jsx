@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
+import { useConfirm } from './ConfirmProvider'
 import { amountToCents, centsToAmount, PAYMENT_TYPE_LABELS } from '../../lib/admin/mentorPayments'
 import styles from '../../styles/admin.module.css'
 
 function AssignmentRow({ assignment, milestones, rates, onRemoved, onSettingsSaved, onRatesSaved }) {
+  const confirm = useConfirm()
   const [paymentType, setPaymentType] = useState(assignment.settings?.payment_type || 'milestone')
   const [hourlyRate, setHourlyRate] = useState(centsToAmount(assignment.settings?.hourly_rate_cents))
   const [milestoneRates, setMilestoneRates] = useState(() =>
@@ -13,7 +15,8 @@ function AssignmentRow({ assignment, milestones, rates, onRemoved, onSettingsSav
   const [error, setError] = useState('')
 
   async function removeAssignment() {
-    if (!window.confirm(`Remove ${assignment.mentors?.name} as ${assignment.role} for this student?`)) return
+    const ok = await confirm({ title: 'Remove mentor', message: `Remove ${assignment.mentors?.name} as ${assignment.role} for this student?`, danger: true, confirmLabel: 'Remove' })
+    if (!ok) return
     setBusy(true)
     setError('')
     const { error: deleteError } = await supabase.from('student_mentor_assignments').delete().eq('id', assignment.id)

@@ -1,5 +1,30 @@
 # Progress Log — YondeLabs Web
 
+## Session: 2026-08-14 - Admin portal visual redesign (dark mode, sidebar, interactivity)
+
+### Background
+UI analysis earlier this session found the admin portal functionally solid but visually dated: tiny type (9-12px), no shared button/badge/input system (every file redefined its own), a top tab bar, no dark mode, and native `window.confirm`/`window.prompt` dialogs clashing with the rest of the UI. User asked for it to look like "an actual admin portal" — sidebar nav, dark mode, more interactive — with the existing structure/workflow fully retained. This is a re-skin + interaction-layer upgrade only; no data flow, RPC, or business-rule changes.
+
+### Added
+- **Design tokens + dark mode**: CSS custom properties (surface/background/border/text/accent/status colors, radii, shadows) declared on `.shell` (the new admin root) in `styles/admin.module.css`, with a `.shell[data-theme='dark']` override. Scoped to admin only — can't leak into the public site or other portals, since it's keyed off a class + data attribute on the admin root, not `<html>`. `styles/courseHours.module.css` and `styles/studentFiles.module.css` had their admin-prefixed classes (not the student-portal-facing ones — those are untouched) refactored to `var(--token, #fallback)`, so they pick up the same theme via CSS custom-property inheritance despite being separate stylesheets.
+- **`lib/admin/useAdminTheme.js`** + **`components/admin/ThemeToggle.jsx`** — manual light/dark toggle, defaults to `prefers-color-scheme` on first visit, persisted in `localStorage`. Theme is only read from `window`/`localStorage` inside a `useEffect` (not the `useState` initializer) to avoid a hydration mismatch against the statically-prerendered `/admin` page.
+- **`components/admin/AdminShell.jsx`** — new sidebar + topbar layout, replacing the old inline `<header>` + top tab bar in `pages/admin/index.jsx`. Same 4 sections, same order, same section-switching logic — just moved into a persistent left nav with icons (`components/admin/icons.jsx`, hand-drawn inline SVGs, no new dependency).
+- **`components/admin/ConfirmProvider.jsx`** (`useConfirm()`) — replaces every `window.confirm`/`window.prompt` in the admin portal (8 call sites across `pages/admin/index.jsx`, `CoursePlanManager.jsx` ×3, `MentorAssignments.jsx`, `OfferLetterSender.jsx`, `StudentCourseHours.jsx`, `StudentFiles.jsx`) with a styled in-app modal. Same confirmation semantics throughout, including the delete flows that require typing the exact name/plan name to confirm — now built into the dialog (confirm button disabled until the typed text matches) instead of a raw `window.prompt` + `window.alert` on mismatch.
+- **`components/admin/ToastProvider.jsx`** (`useToast()`) — success/error toasts for actions that previously just silently refetched: application stage moves, current-student conversion, application deletion, mentor payment mark-paid/revert, portal credential creation/reset.
+- **`components/admin/Spinner.jsx`** — replaces plain "Loading…" text.
+- Fixed the payment-status badges in `MentorPayments.jsx` reusing application-stage classes (`status_submitted`/`status_offer`) to mean pending/paid — now `statusPaymentPending`/`statusPaymentPaid`, their own semantic classes.
+- Shared `.btn`/`.badge` system in `admin.module.css`: existing button/status classes (`.primaryButton`, `.secondaryButton`, `.archiveButton`, `.deleteButton`, `.status_*`, etc.) now derive from the same token set instead of each having its own hardcoded values, plus new `.btnPrimary`/`.btnSecondary`/`.btnGhost`/`.btnWarning`/`.btnDanger` aliases for new code. Sticky table headers, row-hover highlight, sticky detail-panel header (stays visible while a long panel scrolls — uses a negative-margin trick so it doesn't require restructuring every panel's JSX), and entrance transitions (panel slide-in, modal pop-in, toast slide-in) added. Type-size floor raised (most 9-11px text now 12-13px).
+
+### Not changed
+Desktop only, as scoped — mobile nav on the admin portal (and the rest of the site) is untouched. No Supabase schema, RPC, or query changes. No new npm dependencies.
+
+### Verification
+- `npm run build` passed after every major step (dependencies already installed from the prior session; ran with placeholder `NEXT_PUBLIC_SUPABASE_*` env vars since `.env.local` isn't present locally).
+- Grepped every touched CSS file for stray hardcoded hex colors outside the token definitions/fallbacks — none found outside intentional cases (white text on solid-colored buttons, which is correct in both themes).
+- Not visually verified in a browser from here — recommend `npm run dev`, open `/admin`, click through both themes and a few of the swapped confirm dialogs (e.g. archive an application, remove a mentor, delete a course plan) before considering this done.
+
+---
+
 ## Session: 2026-08-13 - Mentor payments
 
 ### Background
