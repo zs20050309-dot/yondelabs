@@ -2419,3 +2419,57 @@ User requested an enrolled-student portal with credentials separate from the app
   real Supabase credentials plus an admin account, neither of which is available
   in this environment. The layout changes are CSS-only and desktop rules are
   untouched, but a manual pass on a phone is still worth doing.
+
+## Session: 2026-08-26 - Manual adjustment delete + audit log
+
+### Added
+- A **Delete adjustment** action on manual mentor payment line items, with a
+  danger confirm dialog (`useConfirm`) naming the amount and student.
+- `mentor_payment_adjustment_log` — an append-only audit table recording every
+  manual adjustment added or deleted: mentor, student name, amount, currency,
+  notes, acting admin's id and email, and timestamp.
+- An **Adjustment log** disclosure section in the mentor detail panel listing
+  every add/delete with who did it and when, styled with new
+  `.statusAdjustmentCreated` / `.statusAdjustmentDeleted` pills.
+- `.dangerLink` button style in `admin.module.css`.
+
+### Migration (NOT YET RUN)
+- `docs/sql/migrations/2026-08-26_add_mentor_adjustment_log.sql`, to be applied
+  after `2026-08-13_add_mentor_payments.sql`. Adds the log table (RLS: admin
+  SELECT only — no insert/update/delete policy, so it is append-only via RPC)
+  and two security-definer RPCs:
+  - `add_mentor_manual_adjustment(assignment_id, amount_cents, notes)` — writes
+    the payable line and its log entry in one transaction.
+  - `delete_mentor_manual_adjustment(record_id)` — logs, then deletes.
+
+### Deliberate guards
+- Only `source_type = 'manual'` records are deletable. Milestone and session
+  lines are owned by their sync triggers and would simply be regenerated, so
+  they must be corrected at the source instead.
+- Only **pending** adjustments can be deleted. A paid adjustment is payment
+  history; it must be reverted to pending first, which is its own explicit
+  admin action. Both rules are enforced in the RPC, not just the UI.
+- `record_id` in the log is `on delete set null`, so denormalised
+  `student_name` / `amount_cents` / `notes` columns keep the entry readable
+  after the record row is gone.
+
+### Changed
+- `ManualLineItemForm` now calls the RPC instead of inserting into
+  `mentor_payment_records` directly, so an adjustment can never exist without
+  its log entry. Its button reads "Add adjustment" (was "Add line item").
+- The log is fetched in its own query and fails independently — if the new
+  migration hasn't been run, the log section shows a targeted message instead
+  of taking the whole mentor panel down.
+
+### Files
+- `components/admin/MentorPayments.jsx`
+- `styles/admin.module.css`
+- `docs/sql/migrations/2026-08-26_add_mentor_adjustment_log.sql`
+- `CLAUDE.md` — new migration added to Currently Pending
+
+### Verification
+- `npm run build` compiled successfully (placeholder Supabase env vars again;
+  still no `.env.local` in the repo).
+- Not exercised against a live database: the underlying 2026-08-13 mentor
+  payments migration has not been run either, so neither the RPCs nor the log
+  table exist yet. The SQL is unverified until both migrations are applied.

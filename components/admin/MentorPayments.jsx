@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
+import { useConfirm } from './ConfirmProvider'
 import { useToast } from './ToastProvider'
 import {
   PAYMENT_SOURCE_LABELS,
@@ -11,13 +12,24 @@ import {
 } from '../../lib/admin/mentorPayments'
 import styles from '../../styles/admin.module.css'
 
+const ADJUSTMENT_ACTION_LABELS = {
+  created: 'Added',
+  deleted: 'Deleted',
+}
+
 function formatDate(value) {
   if (!value) return '—'
   return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-function PaymentRow({ record, onUpdated }) {
+function formatDateTime(value) {
+  if (!value) return '—'
+  return new Date(value).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })
+}
+
+function PaymentRow({ record, onUpdated, onDeleted }) {
   const showToast = useToast()
+  const confirm = useConfirm()
   const [editing, setEditing] = useState(false)
   const [amount, setAmount] = useState(centsToAmount(record.amount_cents))
   const [notes, setNotes] = useState(record.notes || '')
@@ -49,6 +61,31 @@ function PaymentRow({ record, onUpdated }) {
     setBusy(false)
   }
 
+  // Only hand-entered adjustments are deletable. Milestone and session lines
+  // are owned by their sync triggers and would just be regenerated.
+  const deletable = record.source_type === 'manual' && record.status === 'pending'
+
+  async function remove() {
+    const ok = await confirm({
+      title: 'Delete this adjustment?',
+      message: `${formatCents(record.amount_cents, record.currency)} for ${record.current_students?.full_name || 'this student'} will be removed from what this mentor is owed. The deletion is kept in the adjustment log.`,
+      confirmLabel: 'Delete adjustment',
+      danger: true,
+    })
+    if (!ok) return
+    setBusy(true)
+    setError('')
+    const { error: rpcError } = await supabase.rpc('delete_mentor_manual_adjustment', { p_record_id: record.id })
+    if (rpcError) {
+      setError(rpcError.message)
+      showToast(rpcError.message || 'Could not delete the adjustment.', 'error')
+      setBusy(false)
+    } else {
+      showToast('Adjustment deleted.')
+      onDeleted(record.id)
+    }
+  }
+
   return (
     <div className={styles.paymentRow}>
       <div className={styles.paymentInfo}>
@@ -68,6 +105,9 @@ function PaymentRow({ record, onUpdated }) {
         ) : null}
         {record.status === 'paid' ? (
           <button type="button" className={styles.viewButton} disabled={busy} onClick={() => submit('pending')}>Revert to pending</button>
+        ) : null}
+        {deletable && !editing ? (
+          <button type="button" className={styles.dangerLink} disabled={busy} onClick={remove}>Delete adjustment</button>
         ) : null}
       </div>
       {editing ? (
@@ -102,24 +142,19 @@ function ManualLineItemForm({ mentor, assignments, onAdded }) {
     }
     setBusy(true)
     setError('')
-    const { data, error: insertError } = await supabase
-      .from('mentor_payment_records')
-      .insert({
-        mentor_id: mentor.id,
-        current_student_id: assignment.current_student_id,
-        assignment_id: assignment.id,
-        source_type: 'manual',
-        amount_cents: cents,
-        notes: notes.trim() || null,
-      })
-      .select('*, current_students(full_name)')
-      .single()
+    // Goes through the RPC rather than a direct insert so the adjustment and
+    // its log entry are written in one transaction.
+    const { data, error: insertError } = await supabase.rpc('add_mentor_manual_adjustment', {
+      p_assignment_id: assignment.id,
+      p_amount_cents: cents,
+      p_notes: notes.trim() || null,
+    })
     if (insertError) setError(insertError.message)
     else {
       setAssignmentId('')
       setAmount('')
       setNotes('')
-      onAdded(data)
+      onAdded({ ...data, current_students: { full_name: assignment.current_students?.full_name } })
     }
     setBusy(false)
   }
@@ -137,7 +172,7 @@ function ManualLineItemForm({ mentor, assignments, onAdded }) {
       </label>
       <label><span>Amount</span><input type="number" min="0" step="0.01" placeholder="0.00" value={amount} onChange={(event) => setAmount(event.target.value)} required /></label>
       <label><span>Notes</span><input type="text" value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Reason for adjustment" /></label>
-      <button type="submit" className={styles.secondaryButton} disabled={busy}>{busy ? 'Adding…' : 'Add line item'}</button>
+      <button type="submit" className={styles.secondaryButton} disabled={busy}>{busy ? 'Adding…' : 'Add adjustment'}</button>
       {error ? <div className={styles.inlineError}>{error}</div> : null}
     </form>
   )
@@ -146,12 +181,14 @@ function ManualLineItemForm({ mentor, assignments, onAdded }) {
 function MentorDetail({ mentor, onClose, onRecordsChanged }) {
   const [assignments, setAssignments] = useState([])
   const [records, setRecords] = useState([])
+  const [adjustmentLog, setAdjustmentLog] = useState([])
+  const [logError, setLogError] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   const load = useCallback(async () => {
     setLoading(true)
-    const [assignmentsResult, recordsResult] = await Promise.all([
+    const [assignmentsResult, recordsResult, logResult] = await Promise.all([
       supabase
         .from('student_mentor_assignments')
         .select('id, role, current_student_id, current_students(full_name), mentor_payment_settings(payment_type, hourly_rate_cents), mentor_milestone_rates(amount_cents, course_milestones(title))')
@@ -161,7 +198,21 @@ function MentorDetail({ mentor, onClose, onRecordsChanged }) {
         .select('*, current_students(full_name)')
         .eq('mentor_id', mentor.id)
         .order('created_at', { ascending: false }),
+      supabase
+        .from('mentor_payment_adjustment_log')
+        .select('*')
+        .eq('mentor_id', mentor.id)
+        .order('created_at', { ascending: false }),
     ])
+    // The log lives in a later migration than the rest of mentor payments, so
+    // it fails independently rather than taking the whole panel down.
+    if (logResult.error) {
+      setLogError('The adjustment log is unavailable. Run the 2026-08-26 mentor adjustment log migration.')
+      setAdjustmentLog([])
+    } else {
+      setLogError('')
+      setAdjustmentLog(logResult.data || [])
+    }
     if (assignmentsResult.error || recordsResult.error) {
       setError('Mentor payments are unavailable. Run the 2026-08-13 mentor payments migration.')
     } else {
@@ -170,6 +221,18 @@ function MentorDetail({ mentor, onClose, onRecordsChanged }) {
       setRecords(recordsResult.data || [])
     }
     setLoading(false)
+  }, [mentor.id])
+
+  const loadAdjustmentLog = useCallback(async () => {
+    const { data, error: logFetchError } = await supabase
+      .from('mentor_payment_adjustment_log')
+      .select('*')
+      .eq('mentor_id', mentor.id)
+      .order('created_at', { ascending: false })
+    if (!logFetchError) {
+      setLogError('')
+      setAdjustmentLog(data || [])
+    }
   }, [mentor.id])
 
   useEffect(() => { load() }, [load])
@@ -182,6 +245,13 @@ function MentorDetail({ mentor, onClose, onRecordsChanged }) {
   function handleRecordAdded(record) {
     setRecords((current) => [record, ...current])
     onRecordsChanged()
+    loadAdjustmentLog()
+  }
+
+  function handleRecordDeleted(recordId) {
+    setRecords((current) => current.filter((item) => item.id !== recordId))
+    onRecordsChanged()
+    loadAdjustmentLog()
   }
 
   const pendingTotal = sumCents(records.filter((item) => item.status === 'pending'))
@@ -256,7 +326,7 @@ function MentorDetail({ mentor, onClose, onRecordsChanged }) {
                       {pendingRecords.length ? <strong className={styles.toProcessTotal}>{formatCents(pendingTotal)}</strong> : null}
                     </div>
                     <div className={styles.paymentList}>
-                      {pendingRecords.map((record) => <PaymentRow key={record.id} record={record} onUpdated={handleRecordUpdated} />)}
+                      {pendingRecords.map((record) => <PaymentRow key={record.id} record={record} onUpdated={handleRecordUpdated} onDeleted={handleRecordDeleted} />)}
                       {!pendingRecords.length ? <p className={styles.allClearNotice}>Nothing owed right now — every logged milestone and session is paid up.</p> : null}
                     </div>
                     <ManualLineItemForm mentor={mentor} assignments={assignments} onAdded={handleRecordAdded} />
@@ -271,8 +341,37 @@ function MentorDetail({ mentor, onClose, onRecordsChanged }) {
                       <strong>{formatCents(paidTotal)}</strong>
                     </summary>
                     <div className={styles.paymentList}>
-                      {paidRecords.map((record) => <PaymentRow key={record.id} record={record} onUpdated={handleRecordUpdated} />)}
+                      {paidRecords.map((record) => <PaymentRow key={record.id} record={record} onUpdated={handleRecordUpdated} onDeleted={handleRecordDeleted} />)}
                       {!paidRecords.length ? <p>Nothing paid yet.</p> : null}
+                    </div>
+                  </details>
+
+                  <details className={`${styles.detailSection} ${styles.historyDisclosure}`}>
+                    <summary>
+                      <div>
+                        <span className={styles.eyebrow}>Audit</span>
+                        <h3>Adjustment log{adjustmentLog.length ? ` (${adjustmentLog.length})` : ''}</h3>
+                      </div>
+                      <strong>{adjustmentLog.length ? 'Every add & delete' : 'No activity'}</strong>
+                    </summary>
+                    {logError ? <div className={styles.inlineErrorStandalone}>{logError}</div> : null}
+                    <div className={styles.paymentList}>
+                      {adjustmentLog.map((entry) => (
+                        <div key={entry.id} className={styles.paymentRow}>
+                          <div className={styles.paymentInfo}>
+                            <strong>{entry.student_name || 'Unknown student'}</strong>
+                            <span>{entry.actor_email || 'Unknown admin'} · {formatDateTime(entry.created_at)}</span>
+                            {entry.notes ? <span>{entry.notes}</span> : null}
+                          </div>
+                          <div className={styles.paymentAmount}>
+                            <strong>{formatCents(entry.amount_cents, entry.currency)}</strong>
+                            <span className={`${styles.status} ${entry.action === 'deleted' ? styles.statusAdjustmentDeleted : styles.statusAdjustmentCreated}`}>
+                              {ADJUSTMENT_ACTION_LABELS[entry.action] || entry.action}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                      {!adjustmentLog.length && !logError ? <p>No manual adjustments have been added or deleted for this mentor.</p> : null}
                     </div>
                   </details>
                 </>

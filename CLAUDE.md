@@ -221,6 +221,7 @@ docs/                   ← Guides, SQL migrations, AI context
 
 ## Currently Pending
 
+- [ ] **Run Supabase migration** for the mentor adjustment log — `docs/sql/migrations/2026-08-26_add_mentor_adjustment_log.sql` (after the 2026-08-13 migration). Adding/deleting manual adjustments and the "Adjustment log" section in the mentor panel won't work until this is applied.
 - [ ] **Run Supabase migration** for mentor payments — `docs/sql/migrations/2026-08-13_add_mentor_payments.sql` (after the 2026-08-12 migration). Mentor payment settings/records and the "Mentor payments" admin tab won't work until this is applied; each mentor assignment also needs a payment type + rate set before milestone/session logging generates payable lines.
 - [ ] **Run Supabase migration** for `draft` status — `docs/sql/migrations/2026-05-24_add_draft_status.sql`, guide at `docs/supabase-migration-guide.md`. New form submissions will fail at the DB CHECK constraint until this is run.
 - [ ] **Run Supabase migration** for `portfolio-project` program support — `docs/sql/migrations/2026-07-13_add_portfolio_project_program.sql`. New Portfolio Project submissions will fail at the DB CHECK constraint until this is run.
