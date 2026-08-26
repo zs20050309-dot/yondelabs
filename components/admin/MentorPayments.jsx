@@ -397,15 +397,15 @@ export default function MentorPayments() {
                 const summary = summaries[mentor.id] || { pending: 0, paid: 0, pendingCount: 0 }
                 return (
                   <tr key={mentor.id} className={summary.pendingCount ? styles.needsPaymentRow : undefined}>
-                    <td><button type="button" className={styles.studentLink} onClick={() => setSelectedMentorId(mentor.id)}><strong>{mentor.name}</strong>{!mentor.active ? <span>Inactive</span> : null}</button></td>
-                    <td>
+                    <td data-label="Mentor"><button type="button" className={styles.studentLink} onClick={() => setSelectedMentorId(mentor.id)}><strong>{mentor.name}</strong>{!mentor.active ? <span>Inactive</span> : null}</button></td>
+                    <td data-label="Pending">
                       {summary.pendingCount ? (
                         <span className={`${styles.status} ${styles.statusPaymentPending}`}>{formatCents(summary.pending)} · {summary.pendingCount} unpaid</span>
                       ) : (
                         <span className={styles.noCourse}>Nothing due</span>
                       )}
                     </td>
-                    <td>{formatCents(summary.paid)}</td>
+                    <td data-label="Paid">{formatCents(summary.paid)}</td>
                     <td className={styles.rowActions}><button type="button" className={styles.viewButton} onClick={() => setSelectedMentorId(mentor.id)}>View ledger</button></td>
                   </tr>
                 )

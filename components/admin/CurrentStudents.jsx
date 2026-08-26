@@ -51,11 +51,11 @@ export default function CurrentStudents({ students, loading }) {
                 const mentorNames = (student.student_mentor_assignments || []).map((item) => item.mentors?.name).filter(Boolean)
                 return (
                   <tr key={student.id}>
-                    <td><button type="button" className={styles.studentLink} onClick={() => setSelected(student)}><strong>{student.full_name}</strong><span>{student.contact_email || 'Portal ID login only'}</span></button></td>
-                    <td>{CURRENT_STUDENT_PROGRAMS[student.program] || student.program}</td>
-                    <td>{mentorNames.join(', ') || 'Not assigned'}</td>
-                    <td>{enrollment ? <span className={styles.courseHoursCell}><strong>{formatHours(used)}</strong><span> / {formatHours(enrollment.allocated_minutes)}{enrollment.course_plans?.allow_overage ? ' minimum' : ''}</span></span> : <span className={styles.noCourse}>Not assigned</span>}</td>
-                    <td><span className={`${styles.status} ${styles[`studentStatus_${student.status}`]}`}>{student.status}</span></td>
+                    <td data-label="Student"><button type="button" className={styles.studentLink} onClick={() => setSelected(student)}><strong>{student.full_name}</strong><span>{student.contact_email || 'Portal ID login only'}</span></button></td>
+                    <td data-label="Program">{CURRENT_STUDENT_PROGRAMS[student.program] || student.program}</td>
+                    <td data-label="Mentors">{mentorNames.join(', ') || 'Not assigned'}</td>
+                    <td data-label="Course hours">{enrollment ? <span className={styles.courseHoursCell}><strong>{formatHours(used)}</strong><span> / {formatHours(enrollment.allocated_minutes)}{enrollment.course_plans?.allow_overage ? ' minimum' : ''}</span></span> : <span className={styles.noCourse}>Not assigned</span>}</td>
+                    <td data-label="Status"><span className={`${styles.status} ${styles[`studentStatus_${student.status}`]}`}>{student.status}</span></td>
                     <td className={styles.rowActions}><button type="button" className={styles.viewButton} onClick={() => setSelected(student)}>View student</button></td>
                   </tr>
                 )

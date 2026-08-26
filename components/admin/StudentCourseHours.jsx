@@ -30,13 +30,14 @@ export default function StudentCourseHours({ application, currentStudent }) {
   const [sessionAt, setSessionAt] = useState(localDateTimeValue())
   const [durationHours, setDurationHours] = useState('1')
   const [notes, setNotes] = useState('')
+  const [mentorHourDrafts, setMentorHourDrafts] = useState({})
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
   async function load() {
     const [plansResult, enrollmentResult] = await Promise.all([
       supabase.from('course_plans').select('*, course_modules(*), course_milestones(*)').eq('active', true).order('created_at', { ascending: false }),
-      supabase.from('student_course_enrollments').select('*, course_plans(*, course_modules(*), course_milestones(*))').eq(ownerColumn, ownerId).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+      supabase.from('student_course_enrollments').select('*, course_plans(*, course_modules(*), course_milestones(*)), student_hour_allocations(id, label, allocated_minutes, sort_order)').eq(ownerColumn, ownerId).order('created_at', { ascending: false }).limit(1).maybeSingle(),
     ])
     if (plansResult.error || enrollmentResult.error) {
       setError('Course hours or milestones are unavailable. Run the 2026-07-22 and 2026-07-23 course migrations.')
@@ -69,6 +70,61 @@ export default function StudentCourseHours({ application, currentStudent }) {
   const allowsOverage = Boolean(enrollment?.course_plans?.allow_overage)
   const additionalMinutes = enrollment ? Math.max(usedMinutes - enrollment.allocated_minutes, 0) : 0
   const milestoneProgressMap = new Map(milestoneProgress.map((item) => [item.milestone_id, item]))
+
+  // Hours are budgeted per kind of mentor (the assignment role). Allocations live in
+  // student_hour_allocations keyed by label, which the student portal matches on too.
+  const { mentorHourRows, unassignedMinutes } = useMemo(() => {
+    const keyFor = (label) => String(label || '').trim().toLowerCase()
+    const rows = new Map()
+    const ensure = (label) => {
+      const key = keyFor(label)
+      if (!rows.has(key)) rows.set(key, { key, label: String(label || '').trim(), mentorNames: [], assignmentIds: [], usedMinutes: 0, allocation: null })
+      return rows.get(key)
+    }
+    for (const assignment of mentorAssignments) {
+      if (!assignment.role) continue
+      const row = ensure(assignment.role)
+      row.assignmentIds.push(assignment.id)
+      if (assignment.mentors?.name) row.mentorNames.push(assignment.mentors.name)
+    }
+    for (const allocation of enrollment?.student_hour_allocations || []) ensure(allocation.label).allocation = allocation
+
+    let unassigned = 0
+    for (const session of sessions) {
+      const minutes = Number(session.duration_minutes) || 0
+      const byAssignment = session.assignment_id
+        ? [...rows.values()].find((row) => row.assignmentIds.includes(session.assignment_id))
+        : null
+      const row = byAssignment || (session.mentor_role ? rows.get(keyFor(session.mentor_role)) : null)
+      if (row) row.usedMinutes += minutes
+      else unassigned += minutes
+    }
+    return { mentorHourRows: [...rows.values()], unassignedMinutes: unassigned }
+  }, [mentorAssignments, enrollment, sessions])
+
+  async function saveMentorHours(row) {
+    const raw = mentorHourDrafts[row.key]
+    const minutes = hoursToMinutes(raw)
+    if (!minutes && String(raw ?? '').trim() !== '') return
+    setBusy(true)
+    setError('')
+    let saveError = null
+    if (!minutes) {
+      if (row.allocation) ({ error: saveError } = await supabase.from('student_hour_allocations').delete().eq('id', row.allocation.id))
+    } else if (row.allocation) {
+      ({ error: saveError } = await supabase.from('student_hour_allocations').update({ allocated_minutes: minutes }).eq('id', row.allocation.id))
+    } else {
+      ({ error: saveError } = await supabase.from('student_hour_allocations').insert({
+        enrollment_id: enrollment.id,
+        label: row.label,
+        allocated_minutes: minutes,
+        sort_order: mentorHourRows.length,
+      }))
+    }
+    if (saveError) setError(saveError.message)
+    else await load()
+    setBusy(false)
+  }
 
   function choosePlan(value) {
     setPlanId(value)
@@ -207,6 +263,50 @@ export default function StudentCourseHours({ application, currentStudent }) {
           <button type="button" onClick={() => setEnrollmentStatus(enrollment.status === 'paused' ? 'active' : 'paused')} disabled={busy}>{enrollment.status === 'paused' ? 'Resume course' : 'Pause course'}</button>
           {enrollment.status !== 'completed' ? <button type="button" onClick={() => setEnrollmentStatus('completed')} disabled={busy}>Mark completed</button> : null}
         </div>
+
+        {mentorHourRows.length || unassignedMinutes > 0 ? (
+          <div className={styles.mentorHours}>
+            <div className={styles.editorSubheading}>
+              <div><span className={styles.eyebrow}>Per mentor</span><h4>Hours by mentor</h4></div>
+              <span>Set the hours budgeted for each kind of mentor</span>
+            </div>
+            <div className={styles.mentorHourList}>
+              {mentorHourRows.map((row) => {
+                const allocated = row.allocation?.allocated_minutes || 0
+                const remaining = allocated - row.usedMinutes
+                const draft = mentorHourDrafts[row.key] ?? (allocated ? String(allocated / 60) : '')
+                return (
+                  <div key={row.key}>
+                    <div>
+                      <strong>{row.mentorNames.join(', ') || 'No mentor assigned'}</strong>
+                      <span>{row.label}</span>
+                    </div>
+                    <div className={styles.mentorHourStat}><span>Used</span><strong>{formatHours(row.usedMinutes)}</strong></div>
+                    <div className={styles.mentorHourStat}>
+                      <span>{allocated ? (remaining < 0 ? 'Over by' : 'Left') : 'Left'}</span>
+                      <strong className={allocated && remaining < 0 ? styles.mentorHourOver : undefined}>
+                        {allocated ? formatHours(Math.abs(remaining)) : '—'}
+                      </strong>
+                    </div>
+                    <label>
+                      <span className={styles.srOnly}>{`${row.label} allocated hours`}</span>
+                      <input type="number" min="0" step="0.25" placeholder="No budget" value={draft}
+                        onChange={(event) => setMentorHourDrafts((current) => ({ ...current, [row.key]: event.target.value }))} />
+                    </label>
+                    <button type="button" onClick={() => saveMentorHours(row)} disabled={busy}>Save</button>
+                  </div>
+                )
+              })}
+              {unassignedMinutes > 0 ? (
+                <div>
+                  <div><strong>Unassigned classes</strong><span>Logged without a mentor</span></div>
+                  <div className={styles.mentorHourStat}><span>Used</span><strong>{formatHours(unassignedMinutes)}</strong></div>
+                  <div className={styles.mentorHourStat}><span>Left</span><strong>—</strong></div>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
 
         {milestones.length ? (
           <div className={styles.adminMilestones}>

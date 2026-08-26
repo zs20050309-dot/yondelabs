@@ -37,3 +37,11 @@ export function IconCheck(props) {
 export function IconAlert(props) {
   return <svg {...base(props)}><path d="M12 3.5 21.5 20h-19L12 3.5Z" /><path d="M12 10v4.2M12 17.3v.1" /></svg>
 }
+
+export function IconMenu(props) {
+  return <svg {...base(props)}><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+}
+
+export function IconClose(props) {
+  return <svg {...base(props)}><path d="M6 6l12 12M18 6 6 18" /></svg>
+}

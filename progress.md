@@ -1,5 +1,24 @@
 # Progress Log — YondeLabs Web
 
+## Session: 2026-08-17 - Per-mentor hours remaining in admin course hours
+
+### Request
+In the admin portal, the per-student "Course hours" section showed only total used/remaining. User asked to also see hours left for each kind of mentor.
+
+### Changed
+- **`components/admin/StudentCourseHours.jsx`** — new "Hours by mentor" panel between the allocation editor and the milestone list:
+  - Rows are keyed by the mentor assignment **role** ("kind of mentor"), merged with any existing `student_hour_allocations` labels for the enrollment (case-insensitive match). A row shows the mentor name(s), the role, hours used, hours left (or "Over by" in the danger color when used exceeds the budget), plus an inline hours input + Save.
+  - Used minutes per role come from `class_sessions.assignment_id` first, falling back to the legacy free-text `mentor_role` for sessions logged before the 2026-08-13 migration. Sessions matching neither roll up into an "Unassigned classes" row (used only, no budget).
+  - Saving writes to the existing `student_hour_allocations` table (insert / update / delete when cleared) — the same table the student portal already reads for its "Hour allocation" list, so budgets set here show up on the student side too. **No migration needed**; `student_hour_allocations` shipped with 2026-08-01.
+  - Enrollment query now also selects `student_hour_allocations(id, label, allocated_minutes, sort_order)`.
+- **`styles/courseHours.module.css`** — `.mentorHours`, `.mentorHourList`, `.mentorHourStat`, `.mentorHourOver`, `.srOnly` (all token-based so they follow the admin light/dark theme), plus a mobile column collapse.
+
+### Verification
+`npm run build` passed (run with placeholder `NEXT_PUBLIC_SUPABASE_*` env vars — `.env.local` isn't present locally).
+
+### Not changed
+The student-portal `components/portal/CourseHours.jsx` still matches allocations to sessions by `mentor_role` label only, not `assignment_id` — out of scope for this request, but worth aligning later so student-side per-mentor usage matches the admin numbers exactly for sessions logged with a mentor but no role string.
+
 ## Session: 2026-08-14 - Admin portal visual redesign (dark mode, sidebar, interactivity)
 
 ### Background
@@ -2316,3 +2335,87 @@ User requested an enrolled-student portal with credentials separate from the app
 - Confirmed the final PDF contains the intended Chinese glyphs instead of `?`.
 - Confirmed English-only PDFs keep the original lightweight standard-font path.
 - `npm.cmd run build` and `git diff --check` passed.
+
+## Session: 2026-08-26 - Admin mobile navigation
+
+### Added
+- Off-canvas mobile navigation for the admin dashboard. Below 900px the 240px
+  sidebar becomes a fixed drawer that slides in from the left over a dimmed
+  backdrop, leaving the content area full-width.
+- A hamburger toggle and the YondeLabs logo in the admin topbar (mobile only),
+  plus a close button inside the drawer header.
+- `IconMenu` and `IconClose` in `components/admin/icons.jsx`.
+
+### Behavior
+- The drawer closes on nav-item tap, backdrop click, close button, Escape, and
+  whenever the active section changes.
+- Background scroll is locked while the drawer is open and the previous
+  `body.overflow` value is restored on close.
+- The topbar is sticky on mobile; below 480px the topbar logo is hidden so the
+  section title has room.
+- `prefers-reduced-motion: reduce` disables the slide transition.
+- Desktop layout (>900px) is unchanged — the drawer styles live entirely inside
+  the new media query and the toggle/close/backdrop are `display: none` by
+  default.
+
+### Files
+- `components/admin/AdminShell.jsx` — drawer state, toggle/close controls, backdrop.
+- `components/admin/icons.jsx` — two new icons.
+- `styles/admin.module.css` — `.navToggle`, `.navClose`, `.navBackdrop`,
+  `.topbarLead`, `.topbarBrand`, `.sidebarOpen`, and the 900px/480px media queries.
+
+### Verification
+- `npm run build` passed with `/admin` in the production route list. Note: the
+  repo has no `.env.local`, so the build was run with placeholder
+  `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` values; without
+  them the build fails at page-data collection for reasons unrelated to this change.
+
+### Follow-up: admin content-area mobile fixes (same session)
+
+### Added
+- Mobile card layout for all three admin tables (applications/archived, current
+  students, mentor payments). Below 760px the table, thead, tbody, tr, and td
+  switch to block/flex, `thead` is hidden, and each `<td>` renders its column
+  name from a new `data-label` attribute. This removes the 940px `min-width`
+  horizontal scroll on phones.
+- `data-label` attributes on the data cells of those three tables. **These must
+  be kept in sync with the `<th>` text whenever a column is added or renamed.**
+- Row action buttons restack as a full-width wrapped button group with 40px
+  minimum touch targets; `.viewButton` gains a visible border on mobile so it
+  reads as a button rather than bare text.
+
+### Also fixed below 760px
+- Detail panel goes full-width; smaller panel/page headings.
+- Mentor forms (`mentorPaymentForm`, `addMentorForm`, `manualLineForm`,
+  `markPaidForm`) use `flex: 1 1 150px` labels so inputs fill the row instead of
+  sitting at a fixed 140px.
+- `milestoneRateField` stacks; `paymentRow` stacks with left-aligned amounts.
+- Label/value rows (`detailList`, `assignmentSummary`, `offerHistory`,
+  `milestoneRateSummary`) stack instead of squeezing two justified columns.
+- Toolbar selects/buttons go full-width; `needsPaymentToggle` loses its auto margin.
+- History disclosure summary, `toProcessSection`, and `empty` padding tightened.
+- Toast stack insets to 12px and spans the viewport width.
+- Confirm dialog actions stack as full-width buttons (primary on top).
+- Below 480px: stats and payment summary cards go single-column, `main` padding
+  drops to 14px.
+
+### courseHours.module.css (850px query extended)
+- Manager header stacks, plan editor/sidebar padding reduced, `moduleForm`
+  single-column, `editableModule` / `editableMilestone` / `adminSessionList`
+  rows regrid, `managerGrid` drops its 520px `min-height`.
+
+### Files
+- `pages/admin/index.jsx`, `components/admin/CurrentStudents.jsx`,
+  `components/admin/MentorPayments.jsx` — `data-label` attributes only.
+- `styles/admin.module.css` — table card layout + content fixes in the 760px
+  query, new 480px query.
+- `styles/courseHours.module.css` — extended 850px query.
+
+### Verification
+- `npm run build` passed (again with placeholder Supabase env vars — see the
+  note above; there is still no `.env.local` in the repo).
+- `git diff --check` passed with no whitespace errors.
+- Not visually verified in a browser: `/admin` is gated by `proxy.js` and needs
+  real Supabase credentials plus an admin account, neither of which is available
+  in this environment. The layout changes are CSS-only and desktop rules are
+  untouched, but a manual pass on a phone is still worth doing.

@@ -313,11 +313,11 @@ function AdminDashboardInner({ theme, toggleTheme }) {
                 const usedMinutes = sumMinutes(enrollment?.class_sessions)
                 return (
                   <tr key={application.id}>
-                    <td><button type="button" className={styles.studentLink} onClick={() => setSelectedId(application.id)}><strong>{studentName(application)}</strong><span>{studentEmail(application)}</span></button></td>
-                    <td>{PROGRAM_LABELS[application.program] || application.program}</td>
-                    <td>{formatDate(application.submitted_at)}</td>
-                    <td><span className={`${styles.status} ${styles[`status_${application.status}`]}`}>{STATUS_LABELS[application.status] || application.status}</span></td>
-                    <td>{enrollment ? <span className={styles.courseHoursCell}><strong>{formatHours(usedMinutes)}</strong><span> / {formatHours(enrollment.allocated_minutes)}</span></span> : <span className={styles.noCourse}>Not assigned</span>}</td>
+                    <td data-label="Student"><button type="button" className={styles.studentLink} onClick={() => setSelectedId(application.id)}><strong>{studentName(application)}</strong><span>{studentEmail(application)}</span></button></td>
+                    <td data-label="Program">{PROGRAM_LABELS[application.program] || application.program}</td>
+                    <td data-label="Submitted">{formatDate(application.submitted_at)}</td>
+                    <td data-label="Stage"><span className={`${styles.status} ${styles[`status_${application.status}`]}`}>{STATUS_LABELS[application.status] || application.status}</span></td>
+                    <td data-label="Course hours">{enrollment ? <span className={styles.courseHoursCell}><strong>{formatHours(usedMinutes)}</strong><span> / {formatHours(enrollment.allocated_minutes)}</span></span> : <span className={styles.noCourse}>Not assigned</span>}</td>
                     <td className={styles.rowActions}>
                       <button type="button" className={styles.viewButton} onClick={() => setSelectedId(application.id)}>View profile</button>
                       {nextStatus ? <button type="button" className={styles.moveButton} disabled={movingId === application.id} onClick={() => moveApplication(application, nextStatus)}>{movingId === application.id ? 'Updating…' : `Move to ${STATUS_LABELS[nextStatus]}`}</button> : null}

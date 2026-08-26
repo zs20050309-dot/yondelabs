@@ -92,6 +92,11 @@
 .navBadge { display: inline-grid; min-width: 18px; height: 18px; place-items: center; border-radius: 99px; background: rgba(116, 128, 149, .16); padding: 0 5px; color: var(--text-muted); font-size: 10px; font-weight: 800; }
 .navItemActive .navBadge { background: rgba(37, 65, 178, .16); color: var(--accent-soft-text); }
 .sidebarFooter { border-top: 1px solid var(--border); padding: 12px; }
+.navToggle, .navClose { display: none; place-items: center; width: 36px; height: 36px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); color: var(--text-secondary); cursor: pointer; }
+.navToggle:hover, .navClose:hover { background: var(--surface-hover); color: var(--text-primary); }
+.navBackdrop { display: none; }
+.topbarLead { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.topbarBrand { display: none; width: 108px; height: auto; }
 
 .topbar { display: flex; align-items: center; justify-content: space-between; height: 68px; padding: 0 32px; border-bottom: 1px solid var(--border); background: var(--surface); }
 .topbarTitle { color: var(--text-secondary); font-size: 13px; font-weight: 700; }
@@ -367,8 +372,67 @@
 .historyDisclosure .paymentList { margin-top: 16px; }
 .historyDisclosure .paymentRow { background: var(--surface-alt); }
 
+/* ===== Mobile navigation: sidebar collapses to an off-canvas drawer ===== */
+@media (max-width: 900px) {
+  .sidebar {
+    position: fixed;
+    z-index: 60;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: min(82vw, 280px);
+    box-shadow: var(--shadow-lg);
+    transform: translateX(-100%);
+    transition: transform 220ms ease;
+  }
+  .sidebarOpen { transform: translateX(0); }
+  .sidebarBrand { justify-content: space-between; padding: 0 16px; }
+  .sidebarNav { padding: 14px 12px; }
+  .navItem { padding: 13px 12px; font-size: 14px; }
+  .navClose { display: grid; }
+  .navBackdrop { display: block; position: fixed; z-index: 55; inset: 0; background: rgba(9, 13, 24, .5); }
+  .navToggle { display: grid; }
+  .topbar { position: sticky; z-index: 40; top: 0; height: 60px; padding: 0 16px; }
+  .topbarBrand { display: block; }
+  .topbarTitle { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .content { width: 100%; }
+}
+
+@media (max-width: 900px) and (prefers-reduced-motion: reduce) {
+  .sidebar { transition: none; }
+}
+
+@media (max-width: 480px) {
+  .stats, .paymentsSummaryBar { grid-template-columns: 1fr; }
+  .main { padding: 24px 14px 48px; }
+  .tableWrap tbody tr { padding: 14px 14px; }
+}
+
+/* Below 480px the topbar has room for either the logo or the section title. */
+@media (max-width: 480px) {
+  .topbarBrand { display: none; }
+}
+
 @media (max-width: 760px) {
   .header { padding: 0 18px; }
+  /* Tables restack as labelled cards — a 940px-wide table is unusable on a
+     phone, and each row's data-label supplies the header the thead no longer
+     shows. Keep data-label in sync with the <th> text when columns change. */
+  .tableWrap { overflow-x: visible; }
+  .tableWrap table { min-width: 0; display: block; }
+  .tableWrap thead { display: none; }
+  .tableWrap tbody { display: block; }
+  .tableWrap tbody tr { display: block; border-top: 1px solid var(--border); padding: 14px 16px; }
+  .tableWrap tbody tr:first-child { border-top: 0; }
+  .tableWrap td { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; border: 0; padding: 5px 0; text-align: right; }
+  .tableWrap td::before { content: attr(data-label); flex-shrink: 0; color: var(--text-muted); font-size: 11px; font-weight: 700; letter-spacing: .05em; text-align: left; text-transform: uppercase; }
+  .tableWrap td:first-child { display: block; padding-bottom: 9px; text-align: left; }
+  .tableWrap td:first-child::before { display: none; }
+  .rowActions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; text-align: left; white-space: normal; }
+  .rowActions::before { display: none; }
+  .rowActions .viewButton { margin-right: 0; }
+  .rowActions button { flex: 1 1 auto; min-height: 40px; }
+  .viewButton { border: 1px solid var(--border-strong); border-radius: var(--radius-md); padding: 9px 14px; }
   .main { padding: 30px 16px 54px; }
   .titleRow { align-items: flex-start; flex-direction: column; }
   .stats { grid-template-columns: repeat(2, 1fr); }
@@ -398,6 +462,26 @@
   .addMentorInline { margin-left: 0; width: 100%; }
   .addMentorInline input { flex: 1; }
   .markPaidForm > div { margin-left: 0; }
+  .titleRow h1 { font-size: 26px; }
+  .detailPanel { width: 100%; }
+  .detailHeader h2 { font-size: 22px; }
+  .toolbar select, .toolbar button { width: 100%; }
+  .needsPaymentToggle { margin-left: 0; }
+  .mentorAssignmentHeading { align-items: flex-start; flex-direction: column; }
+  .mentorPaymentForm label, .addMentorForm label, .manualLineForm label, .markPaidForm label { flex: 1 1 150px; min-width: 0; }
+  .mentorPaymentForm button, .addMentorForm button, .manualLineForm button { flex: 1 1 auto; }
+  .milestoneRateField { grid-template-columns: 1fr; gap: 6px; }
+  .paymentRow { align-items: flex-start; flex-direction: column; gap: 10px; }
+  .paymentAmount { text-align: left; }
+  .detailList p, .assignmentSummary p, .offerHistory > div, .milestoneRateSummary li { align-items: flex-start; flex-direction: column; gap: 4px; }
+  .historyDisclosure { padding: 16px; }
+  .historyDisclosure > summary { align-items: flex-start; flex-direction: column; gap: 6px; }
+  .toProcessSection { padding: 16px; }
+  .empty { padding: 40px 20px; }
+  .toastStack { top: 12px; right: 12px; width: calc(100vw - 24px); }
+  .confirmActions { flex-direction: column-reverse; }
+  .confirmActions button { width: 100%; min-height: 42px; }
+  .offerPreviewModal { height: 92vh; }
   .paymentAmount { text-align: left; }
   .milestoneRateField { grid-template-columns: 1fr; }
   .paymentsSummaryBar { grid-template-columns: 1fr; }
