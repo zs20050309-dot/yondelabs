@@ -2685,3 +2685,88 @@ Built on top of the existing portal rather than replacing it. `/student/course`
 `.workspaceCards` / `.workspaceCard` / `.courseVisual` / `.filesVisual` in
 `studentPortal.module.css` are now unused. Left in place deliberately — dead CSS
 is harmless and removing it is unnecessary churn during an in-progress upgrade.
+
+## Session: 2026-09-02 - Student journey admin authoring UI
+
+Both 2026-09-02 migrations were applied by the user, so the journey tables now
+exist. This pass builds the staff side that fills them — previously the blocking
+gap that left all six student sections empty.
+
+### Added
+- `components/admin/ProgramOverviewFields.jsx` — learning objective, capstone
+  goal, cadence, start/expected-end dates on a course plan.
+- `components/admin/LearningMapManager.jsx` — category/topic CRUD with rename,
+  delete, and reorder at both levels.
+- `components/admin/ProjectPhasesManager.jsx` — phase CRUD, reorder, and a
+  per-milestone phase assignment control.
+- `components/admin/SessionNotesManager.jsx` — upload/delete meeting notes for
+  one student's enrollment.
+- `components/admin/MentorProfileFields.jsx` — mentor `responsibility` and
+  `timezone`, the two fields the student's Your Team card needs.
+- Admin-only authoring styles appended to `styles/courseHours.module.css`,
+  using the admin token set with fallbacks per the CLAUDE.md convention. The
+  student-facing classes in that file are untouched.
+
+### Changed
+- `components/admin/CoursePlanManager.jsx` — renders the three plan-level
+  editors beneath the existing milestone editor. Its plan query already used
+  `select('*')`, so the new overview columns arrive without a query change.
+- `components/admin/MentorAssignments.jsx` — both mentor selects widened to
+  `responsibility, timezone`; profile editor rendered per assignment row.
+- `components/admin/CurrentStudents.jsx` — session notes panel in the student
+  detail view.
+
+### Design decisions
+- **Reorder swaps `display_order` with the neighbour** rather than renumbering
+  the list, keeping each move to two row updates.
+- **Phase status is not editable in the admin.** It is derived from milestone
+  progress on the student side, so the only thing staff control is which
+  milestones belong to which phase — there is nothing to disagree about.
+- **`mentor_name` is denormalised onto `session_notes`** so attribution survives
+  a mentor record being deleted (`mentor_id` is `on delete set null`).
+- Each editor loads and errors independently, and names the missing migration in
+  its error text, consistent with the mentor-payments panels.
+- Deleting a phase keeps its milestones and leaves them unassigned, rather than
+  cascading — milestone progress is student data and must not be destroyed by a
+  curriculum edit.
+
+### Verification
+- **`npm run build` NOT run** — still no Node runtime in this environment.
+  Checked manually: balanced delimiters across all 13 new/edited JS files,
+  balanced CSS braces in both stylesheets, every `styles.*` reference resolved
+  against its stylesheet (portal and admin), clean `git diff --check`.
+- Not exercised against the database despite the migrations now being applied —
+  this environment still has no Supabase credentials.
+
+### Follow-up: per-student project fields editor
+Audit against the spec's acceptance criteria found a gap introduced earlier in
+the session: `project_area` / `project_goal` were added to the schema and read
+by `components/portal/ProgramOverview.jsx`, but nothing wrote them — the two
+fields were unreachable for staff.
+
+- Added `components/admin/StudentProjectFields.jsx` and wired it into the
+  student detail panel in `components/admin/CurrentStudents.jsx`.
+- These are student-level, not plan-level: several students share one program
+  but each has their own project. A blank goal is a valid state and renders as
+  "Exploring Project Direction".
+
+### Build verification (finally possible)
+The repeated "npm run build NOT run" caveat in the entries above is now
+resolved. The cause was that this machine had no Node toolchain at all — no
+`node`, `npm`, or `npx` on PATH and no `node_modules` — not a sandbox
+restriction.
+
+- Installed Node v24.20.0 (current LTS) to `~/.local/node` from nodejs.org, no
+  sudo required, then ran `npm install`.
+- `npm run build` **compiled successfully in 8.2s**, 17/17 static pages
+  generated, with placeholder Supabase env vars. All routes present including
+  `/student`, `/student/course`, `/student/files`, and `/admin`.
+- This covers every change made this session: the Add student form, the
+  six-section student journey page, and the admin authoring UI.
+- Note for future sessions: `~/.local/node/bin` is not on the default PATH, so
+  prefix commands with `export PATH="$HOME/.local/node/bin:$PATH"` or add it to
+  `~/.bashrc`.
+
+Still unverified: nothing has been exercised against the live database, since
+this environment has no Supabase credentials. A clean build is a compile check,
+not proof the queries and RLS policies behave correctly.

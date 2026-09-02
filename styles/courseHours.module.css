@@ -219,3 +219,73 @@
   .adminSessionList > div { grid-template-columns: 1fr auto; }
   .managerGrid { min-height: 0; }
 }
+
+/* --- Student-journey authoring (admin only) -------------------------------
+ * Admin-facing classes: they use the admin token set with fallbacks, matching
+ * the rest of the admin-prefixed rules in this file. The student-facing
+ * classes above (.studentSection, .studentCard, …) are a separate visual
+ * system and are deliberately untouched by these rules.
+ */
+
+.journeyEditor { display: grid; gap: 12px; margin-top: 22px; border-top: 1px solid var(--border, #e2e7ee); padding-top: 18px; }
+.journeyEditor > button { justify-self: start; border: 1px solid var(--border-strong, #cfd6e2); border-radius: 8px; background: var(--surface, #fff); color: var(--text-primary, #253148); cursor: pointer; padding: 8px 14px; font: inherit; font-size: 12px; font-weight: 700; }
+.journeyEditor > button:hover { background: var(--surface-hover, #f4f7fb); }
+
+.stackedField { display: grid; gap: 5px; color: var(--text-secondary, #5d6980); font-size: 12px; font-weight: 700; }
+.stackedField input, .stackedField textarea, .stackedField select {
+  border: 1px solid var(--border-strong, #cfd6e2); border-radius: 8px; background: var(--surface, #fff);
+  padding: 9px 11px; color: var(--text-primary, #253148); font: inherit; font-size: 13px; font-weight: 500;
+}
+.stackedField textarea { resize: vertical; line-height: 1.55; }
+.dateRow { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+
+.rowTools { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.rowTools button {
+  border: 1px solid var(--border, #e2e7ee); border-radius: 7px; background: var(--surface, #fff);
+  color: var(--text-secondary, #5d6980); cursor: pointer; padding: 5px 9px; font: inherit; font-size: 11px; font-weight: 700;
+}
+.rowTools button:hover:not(:disabled) { background: var(--surface-hover, #f4f7fb); color: var(--text-primary, #253148); }
+.rowTools button:disabled { opacity: .4; cursor: not-allowed; }
+
+.inlineAddForm { display: flex; flex-wrap: wrap; gap: 8px; }
+.inlineAddForm input {
+  flex: 1 1 200px; min-width: 0; border: 1px solid var(--border-strong, #cfd6e2); border-radius: 8px;
+  background: var(--surface, #fff); padding: 8px 11px; color: var(--text-primary, #253148); font: inherit; font-size: 12px;
+}
+.inlineAddForm button {
+  border: 1px solid var(--accent, #2541b2); border-radius: 8px; background: var(--accent, #2541b2);
+  color: #fff; cursor: pointer; padding: 8px 14px; font: inherit; font-size: 12px; font-weight: 700;
+}
+.inlineAddForm button:disabled { opacity: .55; cursor: wait; }
+
+.mapCategoryRow { border: 1px solid var(--border, #e2e7ee); border-radius: 10px; padding: 13px 14px; display: grid; gap: 10px; }
+.mapCategoryHead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.mapCategoryHead strong { color: var(--text-primary, #253148); font-size: 13px; }
+.mapCategoryHead input { flex: 1 1 200px; border: 1px solid var(--border-strong, #cfd6e2); border-radius: 7px; padding: 6px 10px; font: inherit; font-size: 12px; }
+.mapTopicList { display: grid; gap: 5px; margin: 0; padding: 0; list-style: none; }
+.mapTopicList li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; border-radius: 7px; background: var(--surface-alt, #f7f9fc); padding: 7px 10px; }
+.mapTopicList li > span { color: var(--text-secondary, #5d6980); font-size: 12px; }
+.mapTopicList li input { flex: 1 1 180px; border: 1px solid var(--border-strong, #cfd6e2); border-radius: 6px; padding: 5px 9px; font: inherit; font-size: 12px; }
+
+.phaseRow { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 10px; border: 1px solid var(--border, #e2e7ee); border-radius: 10px; padding: 12px 14px; }
+.phaseRowMain { display: flex; align-items: flex-start; gap: 11px; min-width: 0; }
+.phaseRowMain > div > strong { display: block; color: var(--text-primary, #253148); font-size: 13px; }
+.phaseRowMain > div > span { display: block; margin-top: 3px; color: var(--accent, #2541b2); font-size: 11px; font-weight: 700; }
+.phaseRowMain > div > p { margin: 6px 0 0; color: var(--text-muted, #7b8698); font-size: 11px; line-height: 1.55; }
+.phaseEditFields { display: grid; gap: 8px; width: 100%; }
+.phaseEditFields input, .phaseEditFields textarea { border: 1px solid var(--border-strong, #cfd6e2); border-radius: 7px; padding: 7px 10px; font: inherit; font-size: 12px; }
+.phaseEditFields > div { display: flex; gap: 7px; }
+.phaseForm { display: grid; gap: 8px; }
+.phaseForm input, .phaseForm textarea { border: 1px solid var(--border-strong, #cfd6e2); border-radius: 8px; padding: 8px 11px; font: inherit; font-size: 12px; }
+.phaseForm button { justify-self: start; border: 1px solid var(--accent, #2541b2); border-radius: 8px; background: var(--accent, #2541b2); color: #fff; cursor: pointer; padding: 8px 14px; font: inherit; font-size: 12px; font-weight: 700; }
+
+.milestoneAssign { display: grid; gap: 7px; border-top: 1px solid var(--border, #e2e7ee); padding-top: 14px; }
+.milestoneAssign h4 { margin: 0; color: var(--text-primary, #253148); font-size: 13px; }
+.assignHint { margin: 0; color: var(--text-muted, #7b8698); font-size: 11px; line-height: 1.55; }
+.assignRow { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; border-radius: 7px; background: var(--surface-alt, #f7f9fc); padding: 8px 11px; }
+.assignRow > span { color: var(--text-secondary, #5d6980); font-size: 12px; }
+.assignRow select { border: 1px solid var(--border-strong, #cfd6e2); border-radius: 6px; background: var(--surface, #fff); padding: 5px 9px; color: var(--text-primary, #253148); font: inherit; font-size: 12px; }
+
+.noteRow { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; border: 1px solid var(--border, #e2e7ee); border-radius: 9px; padding: 10px 13px; }
+.noteRow > div > strong { display: block; color: var(--text-primary, #253148); font-size: 13px; }
+.noteRow > div > span { display: block; margin-top: 3px; color: var(--text-muted, #7b8698); font-size: 11px; }

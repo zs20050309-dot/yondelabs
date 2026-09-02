@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
 import { useConfirm } from './ConfirmProvider'
+import ProgramOverviewFields from './ProgramOverviewFields'
+import LearningMapManager from './LearningMapManager'
+import ProjectPhasesManager from './ProjectPhasesManager'
 import { formatHours, hoursToMinutes, sumMinutes } from '../../lib/courseHours'
 import styles from '../../styles/courseHours.module.css'
 
@@ -319,6 +322,16 @@ export default function CoursePlanManager({ onClose }) {
                 <button type="submit" disabled={busy}>Add milestone</button>
               </form>
             </div>
+
+            {/* Student-portal content. Each editor loads and fails on its own,
+                so a missing journey migration degrades only that block. */}
+            <ProgramOverviewFields plan={selected} onSaved={() => loadPlans(selected.id)} />
+            <LearningMapManager planId={selected.id} />
+            <ProjectPhasesManager
+              planId={selected.id}
+              milestones={selected.course_milestones}
+              onMilestonesChanged={() => loadPlans(selected.id)}
+            />
           </> : <div className={styles.managerEmpty}>Create a course plan to begin adding modules.</div>}
         </div>
       </div>

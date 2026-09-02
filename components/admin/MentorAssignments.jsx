@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
+import MentorProfileFields from './MentorProfileFields'
 import { useConfirm } from './ConfirmProvider'
 import { amountToCents, centsToAmount, PAYMENT_TYPE_LABELS } from '../../lib/admin/mentorPayments'
 import styles from '../../styles/admin.module.css'
@@ -126,6 +127,8 @@ function AssignmentRow({ assignment, milestones, rates, onRemoved, onSettingsSav
         )
       ) : null}
 
+      <MentorProfileFields mentor={assignment.mentors} />
+
       {error ? <div className={styles.inlineError}>{error}</div> : null}
     </div>
   )
@@ -148,10 +151,10 @@ export default function MentorAssignments({ currentStudent }) {
     const [assignmentsResult, mentorsResult, enrollmentResult] = await Promise.all([
       supabase
         .from('student_mentor_assignments')
-        .select('id, role, sort_order, mentors(id, name), mentor_payment_settings(payment_type, hourly_rate_cents)')
+        .select('id, role, sort_order, mentors(id, name, responsibility, timezone), mentor_payment_settings(payment_type, hourly_rate_cents)')
         .eq('current_student_id', currentStudent.id)
         .order('sort_order', { ascending: true }),
-      supabase.from('mentors').select('id, name').eq('active', true).order('name', { ascending: true }),
+      supabase.from('mentors').select('id, name, responsibility, timezone').eq('active', true).order('name', { ascending: true }),
       supabase
         .from('student_course_enrollments')
         .select('id, course_plans(course_milestones(id, title, sort_order))')
