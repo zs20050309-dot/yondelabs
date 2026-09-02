@@ -2875,3 +2875,50 @@ direction (clean, editorial, premium, personal, structured, calm).
 `.workspaceCard`, `.courseVisual`, and `.filesVisual` in
 `studentPortal.module.css` are now unused. Left in place; harmless, and worth
 one deliberate cleanup pass rather than piecemeal removal.
+
+## Session: 2026-09-02 - Student portal contrast and journey redesign
+
+Feedback: too white and washed out, low contrast, static, cards blending into
+the background, and a Project Journey that read as a document rather than
+progress. Redesigned to fix those specifically, staying light (dark theme was
+explicitly ruled out).
+
+### Contrast and surface
+- **Canvas given a real tint** (`#eef2f7` → `#e7ecf4`, was near-white
+  `#fbfcfe`). This is the root fix for cards blending in: white surfaces now
+  have something to lift off.
+- Every card carries a border plus a two-layer shadow (`--lift`), with a
+  stronger `--lift-hover` on hover.
+- Ink darkened across the board (`#0a1729` / `#33455e` / `#5f6f88`) and body
+  weights raised to 450–550. No thin grey text left.
+
+### Project Journey rewritten as progress
+- New `lib/portal/journeyProgress.js` derives completion from existing
+  milestone progress — `summarise()` and `phaseProgress()`. In-progress
+  milestones count half, so the meter moves between completions instead of
+  jumping only at the end.
+- New summary card: large percentage, "n of m milestones complete", a meter,
+  plus current phase and next milestone.
+- Phases are now **expandable cards** (`ProjectJourney.jsx`), each with a status
+  chip, duration, milestone count, and its own meter. The current phase is open
+  by default and ringed in accent; upcoming phases sit on a sunken background.
+- Milestones became a checklist with filled check circles for completed, an
+  "In progress" tag for active, and muted styling for upcoming.
+
+### Other components
+- Learning Map categories became elevated cards with hover lift and bulleted
+  topics.
+- Team cards gained gradient initials avatars and a status dot on the timezone.
+- Session notes became one bordered card with hover/open row shading.
+- Identity bar items became discrete pills.
+- Program pill in the masthead became a solid bordered card.
+
+### Interaction
+Hover lift on cards, focus-visible rings on the phase toggles and note
+summaries, animated meter fills (620ms), and a reveal transition on phase
+expansion.
+
+### Verification
+- `npm run build` compiled successfully; all `styles.*` references resolve,
+  including the dynamic `card_*`, `chip_*`, and `meterFill_*` classes.
+- Not seen in a browser — no Supabase credentials in this environment.
