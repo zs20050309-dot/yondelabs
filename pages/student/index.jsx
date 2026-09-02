@@ -12,6 +12,7 @@ import StudentFiles from '../../components/portal/StudentFiles'
 import useStudentPortal from '../../lib/portal/useStudentPortal'
 import useStudentJourney, { derivePhaseStatuses } from '../../lib/portal/useStudentJourney'
 import styles from '../../styles/studentPortal.module.css'
+import journeyStyles from '../../styles/studentJourney.module.css'
 
 export default function StudentPortalHome() {
   const { user, application, currentStudent, portalAccount, loading, error } = useStudentPortal()
@@ -49,44 +50,42 @@ export default function StudentPortalHome() {
       {error ? <div className={styles.error}>{error}</div> : null}
       {!error ? (
         <>
-          <section className={styles.homeSummary} aria-label="Portal summary">
-            <div>
-              <span className={styles.summaryIcon} aria-hidden>Y</span>
-              <div><span>Portal ID</span><strong>{portalAccount?.portal_id}</strong></div>
-            </div>
-            <div>
-              <span className={styles.summaryIcon} aria-hidden>01</span>
-              <div><span>Program</span><strong>{programName}</strong></div>
-            </div>
-            <div>
-              <span className={`${styles.summaryIcon} ${styles.summaryActive}`} aria-hidden>✓</span>
-              <div><span>Access</span><strong>Active</strong></div>
-            </div>
-          </section>
+          {/* Deliberately quiet: identifiers are reference detail, not the
+              point of the page, so they sit as one small line rather than
+              three decorated tiles competing with the program itself. */}
+          <dl className={journeyStyles.identityBar} aria-label="Portal details">
+            {portalAccount?.portal_id ? (
+              <div><dt>Portal ID</dt><dd>{portalAccount.portal_id}</dd></div>
+            ) : null}
+            <div><dt>Access</dt><dd>Active</dd></div>
+          </dl>
 
           {/* Section order is the product spec's narrative and is deliberate:
               goal -> what I'm learning -> where I am -> who helps -> what
-              happened -> my resources. Each section hides itself when empty. */}
-          <ProgramOverview
-            programName={programName}
-            plan={journey.plan}
-            student={journey.studentProfile || currentStudent}
-          />
-          <LearningMap categories={journey.categories} />
-          <ProjectJourney phases={phases} />
-          <YourTeam team={journey.team} />
-          <SessionNotes notes={journey.notes} hasCourse={Boolean(journey.enrollment)} />
+              happened -> my resources. Each section hides itself when empty.
+              The .journey wrapper carries the shared palette custom properties. */}
+          <div className={journeyStyles.journey}>
+            <ProgramOverview
+              programName={programName}
+              plan={journey.plan}
+              student={journey.studentProfile || currentStudent}
+            />
+            <LearningMap categories={journey.categories} />
+            <ProjectJourney phases={phases} />
+            <YourTeam team={journey.team} />
+            <SessionNotes notes={journey.notes} hasCourse={Boolean(journey.enrollment)} />
 
-          {profile ? (
-            <JourneySection eyebrow="Your resources" title="Additional Materials">
-              <StudentFiles
-                applicationId={application?.id}
-                currentStudentId={currentStudent?.id}
-                showEmpty
-                hideHeading
-              />
-            </JourneySection>
-          ) : null}
+            {profile ? (
+              <JourneySection eyebrow="Your resources" title="Additional Materials">
+                <StudentFiles
+                  applicationId={application?.id}
+                  currentStudentId={currentStudent?.id}
+                  showEmpty
+                  hideHeading
+                />
+              </JourneySection>
+            ) : null}
+          </div>
         </>
       ) : null}
     </StudentPortalShell>

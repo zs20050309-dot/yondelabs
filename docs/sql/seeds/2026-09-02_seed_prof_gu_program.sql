@@ -184,11 +184,22 @@ begin
       ('Clementine Li', null,              null,               null, null)
     ) as t(full_name, school, stage, project_area, project_goal)
   loop
-    select id into v_student from public.current_students where full_name = r.full_name;
+    -- These three were already entered in the admin portal, so the match is
+    -- case-insensitive and trim-tolerant: a stray space or different casing
+    -- must update the existing student, never create a second one.
+    select id into v_student from public.current_students
+     where lower(trim(full_name)) = lower(trim(r.full_name))
+     order by created_at asc limit 1;
+
     if v_student is null then
       insert into public.current_students (full_name, program, status, source)
       values (r.full_name, null, 'active', 'manual')
       returning id into v_student;
+      -- Surfaced deliberately: if this fires, the portal spelling differs from
+      -- the spec and you now have two records to reconcile.
+      raise notice 'Created new student "%" — no existing record matched.', r.full_name;
+    else
+      raise notice 'Updated existing student "%".', r.full_name;
     end if;
 
     update public.current_students set

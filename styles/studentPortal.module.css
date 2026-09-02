@@ -3,10 +3,9 @@
   display: flex;
   flex-direction: column;
   background:
-    radial-gradient(circle at 88% 7%, rgba(6, 190, 225, 0.14), transparent 30rem),
-    radial-gradient(circle at 8% 35%, rgba(37, 65, 178, 0.07), transparent 28rem),
-    linear-gradient(180deg, #f8fbff 0%, #f1f5fb 100%);
-  color: #13213b;
+    radial-gradient(circle at 92% -4%, rgba(20, 104, 128, 0.07), transparent 34rem),
+    linear-gradient(180deg, #fbfcfe 0%, #f6f8fb 100%);
+  color: #0c1a30;
   font-family: Manrope, Inter, system-ui, sans-serif;
 }
 
@@ -25,8 +24,7 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 40px;
-  padding: 8px 0 38px;
-  border-bottom: 1px solid #dce3ed;
+  padding: 6px 0 34px;
 }
 
 .eyebrow {
@@ -38,31 +36,31 @@
 }
 
 .pageHeader h1 {
-  margin: 8px 0 0;
-  color: #0b1f49;
+  margin: 10px 0 0;
+  max-width: 18ch;
+  color: #0c1a30;
   font-family: Fraunces, Georgia, serif;
-  font-size: clamp(2.8rem, 5.4vw, 5.2rem);
-  font-weight: 750;
-  line-height: 0.98;
-  letter-spacing: -0.025em;
+  font-size: clamp(2.4rem, 4.4vw, 3.9rem);
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
 }
 
 .pageHeader p {
-  max-width: 46rem;
-  margin: 18px 0 0;
-  color: #53657e;
-  font-size: clamp(1.05rem, 1.5vw, 1.2rem);
-  line-height: 1.72;
+  max-width: 38rem;
+  margin: 16px 0 0;
+  color: #5b6b82;
+  font-size: clamp(1rem, 1.3vw, 1.1rem);
+  line-height: 1.7;
+  text-wrap: pretty;
 }
 
 .programPill {
-  min-width: 280px;
-  max-width: 370px;
-  padding: 20px 22px;
-  border: 1px solid rgba(186, 201, 220, 0.82);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.76);
-  box-shadow: 0 12px 34px rgba(18, 47, 92, 0.06);
+  min-width: 240px;
+  max-width: 360px;
+  padding: 0 0 8px 22px;
+  border-left: 2px solid #146880;
 }
 
 .programPill span,
@@ -71,7 +69,7 @@
 }
 
 .programPill span {
-  color: #7a879a;
+  color: #146880;
   font-size: 0.74rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -79,9 +77,11 @@
 }
 
 .programPill strong {
-  margin-top: 8px;
-  color: #173b78;
-  font-size: 1.05rem;
+  margin-top: 9px;
+  color: #0c1a30;
+  font-family: Fraunces, Georgia, serif;
+  font-size: 1.16rem;
+  font-weight: 600;
   line-height: 1.35;
 }
 

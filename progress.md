@@ -2799,6 +2799,11 @@ as common student-level fields, not cohort-specific:
 - **Milestones are upserted by title, never deleted**, because deleting them
   would cascade `student_milestone_progress` and destroy student progress. The
   Learning Map, which has no progress attached, is rebuilt wholesale instead.
+- **Student matching is case-insensitive and trim-tolerant.** The three were
+  already entered in the admin portal, so the seed must attach to those rows,
+  not create second copies; a stray space or different casing still matches. It
+  raises a notice saying whether each student was updated or created, so a
+  spelling mismatch is visible instead of silently duplicating.
 - **Clementine Li's project fields are deliberately null** — the spec gives her
   no project data, and the portal renders an unset goal as "Exploring Project
   Direction".
@@ -2814,3 +2819,59 @@ Adjust if real hours are agreed.
 ### Verification
 - `npm run build` **compiled successfully in 8.2s**, 17/17 static pages.
 - The seed SQL is unexecuted — no database credentials in this environment.
+
+## Session: 2026-09-02 - Student portal visual redesign
+
+The first pass was structurally correct but visually flat. Redesigned around an
+editorial reading experience rather than a dashboard, per the spec's UX
+direction (clean, editorial, premium, personal, structured, calm).
+
+### Layout
+- **Two-column editorial grid** (`JourneySection.jsx` + `.section`): on desktop
+  the section label sits in a **sticky left rail** while content scrolls beside
+  it, so the reader always knows where they are in the journey. Collapses to a
+  single column below 900px, with sticky disabled — a sticky heading in a
+  one-column layout traps itself mid-scroll.
+- Sections are separated by a single hairline and generous vertical padding
+  instead of boxes, so the page reads as one continuous story.
+
+### Typography and colour
+- Palette consolidated into custom properties on a single `.journey` wrapper
+  (ink / ink-soft / ink-muted / rule / accent / gold) instead of repeated hex
+  literals. `pages/student/index.jsx` wraps the sections in that class.
+- Fraunces used for all section and card headings at a tighter, more deliberate
+  scale; weights dropped from 700–750 to 600 for a less shouty, more editorial
+  feel. `text-wrap: balance` on headings, `pretty` on prose.
+- Masthead h1 reduced from `clamp(2.8rem, 5.4vw, 5.2rem)` to
+  `clamp(2.4rem, 4.4vw, 3.9rem)` and capped at 18ch — the old size dominated the
+  content it was introducing.
+- Canvas calmed from three overlapping gradients to one soft wash.
+
+### Component-level
+- **Identity bar replaces the three badge tiles.** The old "Y" / "01" / "✓"
+  summary cards were exactly the decorative noise the spec warns against; they
+  are now one quiet definition list of reference detail.
+- **Program pill** is no longer a boxed card competing with the student's name —
+  it is a rule-marked line.
+- **Learning Map** categories are numbered (01, 02, 03) with a strong underline,
+  reading as a map rather than three bullet lists.
+- **Project Journey** current phase is now the clear focal point: a raised white
+  card with a soft long shadow and an accent marker ring; other phases recede.
+  Milestones became readable pills with completed/in-progress states.
+- **Team** cards form a single hairline-divided grid instead of separate boxes.
+- **Session notes** use a three-column summary (date / title / chevron) with the
+  expanded body indented to align under the title and capped at a 40rem measure
+  with 1.85 leading, since Zoom notes can be very long. On mobile the date moves
+  above the title and the indent is dropped.
+
+### Verification
+- `npm run build` compiled successfully in 8.3s; every `styles.*` reference in
+  all six journey components and the page resolves against its stylesheet.
+- Not visually verified in a browser — this environment has no Supabase
+  credentials, so the portal cannot be loaded with real data.
+
+### Note
+`.homeSummary`, `.summaryIcon`, `.summaryActive`, `.workspaceCards`,
+`.workspaceCard`, `.courseVisual`, and `.filesVisual` in
+`studentPortal.module.css` are now unused. Left in place; harmless, and worth
+one deliberate cleanup pass rather than piecemeal removal.

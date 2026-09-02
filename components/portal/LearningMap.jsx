@@ -12,9 +12,12 @@ export default function LearningMap({ categories = [] }) {
   return (
     <JourneySection eyebrow="What you are learning" title="Your Learning Map">
       <div className={styles.mapGrid}>
-        {populated.map((category) => (
+        {populated.map((category, index) => (
           <article className={styles.mapCategory} key={category.id}>
-            <h3>{category.name}</h3>
+            <h3>
+              <i aria-hidden>{String(index + 1).padStart(2, '0')}</i>
+              {category.name}
+            </h3>
             <ul>
               {category.topics.map((topic) => (
                 <li key={topic.id}>{topic.name}</li>
