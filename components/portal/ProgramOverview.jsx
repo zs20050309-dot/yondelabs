@@ -36,8 +36,12 @@ export default function ProgramOverview({ programName, plan, student }) {
 
   if (!rows.length && !objective && !capstone) return null
 
+  // The rail carries a short, fixed section label like every other section. The
+  // program name is variable-length (e.g. "Entrepreneurship Program with Prof.
+  // Gu") and overflowed the narrow rail, so it leads the body instead.
   return (
-    <JourneySection eyebrow="Program overview" title={programName || 'Your program'}>
+    <JourneySection eyebrow="Your program" title="Program Overview">
+      {programName ? <h3 className={styles.programName}>{programName}</h3> : null}
       {objective ? <p className={styles.lede}>{objective}</p> : null}
       {capstone ? (
         <div className={styles.capstone}>

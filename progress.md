@@ -2922,3 +2922,17 @@ expansion.
 - `npm run build` compiled successfully; all `styles.*` references resolve,
   including the dynamic `card_*`, `chip_*`, and `meterFill_*` classes.
 - Not seen in a browser — no Supabase credentials in this environment.
+
+### Fix: Program Overview text overlap
+The section title was the program name, which is variable-length. In the 200px
+sticky rail, "Entrepreneurship Program with Prof. Gu" overflowed its column and
+collided with the learning-objective text in the body column.
+
+- `components/portal/ProgramOverview.jsx` — the rail now carries a short, fixed
+  "Program Overview" label like every other section, and the program name leads
+  the body as a new `.programName` display heading (capped at 24ch).
+- `styles/studentJourney.module.css` — added `overflow-wrap: anywhere` and
+  `hyphens: auto` to `.sectionHeader h2` so no future long title can overflow
+  the rail, whatever a staff member types.
+
+`npm run build` compiles successfully.
