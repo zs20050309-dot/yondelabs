@@ -88,12 +88,17 @@ export default function CourseHours({ applicationId, currentStudentId, mentors =
   }
 
   const remainingMinutes = Math.max(enrollment.allocated_minutes - usedMinutes, 0)
-  const additionalMinutes = Math.max(usedMinutes - enrollment.allocated_minutes, 0)
   const percentage = enrollment.allocated_minutes > 0
     ? Math.min((usedMinutes / enrollment.allocated_minutes) * 100, 100)
     : 0
   const allowsOverage = Boolean(enrollment.course_plans?.allow_overage)
   const progressByMilestone = new Map(milestoneProgress.map((item) => [item.milestone_id, item]))
+  const completedMilestones = milestones.filter((item) => progressByMilestone.get(item.id)?.status === 'completed').length
+  const inProgressMilestones = milestones.filter((item) => progressByMilestone.get(item.id)?.status === 'in_progress').length
+  // Half credit for in-progress work so the graph moves between completions.
+  const milestonePercent = milestones.length
+    ? Math.round(((completedMilestones + inProgressMilestones * 0.5) / milestones.length) * 100)
+    : 0
   const currentMilestone = milestones.find((item) => progressByMilestone.get(item.id)?.status === 'in_progress')
     || milestones.find((item) => progressByMilestone.get(item.id)?.status !== 'completed')
 
@@ -101,27 +106,47 @@ export default function CourseHours({ applicationId, currentStudentId, mentors =
     <section className={styles.studentCard}>
       <div className={styles.studentHeader}>
         <div>
-          <span className={styles.eyebrow}>Course hours</span>
           <h2>{enrollment.course_plans?.name || 'Your course plan'}</h2>
           {enrollment.course_plans?.description ? <p>{enrollment.course_plans.description}</p> : null}
         </div>
         <span className={styles.enrollmentStatus}>{enrollment.status}</span>
       </div>
 
-      <div className={styles.progressOverview}>
-        <div className={styles.progressRing} style={{ '--course-progress': `${percentage * 3.6}deg` }} role="img" aria-label={`${Math.round(percentage)} percent of course hours used`}>
-          <div><strong>{Math.round(percentage)}%</strong><span>{allowsOverage ? 'of minimum' : 'used'}</span></div>
-        </div>
-        <div className={styles.progressContent}>
-          <div className={styles.hourStats}>
-            <div><span>{allowsOverage ? 'Minimum' : 'Allocated'}</span><strong>{formatHours(enrollment.allocated_minutes)}</strong></div>
-            <div><span>Used</span><strong>{formatHours(usedMinutes)}</strong></div>
-            <div><span>{allowsOverage && additionalMinutes > 0 ? 'Beyond minimum' : allowsOverage ? 'To minimum' : 'Remaining'}</span><strong>{formatHours(additionalMinutes > 0 && allowsOverage ? additionalMinutes : remainingMinutes)}</strong></div>
+      {/* Minimum-hours plans are milestone-driven, not hour-consumption driven,
+          so an hours progress bar would imply the wrong goal. Those students get
+          a milestone graph instead, with hours shown as a plain total. */}
+      {allowsOverage ? (
+        <div className={styles.milestoneOverview}>
+          <div className={styles.milestoneOverviewHead}>
+            <div>
+              <strong>{completedMilestones} of {milestones.length} milestones complete</strong>
+              <span>{formatHours(usedMinutes)} of learning logged so far</span>
+            </div>
+            <span className={styles.milestonePercent}>{milestonePercent}%</span>
           </div>
-          <div className={styles.progressTrack} aria-hidden><span style={{ width: `${percentage}%` }} /></div>
-          <div className={styles.progressCaption}><span>{allowsOverage && percentage === 100 ? 'Minimum hours fulfilled' : 'Course hours progress'}</span><span>Started {enrollment.started_at}</span></div>
+          <div className={styles.segmentTrack} role="img" aria-label={`${completedMilestones} of ${milestones.length} milestones complete`}>
+            {milestones.map((milestone) => {
+              const status = progressByMilestone.get(milestone.id)?.status || 'not_started'
+              return <span key={milestone.id} className={styles[`segment_${status}`]} title={milestone.title} />
+            })}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className={styles.progressOverview}>
+          <div className={styles.progressRing} style={{ '--course-progress': `${percentage * 3.6}deg` }} role="img" aria-label={`${Math.round(percentage)} percent of course hours used`}>
+            <div><strong>{Math.round(percentage)}%</strong><span>used</span></div>
+          </div>
+          <div className={styles.progressContent}>
+            <div className={styles.hourStats}>
+              <div><span>Allocated</span><strong>{formatHours(enrollment.allocated_minutes)}</strong></div>
+              <div><span>Used</span><strong>{formatHours(usedMinutes)}</strong></div>
+              <div><span>Remaining</span><strong>{formatHours(remainingMinutes)}</strong></div>
+            </div>
+            <div className={styles.progressTrack} aria-hidden><span style={{ width: `${percentage}%` }} /></div>
+            <div className={styles.progressCaption}><span>Course hours progress</span><span>Started {enrollment.started_at}</span></div>
+          </div>
+        </div>
+      )}
 
       {(enrollment.student_hour_allocations?.length || mentors?.length) ? (
         <div className={styles.studentColumns}>
@@ -133,7 +158,7 @@ export default function CourseHours({ applicationId, currentStudentId, mentors =
       {milestones.length ? (
         <details className={`${styles.studentMilestones} ${styles.courseDisclosure}`} open>
           <summary className={styles.milestoneHeading}>
-            <div><span className={styles.eyebrow}>Current milestone</span><h3>{currentMilestone?.title || 'All milestones completed'}</h3></div>
+            <div><h3>{currentMilestone?.title || 'All milestones completed'}</h3></div>
             <span>{milestoneProgress.filter((item) => item.status === 'completed').length} / {milestones.length} complete <i aria-hidden>⌄</i></span>
           </summary>
           <ol className={styles.milestoneList}>
@@ -154,7 +179,7 @@ export default function CourseHours({ applicationId, currentStudentId, mentors =
 
       <div className={styles.courseSections}>
         <details className={styles.courseDisclosure} open>
-          <summary><div><span className={styles.eyebrow}>Course structure</span><h3>Course modules</h3></div><span>{modules.length} modules <i aria-hidden>⌄</i></span></summary>
+          <summary><div><h3>Course modules</h3></div><span>{modules.length} modules <i aria-hidden>⌄</i></span></summary>
           <div className={styles.moduleList}>
             {modules.map((module) => {
               const moduleUsed = sumMinutes(sessions.filter((session) => session.module_id === module.id))
@@ -168,7 +193,7 @@ export default function CourseHours({ applicationId, currentStudentId, mentors =
           </div>
         </details>
         <details className={styles.courseDisclosure} open>
-          <summary><div><span className={styles.eyebrow}>Learning record</span><h3>Class history</h3></div><span>{sessions.length} classes <i aria-hidden>⌄</i></span></summary>
+          <summary><div><h3>Class history</h3></div><span>{sessions.length} classes <i aria-hidden>⌄</i></span></summary>
           {sessions.length ? (
             <div className={styles.sessionList}>
               {sessions.map((session) => (

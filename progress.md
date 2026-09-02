@@ -3041,3 +3041,38 @@ audit against what was taught. So:
   (`components/portal/icons.jsx`). A check glyph implied completion tracking
   that does not exist in the schema.
 Milestone and session counts elsewhere are kept — those track real state.
+
+## Session: 2026-09-02 - Course tab cleanup and milestone-based progress
+
+### Removed small headings
+- `StudentPortalShell.jsx` — the page-header eyebrow is now conditional, and
+  `pages/student/course.jsx` no longer passes one ("Learning").
+- `components/portal/CourseHours.jsx` — dropped the "Course hours", "Current
+  milestone", "Course structure", and "Learning record" eyebrows. The h2/h3s
+  carry the meaning on their own.
+- Left the eyebrow on `/student/files` ("Resources") since the request was
+  scoped to the Course tab; easy to drop too if wanted.
+
+### Fixed mid-sentence line breaks
+Same cause as the dashboard lede: `text-wrap: pretty` pulls words down to avoid
+an orphan, ending the previous line early. Removed from `.pageHeader p`
+(`studentPortal.module.css`) and widened `.studentHeader p`
+(`courseHours.module.css`) to a 68ch measure.
+
+### Milestone graph for minimum-hours programs
+Minimum-hours plans (`course_plans.allow_overage = true`, which the Prof. Gu
+program uses) are milestone-driven, not hour-consumption driven. An hours
+progress ring implies the goal is to burn hours, which is the wrong target.
+
+- When `allow_overage` is true, `CourseHours.jsx` now renders a **milestone
+  overview**: "n of m milestones complete", the percentage, and a segmented
+  track with one segment per milestone, coloured by real status
+  (`completed` / `in_progress` / `not_started`). Hours appear only as a plain
+  total, with no bar and no remaining/overage framing.
+- Fixed-hours plans keep the original ring and hour stats unchanged.
+- In-progress milestones count half, matching `lib/portal/journeyProgress.js`,
+  so the two views agree.
+- Removed the now-unused `additionalMinutes` calculation.
+
+`npm run build` compiles; all `styles.*` references resolve, including the
+dynamic `segment_*` classes.

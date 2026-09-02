@@ -62,7 +62,7 @@ export default function StudentPortalShell({
         <div className={styles.mainInner}>
           <section className={styles.pageHeader}>
             <div>
-              <span className={styles.eyebrow}>{eyebrow}</span>
+              {eyebrow ? <span className={styles.eyebrow}>{eyebrow}</span> : null}
               <h1>{title}</h1>
               <p>{description}</p>
             </div>

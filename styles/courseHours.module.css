@@ -2,7 +2,7 @@
 .studentCard { margin-top: 32px; border: 1px solid #d9e2ee; border-radius: 24px; background: #fff; padding: clamp(28px, 4vw, 48px); box-shadow: 0 24px 65px rgba(15, 31, 64, .075); }
 .studentHeader { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
 .studentHeader h2 { margin-top: 8px; color: #102451; font-family: Fraunces, Georgia, serif; font-size: clamp(2rem, 2.8vw, 2.7rem); }
-.studentHeader p { max-width: 48rem; margin-top: 12px; color: #596b83; font-size: 16px; line-height: 1.7; }
+.studentHeader p { max-width: 68ch; margin-top: 12px; color: #475467; font-size: 16px; line-height: 1.68; }
 .enrollmentStatus { border-radius: 99px; background: #eaf3ff; color: #254c93; padding: 9px 14px; font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
 .progressOverview { display: grid; grid-template-columns: 180px minmax(0, 1fr); align-items: center; gap: clamp(28px, 4vw, 52px); margin-top: 34px; border: 1px solid #e2e8f1; border-radius: 22px; background: linear-gradient(135deg, #f9fbff, #f1f7fc); padding: clamp(24px, 3.5vw, 38px); }
 .progressRing { display: grid; width: 164px; height: 164px; place-items: center; border-radius: 50%; background: conic-gradient(#2541b2 0 var(--course-progress), #dce6f2 var(--course-progress) 360deg); box-shadow: 0 14px 34px rgba(37, 65, 178, .16); }
@@ -20,6 +20,26 @@
 .progressTrack { height: 12px; margin-top: 24px; overflow: hidden; border-radius: 99px; background: #dfe6ef; }
 .progressTrack span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #2541b2, #06bee1); transition: width 500ms ease; }
 .progressCaption { display: flex; justify-content: space-between; margin-top: 9px; color: #64738a; font-size: 13px; }
+
+/* Milestone-based programs (minimum-hours plans). Progress is expressed as
+   milestones reached, not hours consumed, so there is no hours bar here. */
+.milestoneOverview { margin-top: 30px; border: 1px solid #e2e8f1; border-radius: 20px; background: linear-gradient(135deg, #f9fbff, #f2f6fc); padding: clamp(22px, 3vw, 30px); }
+.milestoneOverviewHead { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.milestoneOverviewHead strong { display: block; color: #102451; font-family: Fraunces, Georgia, serif; font-size: clamp(1.25rem, 2vw, 1.6rem); font-weight: 650; line-height: 1.25; }
+.milestoneOverviewHead span { display: block; margin-top: 7px; color: #5b6b83; font-size: 14px; }
+.milestonePercent { flex: none; color: #2541b2; font-family: Fraunces, Georgia, serif; font-size: clamp(1.9rem, 3vw, 2.5rem); font-weight: 650; line-height: 1; font-variant-numeric: tabular-nums; }
+
+/* One segment per milestone: the shape of the track shows how many there are. */
+.segmentTrack { display: flex; gap: 5px; margin-top: 22px; }
+.segmentTrack > span { flex: 1; height: 10px; border-radius: 99px; background: #dde5ef; transition: background 320ms ease; }
+.segment_completed { background: linear-gradient(90deg, #2541b2, #3a6fd8) !important; }
+.segment_in_progress { background: linear-gradient(90deg, #3a6fd8, #06bee1) !important; }
+.segment_not_started { background: #dde5ef !important; }
+
+@media (max-width: 620px) {
+  .milestoneOverviewHead { flex-direction: column; gap: 10px; }
+  .segmentTrack { gap: 4px; }
+}
 .studentMilestones { margin-top: 30px; }
 .milestoneHeading { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; }
 .milestoneHeading h3 { margin-top: 6px; color: #1b2942; font-size: 21px; }

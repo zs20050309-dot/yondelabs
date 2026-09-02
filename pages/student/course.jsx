@@ -18,7 +18,6 @@ export default function CoursePage() {
       user={user}
       application={application}
       currentStudent={currentStudent}
-      eyebrow="Learning"
       title="My course"
       description="Follow your course hours, current milestone, modules, and completed classes in one place."
     >
