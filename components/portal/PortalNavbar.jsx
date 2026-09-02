@@ -20,7 +20,7 @@ function initials(value) {
   return parts.slice(0, 2).map((part) => part[0].toUpperCase()).join('')
 }
 
-export default function PortalNavbar({ user, studentPortal = false, portalId, programName }) {
+export default function PortalNavbar({ user, studentPortal = false, portalId, programName, accountStatus }) {
   const router = useRouter()
   const [logoError, setLogoError] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -107,7 +107,20 @@ export default function PortalNavbar({ user, studentPortal = false, portalId, pr
                 <div className={styles.profileMeta}>
                   <strong>{displayName}</strong>
                   {programName ? <span>{programName}</span> : null}
-                  {portalId ? <span className={styles.profilePortalId}>Portal ID {portalId}</span> : null}
+                  {portalId ? (
+                    <span className={styles.profileRow}>
+                      <span>Portal ID</span>
+                      <code className={styles.profilePortalId}>{portalId}</code>
+                    </span>
+                  ) : null}
+                  {accountStatus ? (
+                    <span className={styles.profileRow}>
+                      <span>Access</span>
+                      <span className={styles.profileStatus}>
+                        {accountStatus === 'active' ? 'Active' : accountStatus}
+                      </span>
+                    </span>
+                  ) : null}
                 </div>
                 <button type="button" role="menuitem" className={styles.profileAction} onClick={handleLogout}>
                   Log out

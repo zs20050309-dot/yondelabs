@@ -49,7 +49,7 @@ export default function ProgramOverview({ programName, plan, student }) {
               </div>
             ) : null}
             <div className={`${styles.callout} ${styles.calloutMuted}`}>
-              <span>Your project goal</span>
+              <span>Your Project Focus</span>
               <p>{projectGoal}</p>
             </div>
           </div>

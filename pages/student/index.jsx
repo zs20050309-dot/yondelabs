@@ -41,6 +41,7 @@ export default function StudentPortalHome() {
     <StudentPortalShell
       user={user}
       portalId={portalAccount?.portal_id}
+      accountStatus={portalAccount?.status}
       showProgramPill={false}
       application={application}
       currentStudent={currentStudent}
@@ -52,16 +53,6 @@ export default function StudentPortalHome() {
       {error ? <div className={styles.error}>{error}</div> : null}
       {!error ? (
         <>
-          {/* Deliberately quiet: identifiers are reference detail, not the
-              point of the page, so they sit as one small line rather than
-              three decorated tiles competing with the program itself. */}
-          <dl className={journeyStyles.identityBar} aria-label="Portal details">
-            {portalAccount?.portal_id ? (
-              <div><dt>Portal ID</dt><dd>{portalAccount.portal_id}</dd></div>
-            ) : null}
-            <div><dt>Access</dt><dd>Active</dd></div>
-          </dl>
-
           {/* Section order is the product spec's narrative and is deliberate:
               goal -> what I'm learning -> where I am -> who helps -> what
               happened -> my resources. Each section hides itself when empty.

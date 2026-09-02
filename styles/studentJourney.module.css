@@ -115,13 +115,15 @@
 }
 
 .lede {
-  max-width: 44rem;
+  /* No text-wrap: pretty here. It pulls words onto the last line to avoid an
+     orphan, which ended the first line early and left a visible gap mid
+     sentence. Plain wrapping fills each line before breaking. */
+  max-width: 68ch;
   margin: 14px 0 0;
   color: var(--ink-2);
   font-size: 1.02rem;
   font-weight: 400;
-  line-height: 1.68;
-  text-wrap: pretty;
+  line-height: 1.66;
 }
 
 .goalRow {
@@ -211,10 +213,9 @@
 }
 
 .moduleHead {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  display: flex;
   align-items: center;
-  gap: 8px 11px;
+  gap: 11px;
   border-bottom: 1px solid var(--line);
   padding: 18px 20px;
 }
@@ -237,18 +238,6 @@
   font-weight: 650;
   line-height: 1.35;
 }
-.modulePill {
-  grid-column: 2;
-  justify-self: start;
-  border-radius: 99px;
-  background: var(--sunken);
-  border: 1px solid var(--line);
-  padding: 3px 10px;
-  color: var(--ink-3);
-  font-size: 0.72rem;
-  font-weight: 600;
-}
-
 .topicList { margin: 0; padding: 12px 20px 18px; list-style: none; }
 .topicList li {
   display: flex;
@@ -260,8 +249,8 @@
   font-weight: 450;
   line-height: 1.5;
 }
-/* Neutral by design: topics carry no completion state in the data model. */
-.topicIcon { flex: none; margin-top: 2px; color: #7b8698; }
+/* Small neutral diamond — a marker, not a checkbox. */
+.topicIcon { flex: none; width: 13px; height: 13px; margin-top: 4px; color: #a4adbd; }
 
 /* --- Project journey --- */
 
@@ -548,28 +537,6 @@
   font-weight: 450;
   line-height: 1.65;
 }
-
-/* --- Identity bar --- */
-
-.identityBar { display: flex; flex-wrap: wrap; gap: 8px 10px; margin: 0; padding: 16px 0 0; }
-.identityBar > div {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  border: 1px solid var(--line);
-  border-radius: 99px;
-  background: var(--surface);
-  box-shadow: var(--sh-sm);
-  padding: 6px 14px;
-}
-.identityBar dt {
-  color: var(--ink-3);
-  font-size: 0.69rem;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-}
-.identityBar dd { margin: 0; color: var(--ink); font-size: 0.87rem; font-weight: 650; font-variant-numeric: tabular-nums; }
 
 /* --- Responsive --- */
 

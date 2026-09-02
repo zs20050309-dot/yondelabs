@@ -44,6 +44,7 @@ export default function StudentPortalShell({
   currentStudent,
   programName: programNameOverride,
   portalId,
+  accountStatus,
   showProgramPill = true,
   children,
 }) {
@@ -56,7 +57,7 @@ export default function StudentPortalShell({
 
   return (
     <div className={styles.page}>
-      <PortalNavbar user={user} studentPortal portalId={portalId} programName={programName} />
+      <PortalNavbar user={user} studentPortal portalId={portalId} programName={programName} accountStatus={accountStatus} />
       <main className={styles.main}>
         <div className={styles.mainInner}>
           <section className={styles.pageHeader}>

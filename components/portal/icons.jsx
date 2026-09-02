@@ -38,6 +38,13 @@ export const IconCadence = (p) => (
 export const IconCheckCircle = (p) => (
   <svg {...base} {...p}><circle cx="12" cy="12" r="8.5" /><path d="m8.6 12.2 2.3 2.3 4.5-4.7" /></svg>
 )
+// Neutral marker for Learning Map topics. Deliberately not a checkmark or
+// checkbox: these are knowledge areas the program covers, not items a student
+// ticks off, and a check glyph would imply completion tracking that does not
+// exist.
+export const IconTopic = (p) => (
+  <svg {...base} {...p}><path d="M12 6.5 17.5 12 12 17.5 6.5 12z" /></svg>
+)
 export const IconSearch = (p) => (
   <svg {...base} {...p}><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></svg>
 )

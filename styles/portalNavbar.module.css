@@ -304,7 +304,47 @@
   font-size: 0.81rem;
   line-height: 1.45;
 }
-.profilePortalId { font-variant-numeric: tabular-nums; }
+.profileRow {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 9px !important;
+}
+.profileRow > span:first-child {
+  color: #667085;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.profilePortalId {
+  border: 1px solid #eaecf0;
+  border-radius: 6px;
+  background: #f9fafb;
+  padding: 2px 7px;
+  color: #101828;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.profileStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #047857 !important;
+  font-size: 0.8rem !important;
+  font-weight: 650;
+  text-transform: capitalize;
+}
+.profileStatus::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #047857;
+}
 
 .profileAction {
   display: block;

@@ -3004,3 +3004,40 @@ transitions.
 `npm run build` compiled successfully; every `styles.*` reference across the
 seven portal components and the page resolves against its stylesheet.
 Not viewed in a browser — no Supabase credentials in this environment.
+
+### Moved: Portal ID and Access out of the dashboard
+Account identifiers are reference detail, not program content, so they no longer
+sit above Program Overview on `/student`.
+
+- Removed the identity bar from `pages/student/index.jsx`, and deleted its now
+  unused CSS block from `styles/studentJourney.module.css`.
+- Portal ID and Access moved into the **navbar profile dropdown**, which already
+  showed the student's name and program — one discoverable account menu rather
+  than identifiers competing with the program on the front screen. Portal ID is
+  set in monospace on a chip; Access shows a green status dot.
+- Threaded `accountStatus` through `StudentPortalShell` to `PortalNavbar`.
+
+`npm run build` compiles successfully.
+
+### Fix: learning-objective sentence breaking early
+The objective paragraph broke mid-sentence with a visible gap. Cause was
+`text-wrap: pretty` on `.lede`: it pulls words down to avoid an orphan on the
+last line, which ends the first line early. Removed it there and set the measure
+to `68ch`, so lines fill before breaking. Left `pretty` on the shorter prose
+blocks (phase focus, team bios, note bodies) where it still helps.
+
+### Copy: "Your project goal" → "Your Project Focus"
+Student-facing label in the Program Overview callout (`ProgramOverview.jsx`).
+The underlying column stays `current_students.project_goal`; only the display
+label changed, so the admin editor and seed are unaffected.
+
+### Learning Map: removed topic counts, changed bullet marker
+These are general knowledge areas the program covers, not a checklist students
+audit against what was taught. So:
+- Removed the section-level "N topics" pill and the per-card topic count
+  (`LearningMap.jsx`), and deleted the now-unused `.modulePill` style. The card
+  header is a simple flex row again.
+- Replaced the check-circle bullet with a new neutral `IconTopic` diamond
+  (`components/portal/icons.jsx`). A check glyph implied completion tracking
+  that does not exist in the schema.
+Milestone and session counts elsewhere are kept — those track real state.
