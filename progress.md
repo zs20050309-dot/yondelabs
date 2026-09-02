@@ -3162,3 +3162,43 @@ navbar is `position: relative` by design (per CLAUDE.md) and is unaffected.
 Worth a quick look at /apply, /dashboard, and /admin after deploying.
 
 `npm run build` compiles.
+
+## Session: 2026-09-02 - Admin read-only preview of a student's portal
+
+Admins needed to see what a given student (e.g. Emily) sees at `/student`, for
+testing and support.
+
+### Approach
+A **read-only preview**, not impersonation. No session is swapped and no student
+password is reset — the existing alternative (resetting portal credentials via
+`StudentPortalAccess` and logging in as the student) would have locked the
+student out of their own account and is poor practice.
+
+Admins already hold `is_yonde_admin()` RLS read access to every table behind the
+six sections, so the same components render from the admin's own session.
+Verified `admins_manage_student_files` exists too, so Additional Materials
+renders as well.
+
+### Added
+- `components/portal/StudentJourneyView.jsx` — the six sections extracted so
+  they render from data rather than from the logged-in session. **Shared by
+  `/student` and the preview**, so the preview cannot drift from the real
+  portal; a preview showing something different would be worse than none.
+- `pages/admin/student-preview/[id].jsx` — the preview route, with a sticky
+  amber "Read-only preview" banner naming the student, and a link back to admin.
+- `styles/adminPreview.module.css`.
+- "View student portal ↗" link in the student detail panel
+  (`components/admin/CurrentStudents.jsx`), opening in a new tab, plus
+  `.detailActions` / `.previewLink` / `.previewHint` styles.
+
+### Changed
+- `pages/student/index.jsx` now renders `StudentJourneyView` instead of listing
+  the sections inline.
+
+### Security
+Route protection is the existing `proxy.js` gate: `/admin/:path*` requires
+`role === 'admin'`, so a student or applicant hitting the URL is redirected. The
+page issues only reads; there is no write path and no credential exposure.
+
+`npm run build` compiles; `/admin/student-preview/[id]` is registered and all
+`styles.*` references resolve.

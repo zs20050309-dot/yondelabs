@@ -2,17 +2,10 @@ import StudentPortalShell, {
   PortalLoading,
   PROGRAM_LABELS,
 } from '../../components/portal/StudentPortalShell'
-import JourneySection from '../../components/portal/JourneySection'
-import ProgramOverview from '../../components/portal/ProgramOverview'
-import LearningMap from '../../components/portal/LearningMap'
-import ProjectJourney from '../../components/portal/ProjectJourney'
-import YourTeam from '../../components/portal/YourTeam'
-import SessionNotes from '../../components/portal/SessionNotes'
-import StudentFiles from '../../components/portal/StudentFiles'
+import StudentJourneyView from '../../components/portal/StudentJourneyView'
 import useStudentPortal from '../../lib/portal/useStudentPortal'
-import useStudentJourney, { derivePhaseStatuses } from '../../lib/portal/useStudentJourney'
+import useStudentJourney from '../../lib/portal/useStudentJourney'
 import styles from '../../styles/studentPortal.module.css'
-import journeyStyles from '../../styles/studentJourney.module.css'
 
 export default function StudentPortalHome() {
   const { user, application, currentStudent, portalAccount, loading, error } = useStudentPortal()
@@ -35,8 +28,6 @@ export default function StudentPortalHome() {
     || profile?.program
     || 'Your program'
 
-  const phases = derivePhaseStatuses(journey.phases, journey.milestones, journey.progress)
-
   return (
     <StudentPortalShell
       user={user}
@@ -52,34 +43,12 @@ export default function StudentPortalHome() {
     >
       {error ? <div className={styles.error}>{error}</div> : null}
       {!error ? (
-        <>
-          {/* Section order is the product spec's narrative and is deliberate:
-              goal -> what I'm learning -> where I am -> who helps -> what
-              happened -> my resources. Each section hides itself when empty.
-              The .journey wrapper carries the shared palette custom properties. */}
-          <div className={journeyStyles.journey}>
-            <ProgramOverview
-              programName={programName}
-              plan={journey.plan}
-              student={journey.studentProfile || currentStudent}
-            />
-            <LearningMap categories={journey.categories} />
-            <ProjectJourney phases={phases} />
-            <YourTeam team={journey.team} />
-            <SessionNotes notes={journey.notes} hasCourse={Boolean(journey.enrollment)} />
-
-            {profile ? (
-              <JourneySection eyebrow="Your resources" title="Additional Materials">
-                <StudentFiles
-                  applicationId={application?.id}
-                  currentStudentId={currentStudent?.id}
-                  showEmpty
-                  hideHeading
-                />
-              </JourneySection>
-            ) : null}
-          </div>
-        </>
+        <StudentJourneyView
+          journey={journey}
+          currentStudent={currentStudent}
+          applicationId={application?.id}
+          programName={programName}
+        />
       ) : null}
     </StudentPortalShell>
   )

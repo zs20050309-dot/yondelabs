@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import Link from 'next/link'
 import { CURRENT_STUDENT_PROGRAMS } from '../../lib/admin/currentStudents'
 import { formatHours, sumMinutes } from '../../lib/courseHours'
 import StudentCourseHours from './StudentCourseHours'
@@ -87,6 +88,17 @@ function CurrentStudentDetail({ student, onClose }) {
   return (
     <Modal label="Close student details" onClose={onClose}>
       <div className={styles.detailHeader}><div><span className={styles.eyebrow}>Current student</span><h2>{student.full_name}</h2><p>{student.contact_email || 'No contact email provided'}</p></div><button type="button" className={styles.iconButton} onClick={onClose} aria-label="Close">×</button></div>
+      <div className={styles.detailActions}>
+        <Link
+          href={`/admin/student-preview/${student.id}`}
+          className={styles.previewLink}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          View student portal ↗
+        </Link>
+        <span className={styles.previewHint}>Read-only. Opens in a new tab.</span>
+      </div>
       <div className={styles.detailMeta}><div><span>Program</span><strong>{CURRENT_STUDENT_PROGRAMS[student.program] || student.program || 'Not assigned'}</strong></div><div><span>Status</span><strong>{student.status}</strong></div><div><span>Portal ID</span><strong>{student.student_portal_accounts?.[0]?.portal_id || 'Not created'}</strong></div></div>
       <section className={styles.detailSection}><span className={styles.eyebrow}>Course</span><h3>{enrollment?.course_plans?.name || 'No plan assigned'}</h3>{enrollment ? <div className={styles.detailList}><p><span>Hours used</span><strong>{formatHours(used)}</strong></p><p><span>{enrollment.course_plans?.allow_overage ? 'Minimum hours' : 'Allocated hours'}</span><strong>{formatHours(enrollment.allocated_minutes)}</strong></p>{(enrollment.student_hour_allocations || []).map((item) => <p key={item.id}><span>{item.label}</span><strong>{formatHours(item.allocated_minutes)}</strong></p>)}</div> : null}</section>
       <StudentProjectFields currentStudent={student} />

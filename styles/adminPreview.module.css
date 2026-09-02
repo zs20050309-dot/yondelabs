@@ -1,0 +1,45 @@
+/* Banner for the admin read-only student-portal preview. Deliberately loud:
+   an admin must never mistake this for the live student experience or for an
+   editable surface. */
+
+.banner {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  border-bottom: 1px solid #b54708;
+  background: #fffaeb;
+  padding: 12px clamp(20px, 5vw, 84px);
+}
+.banner strong {
+  display: block;
+  color: #93370d;
+  font-size: 0.83rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.banner span {
+  display: block;
+  margin-top: 3px;
+  color: #7a4a12;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+.bannerBack {
+  flex: none;
+  border: 1px solid #b54708;
+  border-radius: 8px;
+  padding: 8px 14px;
+  color: #93370d;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.bannerBack:hover { background: #fef0c7; }
+
+.state { padding: 40px 0; color: #475467; font-size: 1rem; }

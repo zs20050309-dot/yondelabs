@@ -540,3 +540,18 @@
   font-weight: 700;
 }
 .roleEditForm button[type='submit'] { border-color: var(--accent); background: var(--accent); color: #fff; }
+
+/* Link to the read-only student-portal preview. */
+.detailActions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 18px 0 4px; }
+.previewLink {
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  padding: 9px 15px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.previewLink:hover { background: var(--surface-hover); border-color: var(--accent); color: var(--accent); }
+.previewHint { color: var(--text-muted); font-size: 12px; }
