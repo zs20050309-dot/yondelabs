@@ -4,15 +4,17 @@ import { useToast } from './ToastProvider'
 import styles from '../../styles/courseHours.module.css'
 
 /**
- * Per-student project area and goal.
+ * Student-level details: identity, school, and project.
  *
- * These are student-level rather than plan-level: several students share one
+ * These are per student rather than per plan — several students share one
  * program (e.g. Prof. Gu's) but each has their own project. An empty goal is
  * shown to the student as "Exploring Project Direction", so leaving it blank is
  * a valid state, not an incomplete one.
  */
 export default function StudentProjectFields({ currentStudent, onSaved }) {
   const showToast = useToast()
+  const [fullName, setFullName] = useState('')
+  const [contactEmail, setContactEmail] = useState('')
   const [school, setSchool] = useState('')
   const [stage, setStage] = useState('')
   const [projectArea, setProjectArea] = useState('')
@@ -26,13 +28,15 @@ export default function StudentProjectFields({ currentStudent, onSaved }) {
     async function load() {
       const { data, error: loadError } = await supabase
         .from('current_students')
-        .select('school, stage, project_area, project_goal')
+        .select('full_name, contact_email, school, stage, project_area, project_goal')
         .eq('id', currentStudent.id)
         .maybeSingle()
       if (!active) return
       if (loadError) {
         setError('Project fields are unavailable. Run the 2026-09-02 student journey migration.')
       } else {
+        setFullName(data?.full_name || '')
+        setContactEmail(data?.contact_email || '')
         setSchool(data?.school || '')
         setStage(data?.stage || '')
         setProjectArea(data?.project_area || '')
@@ -46,9 +50,15 @@ export default function StudentProjectFields({ currentStudent, onSaved }) {
 
   async function save(event) {
     event.preventDefault()
+    if (!fullName.trim()) {
+      setError('A full name is required.')
+      return
+    }
     setBusy(true)
     setError('')
     const { error: saveError } = await supabase.from('current_students').update({
+      full_name: fullName.trim(),
+      contact_email: contactEmail.trim() || null,
       school: school.trim() || null,
       stage: stage.trim() || null,
       project_area: projectArea.trim() || null,
@@ -56,9 +66,13 @@ export default function StudentProjectFields({ currentStudent, onSaved }) {
       updated_at: new Date().toISOString(),
     }).eq('id', currentStudent.id)
 
-    if (saveError) setError(saveError.message)
-    else {
-      showToast('Project details saved.')
+    if (saveError) {
+      // 23505 is the unique index on lower(contact_email).
+      setError(saveError.code === '23505'
+        ? 'Another student already uses that contact email.'
+        : saveError.message)
+    } else {
+      showToast('Student details saved.')
       if (onSaved) await onSaved()
     }
     setBusy(false)
@@ -69,10 +83,20 @@ export default function StudentProjectFields({ currentStudent, onSaved }) {
   return (
     <form className={styles.journeyEditor} onSubmit={save}>
       <div className={styles.editorSubheading}>
-        <div><span className={styles.eyebrow}>Student-facing</span><h3>Project details</h3></div>
+        <div><span className={styles.eyebrow}>Student-facing</span><h3>Student details</h3></div>
       </div>
       {error ? <div className={styles.adminError}>{error}</div> : null}
 
+      <div className={styles.dateRow}>
+        <label className={styles.stackedField}>
+          <span>Full name</span>
+          <input type="text" value={fullName} onChange={(event) => setFullName(event.target.value)} required />
+        </label>
+        <label className={styles.stackedField}>
+          <span>Contact email</span>
+          <input type="email" value={contactEmail} onChange={(event) => setContactEmail(event.target.value)} placeholder="Optional" />
+        </label>
+      </div>
       <div className={styles.dateRow}>
         <label className={styles.stackedField}>
           <span>School</span>
@@ -104,7 +128,7 @@ export default function StudentProjectFields({ currentStudent, onSaved }) {
       <p className={styles.assignHint}>
         A blank goal is shown to the student as &quot;Exploring Project Direction&quot;.
       </p>
-      <button type="submit" disabled={busy}>{busy ? 'Saving…' : 'Save project details'}</button>
+      <button type="submit" disabled={busy}>{busy ? 'Saving…' : 'Save student details'}</button>
     </form>
   )
 }

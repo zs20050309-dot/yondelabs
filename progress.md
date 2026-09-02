@@ -3109,3 +3109,36 @@ Removed with it:
 
 `npm run build` compiles; every `styles.*` reference in the restored component
 resolves, including the `phase_*` and `milestone_*` variants.
+
+### Admin: student name and contact email are now editable
+There was no way to rename a current student — `full_name` could only be set at
+creation. `components/admin/StudentProjectFields.jsx` (retitled "Student
+details") now edits full name and contact email alongside school, stage, and
+project fields, with 23505 mapped to a readable duplicate-email message.
+
+Also renamed Clementine Li → Alex Han in
+`docs/sql/seeds/2026-09-02_seed_prof_gu_program.sql`, and gave that student the
+project area "AI × Rehabilitation" per the spec's initial student data. Goal
+stays null, so the portal shows "Exploring Project Direction". CLAUDE.md's
+pending entry updated to match.
+
+`npm run build` compiles.
+
+### Re-reverted: Project Journey back to the interactive card version
+Restored `components/portal/ProjectJourney.jsx` and
+`lib/portal/journeyProgress.js` from commit `334fd87` — the summary card
+(percentage, "n of m milestones complete", meter, current phase, next
+milestone) plus expandable phase cards with status chips and milestone
+checklists.
+
+The stylesheet was **not** wholesale reverted, because it also carried two
+changes that had to survive: the removed topic counts (`.modulePill`) and the
+neutral diamond `.topicIcon`. Only the Project Journey block, the shared card
+selector, the card mobile rules, and the reduced-motion entries were swapped
+back. Verified after the fact that `.modulePill` is still absent, the diamond
+marker is intact, and `LearningMap.jsx` still renders no counts.
+
+Kept the `project-journey` anchor id the nav Milestones link targets.
+
+`npm run build` compiles; all `styles.*` references resolve, including the
+`card_*`, `chip_*`, and `meterFill_*` variants.

@@ -179,9 +179,9 @@ begin
        'Build a working demo prototype for an AI-powered fashion venture.'),
       ('Emily Wei',    'Appleby College',  'Rising Sophomore', 'AI × Fashion',
        'Build a working demo prototype for an AI-powered fashion venture.'),
-      -- Clementine Li has no project details in the spec. Left null on purpose:
-      -- the portal renders an unset goal as "Exploring Project Direction".
-      ('Clementine Li', null,              null,               null, null)
+      -- Alex Han: the spec gives a project area but no confirmed goal, so the
+      -- goal is left null and the portal renders "Exploring Project Direction".
+      ('Alex Han',      null,              null,               'AI × Rehabilitation', null)
     ) as t(full_name, school, stage, project_area, project_goal)
   loop
     -- These three were already entered in the admin portal, so the match is
