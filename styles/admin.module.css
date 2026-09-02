@@ -499,3 +499,44 @@
   .needsPaymentToggle { margin: 10px 0 0; }
   .toProcessSection, .historyDisclosure { padding: 15px; }
 }
+
+/* Inline edit for the mentor role shown on the student's Team card. */
+.roleEditLink {
+  margin-left: 9px;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: underline;
+}
+.roleEditLink:hover { color: var(--text-primary); }
+
+.roleEditForm { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 5px; }
+.roleEditForm input {
+  flex: 1 1 190px;
+  min-width: 0;
+  height: 30px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  padding: 0 9px;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+}
+.roleEditForm button {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 5px 10px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+}
+.roleEditForm button[type='submit'] { border-color: var(--accent); background: var(--accent); color: #fff; }

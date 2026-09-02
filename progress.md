@@ -3076,3 +3076,36 @@ progress ring implies the goal is to burn hours, which is the wrong target.
 
 `npm run build` compiles; all `styles.*` references resolve, including the
 dynamic `segment_*` classes.
+
+### Admin: mentor role is now editable
+The role under a mentor’s name on the student Team card came from
+`student_mentor_assignments.role` and could only be set at assignment creation —
+changing it meant removing and re-adding the mentor, losing payment settings.
+`MentorAssignments.jsx` now has an inline **Edit** on the role, saving straight
+to the assignment and updating the list without a reload. Styles in
+`admin.module.css` (`.roleEditLink`, `.roleEditForm`).
+
+Note: `role` is `not null check (char_length(trim(role)) > 0)`, so it can be
+changed but not blanked. Hiding the role line entirely would need either a
+schema change or a conditional in `YourTeam.jsx`.
+
+### Reverted: Project Journey back to the vertical timeline
+Restored `components/portal/ProjectJourney.jsx` from commit `61824ff` — the
+continuous rail with one marker per phase, the current phase lifted onto a
+raised card, and milestones as inline dotted labels. Kept the `project-journey`
+anchor id the nav links target.
+
+The timeline CSS was reinstated in `styles/studentJourney.module.css` but
+**re-expressed in the current design tokens** (indigo accent, `#101828` ink,
+shared shadow scale) rather than the old teal hex values, so it matches the rest
+of the portal rather than reintroducing the previous palette.
+
+Removed with it:
+- the summary card, meters, status chips, expandable phase cards, and milestone
+  checklist styles, plus their now-dead mobile rules and the `reveal` keyframe;
+- `lib/portal/journeyProgress.js`, which nothing referenced any more —
+  `CourseHours.jsx` computes its own milestone percentage. Recoverable from git
+  if the summary is ever wanted back.
+
+`npm run build` compiles; every `styles.*` reference in the restored component
+resolves, including the `phase_*` and `milestone_*` variants.

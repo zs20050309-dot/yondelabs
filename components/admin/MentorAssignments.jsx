@@ -5,8 +5,10 @@ import { useConfirm } from './ConfirmProvider'
 import { amountToCents, centsToAmount, PAYMENT_TYPE_LABELS } from '../../lib/admin/mentorPayments'
 import styles from '../../styles/admin.module.css'
 
-function AssignmentRow({ assignment, milestones, rates, onRemoved, onSettingsSaved, onRatesSaved }) {
+function AssignmentRow({ assignment, milestones, rates, onRemoved, onSettingsSaved, onRatesSaved, onRoleSaved }) {
   const confirm = useConfirm()
+  const [editingRole, setEditingRole] = useState(false)
+  const [roleDraft, setRoleDraft] = useState(assignment.role)
   const [paymentType, setPaymentType] = useState(assignment.settings?.payment_type || 'milestone')
   const [hourlyRate, setHourlyRate] = useState(centsToAmount(assignment.settings?.hourly_rate_cents))
   const [milestoneRates, setMilestoneRates] = useState(() =>
@@ -14,6 +16,25 @@ function AssignmentRow({ assignment, milestones, rates, onRemoved, onSettingsSav
   )
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+
+  // Role is what the student sees under the mentor's name on their Team card.
+  async function saveRole(event) {
+    event.preventDefault()
+    const next = roleDraft.trim()
+    if (!next || next === assignment.role) { setEditingRole(false); return }
+    setBusy(true)
+    setError('')
+    const { error: saveError } = await supabase
+      .from('student_mentor_assignments')
+      .update({ role: next })
+      .eq('id', assignment.id)
+    if (saveError) setError(saveError.message)
+    else {
+      setEditingRole(false)
+      if (onRoleSaved) onRoleSaved(assignment.id, next)
+    }
+    setBusy(false)
+  }
 
   async function removeAssignment() {
     const ok = await confirm({ title: 'Remove mentor', message: `Remove ${assignment.mentors?.name} as ${assignment.role} for this student?`, danger: true, confirmLabel: 'Remove' })
@@ -85,7 +106,24 @@ function AssignmentRow({ assignment, milestones, rates, onRemoved, onSettingsSav
       <div className={styles.mentorAssignmentHeading}>
         <div>
           <strong>{assignment.mentors?.name}</strong>
-          <span>{assignment.role}</span>
+          {editingRole ? (
+            <form className={styles.roleEditForm} onSubmit={saveRole}>
+              <input
+                type="text"
+                value={roleDraft}
+                onChange={(event) => setRoleDraft(event.target.value)}
+                aria-label="Mentor role shown to the student"
+                autoFocus
+              />
+              <button type="submit" disabled={busy}>Save</button>
+              <button type="button" onClick={() => { setRoleDraft(assignment.role); setEditingRole(false) }}>Cancel</button>
+            </form>
+          ) : (
+            <span>
+              {assignment.role}
+              <button type="button" className={styles.roleEditLink} onClick={() => setEditingRole(true)}>Edit</button>
+            </span>
+          )}
         </div>
         <button type="button" className={styles.iconButton} onClick={removeAssignment} disabled={busy} aria-label="Remove mentor">×</button>
       </div>
@@ -145,6 +183,12 @@ export default function MentorAssignments({ currentStudent }) {
   const [role, setRole] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+
+  function handleRoleSaved(assignmentId, role) {
+    setAssignments((current) => current.map((item) => (
+      item.id === assignmentId ? { ...item, role } : item
+    )))
+  }
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -267,6 +311,7 @@ export default function MentorAssignments({ currentStudent }) {
             onRemoved={handleRemoved}
             onSettingsSaved={handleSettingsSaved}
             onRatesSaved={handleRatesSaved}
+            onRoleSaved={handleRoleSaved}
           />
         ))}
         {!assignments.length ? <p className={styles.portalAccessMuted}>No mentors assigned yet.</p> : null}
