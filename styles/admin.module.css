@@ -318,11 +318,12 @@
 .mentorAssignmentHeading strong, .mentorAssignmentHeading span { display: block; }
 .mentorAssignmentHeading strong { color: var(--text-primary); font-size: 14px; }
 .mentorAssignmentHeading span { margin-top: 3px; color: var(--text-muted); font-size: 12px; }
-.mentorPaymentForm, .addMentorForm, .manualLineForm { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; margin-top: 12px; }
-.mentorPaymentForm label, .addMentorForm label, .manualLineForm label { display: grid; gap: 5px; min-width: 140px; color: var(--text-secondary); font-size: 12px; font-weight: 700; }
+.mentorPaymentForm, .addMentorForm, .manualLineForm, .addStudentForm { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; margin-top: 12px; }
+.mentorPaymentForm label, .addMentorForm label, .manualLineForm label, .addStudentForm label { display: grid; gap: 5px; min-width: 140px; color: var(--text-secondary); font-size: 12px; font-weight: 700; }
 .mentorPaymentForm input, .mentorPaymentForm select,
 .addMentorForm input, .addMentorForm select,
-.manualLineForm input, .manualLineForm select {
+.manualLineForm input, .manualLineForm select,
+.addStudentForm input, .addStudentForm select {
   height: 36px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); padding: 0 10px; color: var(--text-primary); font: inherit; font-size: 13px;
 }
 .milestoneRateGrid { display: grid; gap: 10px; margin-top: 12px; border-top: 1px solid var(--border); padding-top: 12px; }
@@ -354,6 +355,10 @@
 .markPaidForm input { height: 36px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); color: var(--text-primary); padding: 0 10px; font: inherit; font-size: 13px; }
 .markPaidForm > div { display: flex; gap: 8px; margin-left: auto; }
 .manualLineForm { border-top: 1px solid var(--border); margin-top: 16px; padding-top: 16px; }
+
+.addStudentBar { display: flex; align-items: flex-end; gap: 10px; border-bottom: 1px solid var(--border); padding: 14px 16px; }
+.addStudentForm { flex: 1; margin-top: 0; }
+.addStudentForm .inlineError { flex-basis: 100%; margin: 2px 0 0; }
 
 .paymentsSummaryBar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 30px 0 18px; }
 .paymentsSummaryCard { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); padding: 18px 20px; }

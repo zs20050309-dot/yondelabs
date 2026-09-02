@@ -16,7 +16,10 @@ function formatDate(value) {
   })
 }
 
-export default function StudentFiles({ applicationId, currentStudentId, showEmpty = false }) {
+// hideHeading is used by the journey page at /student, where the surrounding
+// JourneySection already titles this block "Additional Materials". Defaults to
+// false so the standalone /student/files page is unchanged.
+export default function StudentFiles({ applicationId, currentStudentId, showEmpty = false, hideHeading = false }) {
   const [enrollments, setEnrollments] = useState([])
   const [loading, setLoading] = useState(true)
   const [busyId, setBusyId] = useState(null)
@@ -113,16 +116,18 @@ export default function StudentFiles({ applicationId, currentStudentId, showEmpt
 
   return (
     <section className={styles.studentSection}>
-      <div className={styles.studentHeading}>
-        <div>
-          <span>Course resources</span>
-          <h2>Files and materials</h2>
-          <p>Documents, templates, and feedback shared with you by the Yonde Labs team.</p>
+      {hideHeading ? null : (
+        <div className={styles.studentHeading}>
+          <div>
+            <span>Course resources</span>
+            <h2>Files and materials</h2>
+            <p>Documents, templates, and feedback shared with you by the Yonde Labs team.</p>
+          </div>
+          <span className={styles.studentCount} aria-label={`${files.length} files`}>
+            {files.length}
+          </span>
         </div>
-        <span className={styles.studentCount} aria-label={`${files.length} files`}>
-          {files.length}
-        </span>
-      </div>
+      )}
 
       {files.length ? (
         <div className={styles.fileToolbar}>

@@ -221,6 +221,10 @@ docs/                   ← Guides, SQL migrations, AI context
 
 ## Currently Pending
 
+- [ ] **Run Supabase migration** for the student journey — `docs/sql/migrations/2026-09-02_add_student_journey.sql`. Adds Program Overview fields, Learning Map, Project Journey phases, mentor responsibility/timezone, and Session Notes. The six new `/student` sections stay hidden until this is applied (each query degrades independently, so the portal keeps working without it).
+- [ ] **Build admin authoring UI for the journey content** — the 2026-09-02 student-journey schema has no staff editor yet, so Learning Map / phases / session notes / program-overview fields cannot be entered. See `docs/student-portal-v1-upgrade-plan.md`.
+- [ ] **Run Supabase migration** to make `current_students.program` optional — `docs/sql/migrations/2026-09-02_allow_unassigned_current_student_program.sql`. The admin "Add student" form can leave program unassigned; until this is applied, adding a student without a program fails on the NOT NULL constraint.
+- [ ] **Run seed script** `docs/sql/seeds/2026-09-02_add_four_current_students.sql` — adds Clementine Li, Emily Wei, Cici Fu, Alex HanWeici. Run after the migration above. (Data, not schema; `docs/sql/seeds/` is new.)
 - [ ] **Run Supabase migration** for the mentor adjustment log — `docs/sql/migrations/2026-08-26_add_mentor_adjustment_log.sql` (after the 2026-08-13 migration). Adding/deleting manual adjustments and the "Adjustment log" section in the mentor panel won't work until this is applied.
 - [ ] **Run Supabase migration** for mentor payments — `docs/sql/migrations/2026-08-13_add_mentor_payments.sql` (after the 2026-08-12 migration). Mentor payment settings/records and the "Mentor payments" admin tab won't work until this is applied; each mentor assignment also needs a payment type + rate set before milestone/session logging generates payable lines.
 - [ ] **Run Supabase migration** for `draft` status — `docs/sql/migrations/2026-05-24_add_draft_status.sql`, guide at `docs/supabase-migration-guide.md`. New form submissions will fail at the DB CHECK constraint until this is run.

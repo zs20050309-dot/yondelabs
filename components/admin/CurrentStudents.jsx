@@ -4,6 +4,7 @@ import { formatHours, sumMinutes } from '../../lib/courseHours'
 import StudentCourseHours from './StudentCourseHours'
 import StudentFiles from './StudentFiles'
 import StudentPortalAccess from './StudentPortalAccess'
+import AddCurrentStudent from './AddCurrentStudent'
 import MentorAssignments from './MentorAssignments'
 import styles from '../../styles/admin.module.css'
 
@@ -12,7 +13,7 @@ function currentEnrollment(student) {
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]
 }
 
-export default function CurrentStudents({ students, loading }) {
+export default function CurrentStudents({ students, loading, onStudentsChanged }) {
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState('all')
   const [selected, setSelected] = useState(null)
@@ -21,7 +22,7 @@ export default function CurrentStudents({ students, loading }) {
     const needle = query.trim().toLowerCase()
     return students.filter((student) => {
       const mentors = (student.student_mentor_assignments || []).map((item) => item.mentors?.name).join(' ')
-      const haystack = `${student.full_name} ${student.contact_email || ''} ${CURRENT_STUDENT_PROGRAMS[student.program] || student.program} ${mentors}`.toLowerCase()
+      const haystack = `${student.full_name} ${student.contact_email || ''} ${CURRENT_STUDENT_PROGRAMS[student.program] || student.program || ''} ${mentors}`.toLowerCase()
       return (status === 'all' || student.status === status) && (!needle || haystack.includes(needle))
     })
   }, [query, status, students])
@@ -41,6 +42,9 @@ export default function CurrentStudents({ students, loading }) {
             <option value="archived">Archived</option>
           </select>
         </div>
+        <div className={styles.addStudentBar}>
+          <AddCurrentStudent onCreated={onStudentsChanged} />
+        </div>
         <div className={styles.tableWrap}>
           <table>
             <thead><tr><th>Student</th><th>Program</th><th>Mentors</th><th>Course hours</th><th>Status</th><th><span className={styles.srOnly}>Actions</span></th></tr></thead>
@@ -52,7 +56,7 @@ export default function CurrentStudents({ students, loading }) {
                 return (
                   <tr key={student.id}>
                     <td data-label="Student"><button type="button" className={styles.studentLink} onClick={() => setSelected(student)}><strong>{student.full_name}</strong><span>{student.contact_email || 'Portal ID login only'}</span></button></td>
-                    <td data-label="Program">{CURRENT_STUDENT_PROGRAMS[student.program] || student.program}</td>
+                    <td data-label="Program">{CURRENT_STUDENT_PROGRAMS[student.program] || student.program || <span className={styles.noCourse}>Not assigned</span>}</td>
                     <td data-label="Mentors">{mentorNames.join(', ') || 'Not assigned'}</td>
                     <td data-label="Course hours">{enrollment ? <span className={styles.courseHoursCell}><strong>{formatHours(used)}</strong><span> / {formatHours(enrollment.allocated_minutes)}{enrollment.course_plans?.allow_overage ? ' minimum' : ''}</span></span> : <span className={styles.noCourse}>Not assigned</span>}</td>
                     <td data-label="Status"><span className={`${styles.status} ${styles[`studentStatus_${student.status}`]}`}>{student.status}</span></td>
@@ -81,7 +85,7 @@ function CurrentStudentDetail({ student, onClose }) {
   return (
     <Modal label="Close student details" onClose={onClose}>
       <div className={styles.detailHeader}><div><span className={styles.eyebrow}>Current student</span><h2>{student.full_name}</h2><p>{student.contact_email || 'No contact email provided'}</p></div><button type="button" className={styles.iconButton} onClick={onClose} aria-label="Close">×</button></div>
-      <div className={styles.detailMeta}><div><span>Program</span><strong>{CURRENT_STUDENT_PROGRAMS[student.program]}</strong></div><div><span>Status</span><strong>{student.status}</strong></div><div><span>Portal ID</span><strong>{student.student_portal_accounts?.[0]?.portal_id || 'Not created'}</strong></div></div>
+      <div className={styles.detailMeta}><div><span>Program</span><strong>{CURRENT_STUDENT_PROGRAMS[student.program] || student.program || 'Not assigned'}</strong></div><div><span>Status</span><strong>{student.status}</strong></div><div><span>Portal ID</span><strong>{student.student_portal_accounts?.[0]?.portal_id || 'Not created'}</strong></div></div>
       <section className={styles.detailSection}><span className={styles.eyebrow}>Course</span><h3>{enrollment?.course_plans?.name || 'No plan assigned'}</h3>{enrollment ? <div className={styles.detailList}><p><span>Hours used</span><strong>{formatHours(used)}</strong></p><p><span>{enrollment.course_plans?.allow_overage ? 'Minimum hours' : 'Allocated hours'}</span><strong>{formatHours(enrollment.allocated_minutes)}</strong></p>{(enrollment.student_hour_allocations || []).map((item) => <p key={item.id}><span>{item.label}</span><strong>{formatHours(item.allocated_minutes)}</strong></p>)}</div> : null}</section>
       <MentorAssignments currentStudent={student} />
       <StudentCourseHours currentStudent={student} />

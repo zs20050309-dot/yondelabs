@@ -1,0 +1,345 @@
+/*
+ * Student journey sections for /student.
+ * Extends the visual language already established in studentPortal.module.css
+ * (Fraunces headings, Manrope body, navy #0b1f49, teal eyebrow #177ba1) rather
+ * than introducing a second system. Generous whitespace, minimal decoration.
+ */
+
+.section {
+  padding: clamp(40px, 5vw, 72px) 0;
+  border-bottom: 1px solid #dce3ed;
+}
+.section:last-child { border-bottom: 0; }
+
+.sectionHeader { margin-bottom: clamp(24px, 3vw, 38px); }
+
+.sectionEyebrow {
+  display: block;
+  color: #177ba1;
+  font-size: 0.78rem;
+  font-weight: 850;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.sectionHeader h2 {
+  margin: 10px 0 0;
+  color: #0b1f49;
+  font-family: Fraunces, Georgia, serif;
+  font-size: clamp(1.9rem, 3vw, 2.7rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+/* --- Program overview --- */
+
+.lede {
+  max-width: 46rem;
+  margin: 0 0 26px;
+  color: #34435e;
+  font-size: clamp(1.08rem, 1.5vw, 1.24rem);
+  line-height: 1.7;
+}
+
+.capstone {
+  max-width: 46rem;
+  margin: 0 0 30px;
+  border-left: 2px solid #73c6da;
+  padding: 2px 0 2px 20px;
+}
+.capstone span {
+  color: #177ba1;
+  font-size: 0.76rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.capstone p {
+  margin: 8px 0 0;
+  color: #13213b;
+  font-family: Fraunces, Georgia, serif;
+  font-size: clamp(1.15rem, 1.8vw, 1.45rem);
+  line-height: 1.45;
+}
+
+.overviewGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 26px 40px;
+  margin: 0;
+}
+.overviewGrid dt {
+  color: #6b7d95;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.overviewGrid dd {
+  margin: 8px 0 0;
+  color: #13213b;
+  font-size: 1.04rem;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+/* --- Learning map --- */
+
+.mapGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 28px;
+}
+
+.mapCategory {
+  border-top: 2px solid #0b1f49;
+  padding-top: 20px;
+}
+.mapCategory h3 {
+  margin: 0 0 16px;
+  color: #0b1f49;
+  font-family: Fraunces, Georgia, serif;
+  font-size: 1.28rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.mapCategory ul { margin: 0; padding: 0; list-style: none; }
+.mapCategory li {
+  padding: 9px 0;
+  border-bottom: 1px solid #e6ecf4;
+  color: #44566f;
+  font-size: 0.99rem;
+  line-height: 1.5;
+}
+.mapCategory li:last-child { border-bottom: 0; }
+
+/* --- Project journey --- */
+
+.timeline { margin: 0; padding: 0; list-style: none; }
+
+.phase {
+  position: relative;
+  padding: 0 0 34px 34px;
+}
+.phase::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  bottom: -4px;
+  left: 6px;
+  width: 1px;
+  background: #d3dced;
+}
+.phase:last-child::before { display: none; }
+
+.phaseMarker {
+  position: absolute;
+  top: 7px;
+  left: 0;
+  width: 13px;
+  height: 13px;
+  border: 2px solid #c2cee0;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.phaseTop {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 7px;
+}
+.phaseIndex {
+  color: #6b7d95;
+  font-size: 0.76rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.phaseStatus {
+  border-radius: 99px;
+  background: #eef2f8;
+  padding: 3px 11px;
+  color: #6b7d95;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.phaseBody h3 {
+  margin: 0;
+  color: #0b1f49;
+  font-family: Fraunces, Georgia, serif;
+  font-size: clamp(1.25rem, 2vw, 1.6rem);
+  font-weight: 700;
+  line-height: 1.25;
+}
+.phaseDuration {
+  margin: 7px 0 0;
+  color: #177ba1;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.phaseFocus {
+  max-width: 44rem;
+  margin: 12px 0 0;
+  color: #53657e;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.milestones {
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+}
+.milestones li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #53657e;
+  font-size: 0.95rem;
+}
+.milestoneDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #c2cee0;
+}
+.milestone_completed { color: #188252; }
+.milestone_completed .milestoneDot { background: #188252; }
+.milestone_in_progress { color: #13213b; font-weight: 700; }
+.milestone_in_progress .milestoneDot { background: #177ba1; }
+
+/* Current phase is deliberately dominant; the others recede. */
+.phase_current .phaseMarker { border-color: #177ba1; background: #177ba1; box-shadow: 0 0 0 5px rgba(23, 123, 161, 0.14); }
+.phase_current .phaseStatus { background: #e4f4f9; color: #12667f; }
+.phase_current .phaseBody {
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 18px 44px -30px rgba(11, 31, 73, 0.42);
+  padding: 24px 26px;
+  margin-top: -12px;
+}
+.phase_completed .phaseMarker { border-color: #188252; background: #188252; }
+.phase_completed .phaseStatus { background: #e8f8ef; color: #188252; }
+.phase_upcoming .phaseBody h3 { color: #44566f; }
+.phase_upcoming .phaseFocus { color: #6b7d95; }
+
+/* --- Your team --- */
+
+.teamGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 22px;
+}
+
+.teamCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border: 1px solid #e2e8f1;
+  border-radius: 20px;
+  background: #fff;
+  padding: 28px 26px;
+}
+.teamCard h3 {
+  margin: 0;
+  color: #0b1f49;
+  font-family: Fraunces, Georgia, serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+.teamRole {
+  margin-top: 6px;
+  color: #177ba1;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+.teamCard p {
+  margin: 15px 0 0;
+  color: #53657e;
+  font-size: 0.98rem;
+  line-height: 1.65;
+}
+.teamTimezone {
+  margin-top: 18px;
+  border-top: 1px solid #eef2f8;
+  padding-top: 14px;
+  width: 100%;
+  color: #6b7d95;
+  font-size: 0.86rem;
+}
+
+/* --- Session notes --- */
+
+.noteList { border-top: 1px solid #e2e8f1; }
+
+.note { border-bottom: 1px solid #e2e8f1; }
+.note > summary {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  padding: 20px 4px;
+  cursor: pointer;
+  list-style: none;
+}
+.note > summary::-webkit-details-marker { display: none; }
+.note > summary:hover .noteTitle { color: #177ba1; }
+
+.noteDate {
+  flex: none;
+  min-width: 8.5rem;
+  color: #6b7d95;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+.noteTitle {
+  flex: 1;
+  color: #13213b;
+  font-size: 1.06rem;
+  font-weight: 700;
+  transition: color 140ms ease;
+}
+.noteTitle em { color: #6b7d95; font-style: normal; font-weight: 500; }
+.noteChevron {
+  flex: none;
+  color: #98a7bd;
+  transition: transform 160ms ease;
+}
+.note[open] .noteChevron { transform: rotate(180deg); }
+
+.noteBody {
+  padding: 0 4px 26px;
+  max-width: 48rem;
+}
+.noteBody p {
+  margin: 0;
+  color: #44566f;
+  font-size: 1.02rem;
+  line-height: 1.8;
+  white-space: pre-line;
+}
+
+.emptyNote { color: #6b7d95; font-size: 1rem; line-height: 1.7; }
+
+/* --- Responsive --- */
+
+@media (max-width: 720px) {
+  .section { padding: 34px 0; }
+  .mapGrid, .teamGrid { grid-template-columns: 1fr; gap: 22px; }
+  .overviewGrid { grid-template-columns: 1fr; gap: 20px; }
+  .phase { padding-left: 26px; }
+  .phase_current .phaseBody { padding: 20px; margin-top: -8px; }
+  .milestones { flex-direction: column; gap: 8px; }
+  /* Date stacks above the title so long titles keep a readable measure. */
+  .note > summary { flex-wrap: wrap; gap: 4px 12px; padding: 17px 4px; }
+  .noteDate { min-width: 100%; order: -1; }
+  .noteTitle { flex: 1 1 auto; font-size: 1rem; }
+}

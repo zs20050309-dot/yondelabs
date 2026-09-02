@@ -2473,3 +2473,215 @@ User requested an enrolled-student portal with credentials separate from the app
 - Not exercised against a live database: the underlying 2026-08-13 mentor
   payments migration has not been run either, so neither the RPCs nor the log
   table exist yet. The SQL is unverified until both migrations are applied.
+
+## Session: 2026-09-02 - Add student to the admin portal
+
+### Context
+Request was to add five new student accounts through the admin portal. Tracing
+the code first showed the portal has **no create-student path at all**:
+`components/admin/CurrentStudents.jsx` was read-only (search/filter/detail) and
+`pages/admin/index.jsx` only ever `select`s from `current_students`. Until now
+the single way a `current_students` row came into existence was the conversion
+RPC in `2026-08-02_convert_applications_to_current_students.sql`, i.e. only
+students who arrived through an application.
+
+The schema always anticipated the other case — `current_students.source`
+defaults to `'manual'`, documented in the 2026-08-01 migration as "students who
+did not enter through applications" — but nothing was ever built to write those
+rows. This session builds it.
+
+### Added
+- `components/admin/AddCurrentStudent.jsx` — collapsed "Add student" button that
+  expands to an inline form (full name, contact email, program, status) on the
+  Current students tab. Inserts directly with `source: 'manual'` and
+  `created_by` set to the acting admin, toasts on success, then calls back to
+  reload the roster.
+- `.addStudentBar` / `.addStudentForm` in `styles/admin.module.css`; the form
+  fields reuse the existing `.mentorPaymentForm`/`.addMentorForm`/
+  `.manualLineForm` rule group rather than duplicating field styling.
+
+### Changed
+- `components/admin/CurrentStudents.jsx` — takes a new `onStudentsChanged` prop
+  and renders the add bar between the toolbar and the table.
+- `pages/admin/index.jsx` — passes `onStudentsChanged={loadCurrentStudents}` so
+  a new student appears immediately without a page reload.
+
+### Decisions
+- **Client-side insert, no API route.** RLS policy `admins_manage_current_students`
+  is `for all ... with check (public.is_yonde_admin())`, so an authenticated
+  admin can insert under the anon key. No service-role privilege is needed, so
+  this stays out of `pages/api/admin/**`, matching how `MentorAssignments.jsx`
+  and `MentorPayments.jsx` already write.
+- **Program options come from `CURRENT_STUDENT_PROGRAMS`** rather than a local
+  list. All five of its values (`ra`, `isef`, `irp`, `passion-project`,
+  `portfolio-project`) are accepted by the `current_students_program_check`
+  constraint as widened by the 2026-08-02 migration, so the dropdown cannot
+  offer a value the DB rejects.
+- Postgres `23505` is mapped to a readable message, since
+  `idx_current_students_email` is a unique index on `lower(contact_email)` and a
+  duplicate email is the most likely operator error.
+- Contact email left optional — the column is nullable and the roster already
+  renders "Portal ID login only" for students without one.
+
+### Verification
+- **`npm run build` was NOT run — no Node runtime or `node_modules` exists in
+  this environment (`npm: command not found`).** This is the repo's only
+  correctness check, so these changes are unverified beyond manual review and a
+  clean `git diff --check`. Build before deploying.
+- Not exercised against a live database: no `.env.local` and no Supabase env
+  vars here, so the insert path has not actually been run.
+
+### Follow-up (same day, second pass)
+Clarified: it is **four** students, not five, and both the program and the
+course plan are to be created by admins later.
+
+- Course plan needed no work — it was already assignable after the fact
+  (`StudentCourseHours.jsx:142` creates the enrollment with an admin-editable
+  `allocated_minutes`, `student_hour_allocations` gives per-module custom
+  hours, and an unassigned student simply renders "Not assigned"). The add form
+  correctly never asked for one.
+- Program *did* need work: `current_students.program` was `NOT NULL`, so a
+  student could not exist before their program was decided. Made it optional.
+
+#### Added
+- `docs/sql/migrations/2026-09-02_allow_unassigned_current_student_program.sql`
+  — drops NOT NULL on `current_students.program`. The existing
+  `current_students_program_check` is deliberately left alone: `null in (...)`
+  evaluates to null and a CHECK only rejects on false, so null passes while
+  non-null values stay restricted to the five known programs.
+- `docs/sql/seeds/` (new directory) +
+  `2026-09-02_add_four_current_students.sql` — inserts Clementine Li, Emily Wei,
+  Cici Fu, and Alex HanWeici (`annalisazwc@gmail.com`) with program null,
+  status active, source manual. Data rather than schema, hence the separate
+  directory. Exists only because this environment has no DB access; the admin
+  UI is the intended path from here on.
+
+#### Changed
+- `components/admin/AddCurrentStudent.jsx` — program is now optional; the select
+  offers "Not assigned yet" and inserts null. Validation requires only a name.
+- `components/admin/CurrentStudents.jsx` — three null-program fallbacks: the
+  table cell and detail panel show "Not assigned", and the search haystack
+  coalesces to `''` so a null program cannot stringify to "null" and make every
+  unassigned student match a search for that word.
+
+#### Not changed (deliberate)
+- Student-portal reads already degrade correctly — `StudentPortalShell.jsx:63`
+  guards the program pill behind a truthiness check and `pages/student/index.jsx:17`
+  falls back to "Your program". No edits needed there.
+- The conversion RPC always supplies a program from the application, so nullable
+  program does not affect the application → current-student path.
+
+#### Verification
+- **`npm run build` still NOT run** — this environment has no Node runtime or
+  `node_modules` (`npm: command not found`). Unverified beyond manual review and
+  a clean `git diff --check`. Build before deploying.
+- The migration and seed SQL are unexecuted; no Supabase credentials here.
+
+#### Note
+"Alex HanWeici" is recorded exactly as given. If that is really "Alex Han" with
+a separate given name, fix the row before portal credentials are issued, since
+the name is what appears on offer letters and the student portal.
+
+## Session: 2026-09-02 - Student Portal V1 upgrade plan
+
+### Added
+- `docs/student-portal-v1-upgrade-plan.md` — implementation plan for the
+  "Yonde Student Portal V1 Upgrade" spec. Planning only; no portal code changed.
+
+### Decisions recorded
+- **Course hours stay student-facing.** The spec's six sections omit hours and
+  its UX direction rejects dense dashboards, but the call was to keep the full
+  hours page. `/student/course` and `CourseHours.jsx` are therefore untouched;
+  the new six-section journey page sits at `/student` and does not show hours.
+- **The four-student seed is on hold** pending the Weici / Alex Han question.
+
+### Key findings from reading the spec against the code
+- The schema already has the right pattern to copy — plan-level definition plus
+  per-student progress (`course_milestones` → `student_milestone_progress`).
+  Learning Map and Project Journey should mirror it rather than invent a second
+  pattern.
+- Phase status should be **derived** from milestone progress, not stored, to
+  avoid a second source of truth.
+- `class_sessions.notes` must **not** be reused for Session Notes: those rows
+  feed `mentor_payment_records`, and coupling student-facing Zoom notes to the
+  payment ledger would be wrong. Session Notes gets its own table.
+- `course_modules` cannot serve as the Learning Map — it is hours-based
+  (`planned_minutes`), whereas the Learning Map is knowledge-based with no
+  durations.
+- `estimated_duration` must be text ("~4–6 weeks"); the spec deliberately avoids
+  calendar commitments.
+
+### Blocking questions raised
+- "Weici" appears in the spec as a TA (Product & Prototype), yet the pending
+  seed has a student "Alex HanWeici" holding `annalisazwc@gmail.com`. The spec's
+  cohort is three students (CC, Emily, Alex). Alex Han and Weici are probably
+  two people and the email may be Weici's. Seed held until confirmed.
+- "CC" is unresolved — Cici Fu or Clementine Li.
+- "Entrepreneurship Program with Prof. Gu" is a course-plan name, not a value in
+  `CURRENT_STUDENT_PROGRAMS`. Confirms the approach of the 2026-09-02 nullable
+  program migration: leave program null, source the display name from the plan.
+
+## Session: 2026-09-02 - Student Portal V1: student-facing journey
+
+Built on top of the existing portal rather than replacing it. `/student/course`
+(course hours) and `/student/files` are untouched and still reachable from
+`PortalNavbar`; `StudentPortalShell`, `useStudentPortal`, `PortalNavbar`, and
+`StudentFiles` are all reused.
+
+### Added
+- `docs/sql/migrations/2026-09-02_add_student_journey.sql` — Program Overview
+  columns on `course_plans`, project fields on `current_students`,
+  `responsibility`/`timezone` on `mentors`, new `learning_map_categories`,
+  `learning_map_topics`, `project_phases`, `session_notes`, plus `phase_id` on
+  `course_milestones`. Admin RLS + student read policies scoped through the
+  student's own enrollment.
+- `lib/portal/useStudentJourney.js` — loads all journey data, and exports
+  `derivePhaseStatuses`.
+- `components/portal/` — `JourneySection.jsx`, `ProgramOverview.jsx`,
+  `LearningMap.jsx`, `ProjectJourney.jsx`, `YourTeam.jsx`, `SessionNotes.jsx`.
+- `styles/studentJourney.module.css` — extends the existing editorial system
+  (Fraunces/Manrope, navy #0b1f49, teal #177ba1) rather than adding a second one.
+
+### Changed
+- `pages/student/index.jsx` — now renders the six spec sections in order:
+  Program Overview → Learning Map → Project Journey → Your Team → Session Notes
+  → Additional Materials. The two large workspace cards were removed; both
+  destinations remain in the navbar, and Files is now section 6 inline.
+- `components/portal/StudentPortalShell.jsx` — optional `programName` override.
+- `components/portal/StudentFiles.jsx` — opt-in `hideHeading` so the journey
+  page's section title does not duplicate its internal heading. Default false,
+  so `/student/files` is unchanged.
+
+### Design decisions
+- **Every journey query is issued and handled independently.** The migration
+  cannot be run from this environment, so a missing table or column must degrade
+  one section, never the portal. Sections hide themselves when empty.
+- **`project_area`/`project_goal` are fetched in `useStudentJourney`, not added
+  to `useStudentPortal`'s select list.** That query gates the whole portal — a
+  column that does not exist yet would lock every student out.
+- **Phase status is derived, not stored** (`derivePhaseStatuses`): completed when
+  all its milestones are, current for the first that is not.
+- **Program name now prefers the course plan name** over the program enum, since
+  "Entrepreneurship Program with Prof. Gu" is a plan, and the enum may be null.
+- Team falls back to `useStudentPortal`'s basic `mentors(id, name)` data if the
+  `responsibility`/`timezone` columns do not exist yet.
+- Unset project goal renders "Exploring Project Direction"; no NULL/N/A anywhere.
+
+### Not built yet
+- **Admin authoring UI.** Nothing in `components/admin/` can create a Learning
+  Map, phase, or session note yet, so these sections will be empty even after
+  the migration runs. This is the next step.
+- Initial content seed (Prof. Gu's Learning Map, three phases, three team
+  members) — needs the course plan to exist first.
+
+### Verification
+- **`npm run build` NOT run** — still no Node runtime in this environment
+  (`npm: command not found`). Checked manually: balanced delimiters in all eight
+  new/edited JS files, balanced CSS braces, clean `git diff --check`. Unverified
+  beyond that.
+- Nothing exercised against a database; the migration is unapplied.
+
+### Note
+`.workspaceCards` / `.workspaceCard` / `.courseVisual` / `.filesVisual` in
+`studentPortal.module.css` are now unused. Left in place deliberately — dead CSS
+is harmless and removing it is unnecessary churn during an in-progress upgrade.

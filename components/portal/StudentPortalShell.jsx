@@ -42,12 +42,15 @@ export default function StudentPortalShell({
   description,
   application,
   currentStudent,
+  programName: programNameOverride,
   children,
 }) {
   const profile = currentStudent || application
-  const programName = profile
+  // Callers that have loaded the course plan pass its name in, since that is
+  // the real program title; the enum is only a fallback and may be unset.
+  const programName = programNameOverride || (profile
     ? PROGRAM_LABELS[profile.program] || profile.program
-    : null
+    : null)
 
   return (
     <div className={styles.page}>
