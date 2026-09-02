@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import JourneySection from './JourneySection'
+import { IconCheckCircle } from './icons'
 import { phaseProgress, summarise } from '../../lib/portal/journeyProgress'
 import styles from '../../styles/studentJourney.module.css'
 
@@ -18,7 +19,7 @@ function MilestoneRow({ milestone }) {
   const active = milestone.status === 'in_progress'
   return (
     <li className={`${styles.checkItem} ${done ? styles.checkDone : ''} ${active ? styles.checkActive : ''}`}>
-      <span className={styles.checkMark} aria-hidden>{done ? '✓' : ''}</span>
+      <IconCheckCircle className={styles.checkMark} />
       <span className={styles.checkLabel}>{milestone.title}</span>
       {active ? <span className={styles.checkTag}>In progress</span> : null}
     </li>
@@ -38,7 +39,12 @@ export default function ProjectJourney({ phases = [] }) {
   if (!phases.length) return null
 
   return (
-    <JourneySection eyebrow="Where you are" title="Project Journey">
+    <JourneySection
+      eyebrow="Where you are"
+      title="Project Journey"
+      id="project-journey"
+      action={<span className={styles.countPill}>{summary.completed}/{summary.total} milestones</span>}
+    >
       <div className={styles.summaryCard}>
         <div className={styles.summaryLead}>
           <span className={styles.summaryPercent}>{summary.percent}<i>%</i></span>

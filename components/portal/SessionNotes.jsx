@@ -16,7 +16,7 @@ export default function SessionNotes({ notes = [], hasCourse = false }) {
   if (!notes.length) {
     if (!hasCourse) return null
     return (
-      <JourneySection eyebrow="What has happened" title="Session Notes">
+      <JourneySection eyebrow="What has happened" title="Session Notes" id="session-notes">
         <p className={styles.emptyNote}>
           Your session notes will appear here after your first meeting.
         </p>
@@ -25,7 +25,12 @@ export default function SessionNotes({ notes = [], hasCourse = false }) {
   }
 
   return (
-    <JourneySection eyebrow="What has happened" title="Session Notes">
+    <JourneySection
+      eyebrow="What has happened"
+      title="Session Notes"
+      id="session-notes"
+      action={<span className={styles.countPill}>{notes.length} sessions</span>}
+    >
       <div className={styles.noteList}>
         {notes.map((note) => {
           const mentor = note.mentors?.name || note.mentor_name

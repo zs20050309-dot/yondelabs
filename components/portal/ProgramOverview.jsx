@@ -1,4 +1,5 @@
 import JourneySection from './JourneySection'
+import { FIELD_ICONS } from './icons'
 import styles from '../../styles/studentJourney.module.css'
 
 function formatMonth(value) {
@@ -17,16 +18,14 @@ function duration(startsOn, endsOn) {
 
 export default function ProgramOverview({ programName, plan, student }) {
   const span = duration(plan?.starts_on, plan?.expected_end_on)
-  // Never surface an empty project goal as blank or "N/A" — the spec asks for
-  // this exact phrasing while a direction is still being explored.
+  // Never surface an empty goal as blank or "N/A" — this exact phrasing is the
+  // agreed student-facing wording while a direction is still being explored.
   const projectGoal = student?.project_goal?.trim() || 'Exploring Project Direction'
 
-  const rows = [
-    { label: 'Program', value: programName },
+  const stats = [
     { label: 'School', value: student?.school?.trim() },
     { label: 'Stage', value: student?.stage?.trim() },
     { label: 'Project area', value: student?.project_area?.trim() },
-    { label: 'Project goal', value: projectGoal },
     { label: 'Duration', value: span },
     { label: 'Learning cadence', value: plan?.cadence?.trim() },
   ].filter((row) => row.value)
@@ -34,31 +33,45 @@ export default function ProgramOverview({ programName, plan, student }) {
   const objective = plan?.learning_objective?.trim()
   const capstone = plan?.capstone_goal?.trim()
 
-  if (!rows.length && !objective && !capstone) return null
+  if (!stats.length && !objective && !capstone && !programName) return null
 
-  // The rail carries a short, fixed section label like every other section. The
-  // program name is variable-length (e.g. "Entrepreneurship Program with Prof.
-  // Gu") and overflowed the narrow rail, so it leads the body instead.
   return (
-    <JourneySection eyebrow="Your program" title="Program Overview">
-      {programName ? <h3 className={styles.programName}>{programName}</h3> : null}
-      {objective ? <p className={styles.lede}>{objective}</p> : null}
-      {capstone ? (
-        <div className={styles.capstone}>
-          <span>Capstone goal</span>
-          <p>{capstone}</p>
-        </div>
-      ) : null}
-      {rows.length ? (
-        <dl className={styles.overviewGrid}>
-          {rows.map((row) => (
-            <div key={row.label}>
-              <dt>{row.label}</dt>
-              <dd>{row.value}</dd>
+    <JourneySection eyebrow="Your program" title="Program Overview" id="overview">
+      <div className={styles.overviewCard}>
+        <div className={styles.overviewIntro}>
+          {programName ? <h3 className={styles.programName}>{programName}</h3> : null}
+          {objective ? <p className={styles.lede}>{objective}</p> : null}
+          <div className={styles.goalRow}>
+            {capstone ? (
+              <div className={styles.callout}>
+                <span>Capstone goal</span>
+                <p>{capstone}</p>
+              </div>
+            ) : null}
+            <div className={`${styles.callout} ${styles.calloutMuted}`}>
+              <span>Your project goal</span>
+              <p>{projectGoal}</p>
             </div>
-          ))}
-        </dl>
-      ) : null}
+          </div>
+        </div>
+
+        {stats.length ? (
+          <dl className={styles.statBar}>
+            {stats.map((stat) => {
+              const Icon = FIELD_ICONS[stat.label]
+              return (
+                <div key={stat.label} className={styles.stat}>
+                  <dt>
+                    {Icon ? <Icon className={styles.statIcon} /> : null}
+                    {stat.label}
+                  </dt>
+                  <dd>{stat.value}</dd>
+                </div>
+              )
+            })}
+          </dl>
+        ) : null}
+      </div>
     </JourneySection>
   )
 }

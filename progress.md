@@ -2936,3 +2936,71 @@ collided with the learning-objective text in the body column.
   the rail, whatever a staff member types.
 
 `npm run build` compiles successfully.
+
+## Session: 2026-09-02 - Student portal design system rebuild
+
+Rebuilt the student portal on an explicit light design system (off-white canvas,
+white card surfaces, hairline borders + soft elevation, single indigo accent).
+Implemented in CSS Modules, not Tailwind — CLAUDE.md mandates CSS Modules and no
+new dependencies.
+
+### Design tokens (`styles/studentJourney.module.css`, on `.journey`)
+canvas `#f8f9fa` · surface `#fff` · line `#eaecf0` / `#d0d5dd` ·
+ink `#101828` / `#475467` / `#667085` · accent `#4338ca` (deep indigo) ·
+success `#047857` · shadows `0 1px 3px rgba(16,24,40,.08)` and two heavier
+steps · radius scale 8/12/16.
+
+### Layout
+- **Section headers moved from a sticky side rail to top-aligned headers**, so
+  content gets full column width. This also removes the class of bug that caused
+  the earlier Program Overview overlap — no title can collide with body text.
+- Each header carries an optional right-aligned `action` slot, used for count
+  pills ("25 topics", "0/8 milestones", "3 sessions").
+- Sections have anchor ids (`overview`, `learning-map`, `project-journey`,
+  `team`, `session-notes`) that the nav links target.
+
+### Components
+- **Program Overview** is now one card: program name + objective, a two-up
+  callout row (capstone goal / this student's project goal), and a key-value
+  **stat bar** with inline icons for School, Stage, Project area, Duration,
+  Cadence.
+- **Learning Map** categories became interactive module cards with a numbered
+  index chip, topic-count pill, hover lift, and check-circle topic markers.
+- **Project Journey** keeps the summary + expandable phase cards, now with
+  gradient meter fills, indigo/emerald/grey micro-badges, and index chips that
+  recolour by state.
+- **Team** cards gained circular avatars and a cleaner header block.
+- New `components/portal/icons.jsx` — hand-rolled inline SVG, matching the
+  admin side. No icon library added.
+
+### Navigation
+`PortalNavbar` (student portal only; the applicant path is untouched) now has
+Dashboard / Modules / Milestones / Course / Resources, and an **avatar profile
+dropdown** showing name, program, and portal ID with log out. It closes on
+outside click and Escape. Active state now matches on `router.asPath` so anchor
+links highlight correctly.
+- The masthead program pill is suppressed on `/student` via `showProgramPill`,
+  since Program Overview now leads with the program name.
+
+### Accessibility
+Measured against the `#f8f9fa` canvas: `#101828` 16.8:1, `#475467` 7.3:1,
+`#667085` 4.7:1, `#4338ca` 7.5:1, `#047857` 5.2:1 — all AA for normal text.
+Non-text UI (chevrons, check markers) was `#98a2b3` at 2.44:1, below the 3:1
+floor in WCAG 1.4.11; darkened to `#667085` and `#7b8698` (4.7:1 / 3.5:1).
+Focus-visible rings on every interactive element, and a
+`prefers-reduced-motion` block disabling the meter, reveal, and hover
+transitions.
+
+### Deliberately not built
+- **Global search.** There is no search backend and nothing cross-cutting to
+  query; a search box that does nothing would be fabricated UI. `StudentFiles`
+  already has its own working search.
+- **Learning Map lesson progress.** Topics have no completion state in the
+  schema, so the badge counts topics rather than claiming "0/8 completed", and
+  markers are uniformly neutral. Real progress here needs a per-student
+  topic-progress table.
+
+### Verification
+`npm run build` compiled successfully; every `styles.*` reference across the
+seven portal components and the page resolves against its stylesheet.
+Not viewed in a browser — no Supabase credentials in this environment.

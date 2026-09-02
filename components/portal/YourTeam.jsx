@@ -15,16 +15,18 @@ export default function YourTeam({ team = [] }) {
   if (!members.length) return null
 
   return (
-    <JourneySection eyebrow="Who supports you" title="Your Team">
+    <JourneySection eyebrow="Who supports you" title="Your Team" id="team">
       <div className={styles.teamGrid}>
         {members.map((member) => (
           <article className={styles.teamCard} key={member.id}>
-            <span className={styles.teamInitials} aria-hidden>{initials(member.mentors.name)}</span>
-            <h3>{member.mentors.name}</h3>
-            {member.role ? <span className={styles.teamRole}>{member.role}</span> : null}
-            {member.mentors.responsibility ? (
-              <p>{member.mentors.responsibility}</p>
-            ) : null}
+            <header className={styles.teamHead}>
+              <span className={styles.teamAvatar} aria-hidden>{initials(member.mentors.name)}</span>
+              <div>
+                <h3>{member.mentors.name}</h3>
+                {member.role ? <span className={styles.teamRole}>{member.role}</span> : null}
+              </div>
+            </header>
+            {member.mentors.responsibility ? <p>{member.mentors.responsibility}</p> : null}
             {member.mentors.timezone ? (
               <span className={styles.teamTimezone}>{member.mentors.timezone}</span>
             ) : null}

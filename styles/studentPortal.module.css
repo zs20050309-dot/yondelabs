@@ -2,11 +2,9 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  /* A definite tint, not near-white: white cards must visibly lift off it. */
-  background:
-    radial-gradient(circle at 90% -6%, rgba(14, 107, 138, 0.10), transparent 36rem),
-    linear-gradient(180deg, #eef2f7 0%, #e7ecf4 100%);
-  color: #0a1729;
+  /* Crisp off-white canvas; white cards are separated by hairline + shadow. */
+  background: #f8f9fa;
+  color: #101828;
   font-family: Manrope, Inter, system-ui, sans-serif;
 }
 
@@ -29,19 +27,19 @@
 }
 
 .eyebrow {
-  color: #177ba1;
-  font-size: 0.82rem;
-  font-weight: 850;
-  letter-spacing: 0.14em;
+  color: #4338ca;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .pageHeader h1 {
   margin: 10px 0 0;
   max-width: 18ch;
-  color: #0a1729;
+  color: #101828;
   font-family: Fraunces, Georgia, serif;
-  font-size: clamp(2.4rem, 4.4vw, 3.9rem);
+  font-size: clamp(2.1rem, 3.6vw, 3rem);
   font-weight: 650;
   line-height: 1.04;
   letter-spacing: -0.022em;
@@ -51,9 +49,9 @@
 .pageHeader p {
   max-width: 38rem;
   margin: 16px 0 0;
-  color: #48586f;
-  font-size: clamp(1rem, 1.3vw, 1.1rem);
-  font-weight: 450;
+  color: #475467;
+  font-size: clamp(0.99rem, 1.2vw, 1.06rem);
+  font-weight: 400;
   line-height: 1.7;
   text-wrap: pretty;
 }
@@ -61,12 +59,12 @@
 .programPill {
   min-width: 240px;
   max-width: 360px;
-  border: 1px solid #d5dfeb;
-  border-left: 4px solid #0e6b8a;
-  border-radius: 14px;
+  border: 1px solid #eaecf0;
+  border-left: 3px solid #4338ca;
+  border-radius: 12px;
   background: #fff;
-  box-shadow: 0 1px 2px rgba(10, 23, 41, .05), 0 10px 24px -16px rgba(10, 23, 41, .28);
-  padding: 17px 20px;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, .08), 0 1px 2px rgba(16, 24, 40, .06);
+  padding: 16px 18px;
 }
 
 .programPill span,
@@ -75,7 +73,7 @@
 }
 
 .programPill span {
-  color: #0a5570;
+  color: #3730a3;
   font-size: 0.74rem;
   font-weight: 800;
   letter-spacing: 0.1em;

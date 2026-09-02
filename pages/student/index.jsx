@@ -40,6 +40,8 @@ export default function StudentPortalHome() {
   return (
     <StudentPortalShell
       user={user}
+      portalId={portalAccount?.portal_id}
+      showProgramPill={false}
       application={application}
       currentStudent={currentStudent}
       programName={programName}
