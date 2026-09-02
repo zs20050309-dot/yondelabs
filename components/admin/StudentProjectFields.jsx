@@ -13,6 +13,8 @@ import styles from '../../styles/courseHours.module.css'
  */
 export default function StudentProjectFields({ currentStudent, onSaved }) {
   const showToast = useToast()
+  const [school, setSchool] = useState('')
+  const [stage, setStage] = useState('')
   const [projectArea, setProjectArea] = useState('')
   const [projectGoal, setProjectGoal] = useState('')
   const [loading, setLoading] = useState(true)
@@ -24,13 +26,15 @@ export default function StudentProjectFields({ currentStudent, onSaved }) {
     async function load() {
       const { data, error: loadError } = await supabase
         .from('current_students')
-        .select('project_area, project_goal')
+        .select('school, stage, project_area, project_goal')
         .eq('id', currentStudent.id)
         .maybeSingle()
       if (!active) return
       if (loadError) {
         setError('Project fields are unavailable. Run the 2026-09-02 student journey migration.')
       } else {
+        setSchool(data?.school || '')
+        setStage(data?.stage || '')
         setProjectArea(data?.project_area || '')
         setProjectGoal(data?.project_goal || '')
       }
@@ -45,6 +49,8 @@ export default function StudentProjectFields({ currentStudent, onSaved }) {
     setBusy(true)
     setError('')
     const { error: saveError } = await supabase.from('current_students').update({
+      school: school.trim() || null,
+      stage: stage.trim() || null,
       project_area: projectArea.trim() || null,
       project_goal: projectGoal.trim() || null,
       updated_at: new Date().toISOString(),
@@ -67,6 +73,16 @@ export default function StudentProjectFields({ currentStudent, onSaved }) {
       </div>
       {error ? <div className={styles.adminError}>{error}</div> : null}
 
+      <div className={styles.dateRow}>
+        <label className={styles.stackedField}>
+          <span>School</span>
+          <input type="text" value={school} onChange={(event) => setSchool(event.target.value)} placeholder="e.g. The Webb Schools" />
+        </label>
+        <label className={styles.stackedField}>
+          <span>Stage</span>
+          <input type="text" value={stage} onChange={(event) => setStage(event.target.value)} placeholder="e.g. Rising Sophomore" />
+        </label>
+      </div>
       <label className={styles.stackedField}>
         <span>Project area</span>
         <input

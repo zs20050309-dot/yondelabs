@@ -2770,3 +2770,47 @@ restriction.
 Still unverified: nothing has been exercised against the live database, since
 this environment has no Supabase credentials. A clean build is a compile check,
 not proof the queries and RLS policies behave correctly.
+
+## Session: 2026-09-02 - Prof. Gu program content seeded
+
+Cohort clarified to **three** students — Cici Fu, Emily Wei, Clementine Li.
+Alex is dropped, and Weici is confirmed as a TA, not a student. The earlier
+`2026-09-02_add_four_current_students.sql` seed (which had a student
+"Alex HanWeici" holding annalisazwc@gmail.com) was **deleted** as wrong.
+
+### Structure changed to fit the data
+The spec's student records carry School and Stage, which had no column. Added
+as common student-level fields, not cohort-specific:
+- `docs/sql/migrations/2026-09-02_add_student_school_stage.sql`
+- `components/admin/StudentProjectFields.jsx` — school + stage inputs
+- `components/portal/ProgramOverview.jsx` — School and Stage rows
+- `lib/portal/useStudentJourney.js` — widened select
+
+### Added
+- `docs/sql/seeds/2026-09-02_seed_prof_gu_program.sql` — all spec content
+  verbatim: program overview (objective, capstone, cadence, Sep 2026 – Apr
+  2027), the 3-category / 25-topic Learning Map, 3 phases, 8 milestones mapped
+  to phases, 3 mentors with responsibility and timezone, and the three students
+  with enrollments and mentor assignments.
+
+### Seed design
+- **Idempotent.** Re-running updates rather than duplicating, unlike the deleted
+  four-student seed which would have created duplicate rows on a second run.
+- **Milestones are upserted by title, never deleted**, because deleting them
+  would cascade `student_milestone_progress` and destroy student progress. The
+  Learning Map, which has no progress attached, is rebuilt wholesale instead.
+- **Clementine Li's project fields are deliberately null** — the spec gives her
+  no project data, and the portal renders an unset goal as "Exploring Project
+  Direction".
+- Program is left null on all three; the program name comes from the course
+  plan, which is why the nullable-program migration mattered.
+
+### Assumption flagged
+`student_course_enrollments.allocated_minutes` is NOT NULL and must be > 0, but
+this program is not hours-based. Seeded as 2400 (40h) with the plan's
+`allow_overage = true`, making it a non-binding minimum rather than a cap.
+Adjust if real hours are agreed.
+
+### Verification
+- `npm run build` **compiled successfully in 8.2s**, 17/17 static pages.
+- The seed SQL is unexecuted — no database credentials in this environment.

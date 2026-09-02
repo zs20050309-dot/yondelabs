@@ -222,7 +222,7 @@ docs/                   ← Guides, SQL migrations, AI context
 
 ## Currently Pending
 
-- [ ] **Run seed script** `docs/sql/seeds/2026-09-02_add_four_current_students.sql` — adds Clementine Li, Emily Wei, Cici Fu, Alex HanWeici. **On hold** pending the Weici / Alex Han identity question (see `docs/student-portal-v1-upgrade-plan.md`). Run once only — duplicate names are not caught by `on conflict`. (Data, not schema; `docs/sql/seeds/` is new.)
+- [ ] **Run migration then seed** — `docs/sql/migrations/2026-09-02_add_student_school_stage.sql`, then `docs/sql/seeds/2026-09-02_seed_prof_gu_program.sql`. Creates the Entrepreneurship Program with Prof. Gu (overview, Learning Map, 3 phases, 8 milestones, 3 mentors) and its three students: Cici Fu, Emily Wei, Clementine Li. The seed is idempotent — safe to re-run.
 - [ ] **Run Supabase migration** for the mentor adjustment log — `docs/sql/migrations/2026-08-26_add_mentor_adjustment_log.sql` (after the 2026-08-13 migration). Adding/deleting manual adjustments and the "Adjustment log" section in the mentor panel won't work until this is applied.
 - [ ] **Run Supabase migration** for mentor payments — `docs/sql/migrations/2026-08-13_add_mentor_payments.sql` (after the 2026-08-12 migration). Mentor payment settings/records and the "Mentor payments" admin tab won't work until this is applied; each mentor assignment also needs a payment type + rate set before milestone/session logging generates payable lines.
 - [ ] **Run Supabase migration** for `draft` status — `docs/sql/migrations/2026-05-24_add_draft_status.sql`, guide at `docs/supabase-migration-guide.md`. New form submissions will fail at the DB CHECK constraint until this is run.

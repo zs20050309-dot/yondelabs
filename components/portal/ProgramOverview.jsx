@@ -23,6 +23,8 @@ export default function ProgramOverview({ programName, plan, student }) {
 
   const rows = [
     { label: 'Program', value: programName },
+    { label: 'School', value: student?.school?.trim() },
+    { label: 'Stage', value: student?.stage?.trim() },
     { label: 'Project area', value: student?.project_area?.trim() },
     { label: 'Project goal', value: projectGoal },
     { label: 'Duration', value: span },
