@@ -3142,3 +3142,23 @@ Kept the `project-journey` anchor id the nav Milestones link targets.
 
 `npm run build` compiles; all `styles.*` references resolve, including the
 `card_*`, `chip_*`, and `meterFill_*` variants.
+
+### Fix: portal navbar not sticking on scroll
+`.header` in `portalNavbar.module.css` already declared `position: sticky;
+top: 0`, so the bug was elsewhere: `styles/globals.css` set
+`overflow-x: hidden` on `html, body`, which makes them scroll containers and
+silently disables sticky positioning for every descendant.
+
+Changed to `overflow-x: clip` inside an `@supports (overflow-x: clip)` block,
+keeping the original `hidden` declaration as the fallback. `clip` prevents
+horizontal overflow the same way without creating a scroll container. Safari
+< 16 keeps the old behaviour rather than breaking.
+
+**This touches `globals.css`, which is site-wide**, so it also re-enables the
+sticky declarations already present in `apply.module.css`,
+`wizard.module.css`, `dashboard.module.css`, and `admin.module.css` — those
+were written expecting sticky to work and have been silently flat. The homepage
+navbar is `position: relative` by design (per CLAUDE.md) and is unaffected.
+Worth a quick look at /apply, /dashboard, and /admin after deploying.
+
+`npm run build` compiles.
